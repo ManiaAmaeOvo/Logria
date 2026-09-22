@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://logria.app/schemas/health-log-v1.json",
+  "title": "Logria health log export",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schema_version",
+    "export_id",
+    "exported_at",
+    "time_zone",
+    "date_range",
+    "included_data",
+    "days"
+  ],
+  "properties": {
+    "format": { "const": "logria.health_log" },
+    "schema_version": { "const": 1 },
+    "export_id": { "$ref": "#/$defs/uuid" },
+    "exported_at": { "$ref": "#/$defs/timestamp" },
+    "time_zone": { "type": "string", "minLength": 1 },
+    "date_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "$ref": "#/$defs/localDate" },
+        "to": { "$ref": "#/$defs/localDate" }
+      }
+    },
+    "included_data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fitness", "food_log", "nutrition", "body"],
+      "properties": {
+        "fitness": { "type": "boolean" },
+        "food_log": { "type": "boolean" },
+        "nutrition": { "type": "boolean" },
+        "body": { "type": "boolean" }
+      }
+    },
+    "days": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/day" }
+    }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "localDate": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "nullableNumber": { "type": ["number", "null"], "minimum": 0 },
+    "day": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "fitness_sessions",
+        "food_log_entries",
+        "nutrition",
+        "body_measurements"
+      ],
+      "properties": {
+        "date": { "$ref": "#/$defs/localDate" },
+        "fitness_sessions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fitnessSession" }
+        },
+        "food_log_entries": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/foodLogEntry" }
+        },
+        "nutrition": {
+          "oneOf": [{ "$ref": "#/$defs/nutrition" }, { "type": "null" }]
+        },
+        "body_measurements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/bodyMeasurement" }
+        }
+      }
+    },
+    "fitnessSession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "status",
+        "started_at",
+        "completed_at",
+        "cycle",
+        "exercises",
+        "notes"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "status": { "enum": ["in_progress", "completed", "cancelled"] },
+        "started_at": { "$ref": "#/$defs/timestamp" },
+        "completed_at": {
+          "oneOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }]
+        },
+        "cycle": {
+          "oneOf": [{ "$ref": "#/$defs/cycleContext" }, { "type": "null" }]
+        },
+        "exercises": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/workoutExercise" }
+        },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "cycleContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plan_id",
+        "plan_name",
+        "cycle_number",
+        "day_id",
+        "day_name",
+        "day_type"
+      ],
+      "properties": {
+        "plan_id": { "$ref": "#/$defs/uuid" },
+        "plan_name": { "type": "string", "minLength": 1 },
+        "cycle_number": { "type": "integer", "minimum": 1 },
+        "day_id": { "$ref": "#/$defs/uuid" },
+        "day_name": { "type": "string", "minLength": 1 },
+        "day_type": { "enum": ["training", "rest"] }
+      }
+    },
+    "workoutExercise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exercise_id", "exercise_name", "order", "sets"],
+      "properties": {
+        "exercise_id": {
+          "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+        },
+        "exercise_name": { "type": "string", "minLength": 1 },
+        "order": { "type": "integer", "minimum": 1 },
+        "sets": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/workoutSet" }
+        }
+      }
+    },
+    "workoutSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "set_number",
+        "set_type",
+        "weight",
+        "reps",
+        "rir",
+        "completed"
+      ],
+      "properties": {
+        "set_number": { "type": "integer", "minimum": 1 },
+        "set_type": { "enum": ["working", "warmup"] },
+        "weight": {
+          "oneOf": [{ "$ref": "#/$defs/weight" }, { "type": "null" }]
+        },
+        "reps": { "type": ["integer", "null"], "minimum": 0 },
+        "rir": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 10,
+          "multipleOf": 0.5
+        },
+        "completed": { "type": "boolean" }
+      }
+    },
+    "weight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "unit": { "enum": ["kg", "lb"] }
+      }
+    },
+    "foodLogEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "occurred_at"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "text": { "type": "string", "minLength": 1 },
+        "occurred_at": {
+          "oneOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }]
+        }
+      }
+    },
+    "nutrition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protein_g",
+        "carbohydrate_g",
+        "fat_g",
+        "calories_kcal",
+        "source",
+        "notes"
+      ],
+      "properties": {
+        "protein_g": { "$ref": "#/$defs/nullableNumber" },
+        "carbohydrate_g": { "$ref": "#/$defs/nullableNumber" },
+        "fat_g": { "$ref": "#/$defs/nullableNumber" },
+        "calories_kcal": { "$ref": "#/$defs/nullableNumber" },
+        "source": { "enum": ["manual", "external_llm", "other"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "bodyMeasurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "measurement_id",
+        "type",
+        "display_name",
+        "value",
+        "unit",
+        "recorded_at"
+      ],
+      "properties": {
+        "measurement_id": { "$ref": "#/$defs/uuid" },
+        "type": { "type": "string", "minLength": 1 },
+        "display_name": { "type": "string", "minLength": 1 },
+        "value": { "type": "number", "minimum": 0 },
+        "unit": { "type": "string", "minLength": 1 },
+        "recorded_at": { "$ref": "#/$defs/timestamp" }
+      }
+    }
+  }
+}
