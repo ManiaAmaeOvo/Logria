@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../core/database/app_database.dart';
 import 'shell/logria_shell.dart';
 
 class LogriaApp extends StatelessWidget {
-  const LogriaApp({super.key});
+  const LogriaApp({super.key, required this.database});
+
+  final AppDatabase database;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +24,7 @@ class LogriaApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF7F8F4),
         cardTheme: const CardThemeData(elevation: 0, margin: EdgeInsets.zero),
       ),
-      home: const LogriaShell(),
+      home: LogriaShell(database: database),
     );
   }
 }

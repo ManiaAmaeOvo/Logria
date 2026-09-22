@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../core/database/app_database.dart';
+import '../../features/fitness/presentation/fitness_page.dart';
+
 class LogriaShell extends StatefulWidget {
-  const LogriaShell({super.key});
+  const LogriaShell({super.key, required this.database});
+
+  final AppDatabase database;
 
   @override
   State<LogriaShell> createState() => _LogriaShellState();
@@ -33,12 +38,7 @@ class _LogriaShellState extends State<LogriaShell> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: _ModulePlaceholder(destination: destination),
-        ),
-      ),
+      body: SafeArea(child: _bodyFor(destination)),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
@@ -53,6 +53,17 @@ class _LogriaShellState extends State<LogriaShell> {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _bodyFor(_Destination destination) {
+    if (destination.label == '训练') {
+      return FitnessPage(database: widget.database);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: _ModulePlaceholder(destination: destination),
     );
   }
 }
