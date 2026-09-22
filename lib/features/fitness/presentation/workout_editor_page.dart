@@ -153,48 +153,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 
   Future<_ExerciseSelection?> _askForNewExercise() async {
-    final controller = TextEditingController();
-    final selection = await showDialog<_ExerciseSelection>(
+    return showDialog<_ExerciseSelection>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('输入新动作'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textInputAction: TextInputAction.done,
-          decoration: const InputDecoration(
-            labelText: '动作名称',
-            hintText: '例如：平板卧推',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                Navigator.pop(context, _ExerciseSelection(name, false));
-              }
-            },
-            child: const Text('仅本次'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                Navigator.pop(context, _ExerciseSelection(name, true));
-              }
-            },
-            child: const Text('保存为预设'),
-          ),
-        ],
-      ),
+      builder: (context) => const _NewExerciseDialog(),
     );
-    controller.dispose();
-    return selection;
   }
 
   Future<void> _saveWorkout() async {
@@ -379,6 +341,59 @@ class _ExerciseSelection {
 
   final String name;
   final bool saveAsPreset;
+}
+
+class _NewExerciseDialog extends StatefulWidget {
+  const _NewExerciseDialog();
+
+  @override
+  State<_NewExerciseDialog> createState() => _NewExerciseDialogState();
+}
+
+class _NewExerciseDialogState extends State<_NewExerciseDialog> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('输入新动作'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textInputAction: TextInputAction.done,
+        decoration: const InputDecoration(
+          labelText: '动作名称',
+          hintText: '例如：平板卧推',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('取消'),
+        ),
+        TextButton(
+          onPressed: () => _submit(saveAsPreset: false),
+          child: const Text('仅本次'),
+        ),
+        FilledButton(
+          onPressed: () => _submit(saveAsPreset: true),
+          child: const Text('保存为预设'),
+        ),
+      ],
+    );
+  }
+
+  void _submit({required bool saveAsPreset}) {
+    final name = _controller.text.trim();
+    if (name.isEmpty) return;
+    Navigator.pop(context, _ExerciseSelection(name, saveAsPreset));
+  }
 }
 
 class _ExerciseInput {
