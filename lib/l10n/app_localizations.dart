@@ -98,6 +98,66 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @chooseStartingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose starting day'**
+  String get chooseStartingDay;
+
+  /// No description provided for @chooseStartingDayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Start this cycle at any day, such as Push 2. Earlier days are marked unrecorded, not completed or skipped workouts. The next cycle starts at day 1. Available only before recording this cycle.'**
+  String get chooseStartingDayHint;
+
+  /// No description provided for @startingDayUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish or discard the draft first. The starting day cannot change after this cycle has recorded activity or today\'s action is locked.'**
+  String get startingDayUnavailable;
+
+  /// No description provided for @beforeStartingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'⊖ Before starting day · not recorded'**
+  String get beforeStartingDay;
+
+  /// No description provided for @redoTodayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore today\'s action'**
+  String get redoTodayAction;
+
+  /// No description provided for @redoTodayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s action was undone. Restore the original log and cycle state, or record a new action to replace it.'**
+  String get redoTodayHint;
+
+  /// No description provided for @todayActionRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s action restored.'**
+  String get todayActionRestored;
+
+  /// No description provided for @redoUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot restore: the date, plan or today\'s action has changed.'**
+  String get redoUnavailable;
+
+  /// No description provided for @discardWorkoutDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard draft'**
+  String get discardWorkoutDraft;
+
+  /// No description provided for @discardWorkoutDraftHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard these unsaved inputs? Saved workout records will not change.'**
+  String get discardWorkoutDraftHint;
+
   /// No description provided for @continueWorkoutDraft.
   ///
   /// In en, this message translates to:

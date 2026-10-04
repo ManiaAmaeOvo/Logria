@@ -1,6 +1,6 @@
 # Release process
 
-Version 1.1.0 (Android build 3) uses Flutter 3.47.2 / Dart 3.13.2 and Android application ID
+Version 1.1.0 (Android build 4) uses Flutter 3.47.2 / Dart 3.13.2 and Android application ID
 `com.logria.logria`. The UI version in `lib/core/app_metadata.dart` must match
 `pubspec.yaml`. Build numbers must increase for updates.
 
@@ -42,15 +42,24 @@ latest stable release. Confirm the uploaded APK digest matches the local checksu
 
 ## Upgrade from 1.0.0
 
-Install over the existing app; do not uninstall or clear storage. Build 3 uses
-the same application ID and signing certificate as build 2. Database schema 3
+Install over the existing app; do not uninstall or clear storage. Build 4 uses
+the same application ID and signing certificate as builds 2 and 3. Database schema 3
 adds text weights, cardio logs and manual PR records without replacing existing
-numeric sets or food/body data. Local validation includes 40 tests, English and
+numeric sets or food/body data. Local validation includes 52 tests, English and
 Chinese narrow-screen/large-text checks, and emulator upgrade installation.
 
 Existing orphan set rows from older editing behavior are not purged by this
 upgrade. Foreign-key enforcement prevents new orphan rows; history/PR queries
 only use sets linked to existing workout exercises.
+
+## 1.1.0 reissue (build 4)
+
+At the owner's request, starting-day selection and undo recovery are merged into
+the same 1.1.0 release instead of publishing 1.1.1. Update the existing annotated
+tag to the new commit using an explicit expected-old-ref force lease. Replace only
+the two named release assets and update its notes; do not delete the release or
+rewrite main history. Original build 3 source remains in commit `52a7826`.
+Check that the tag, APK build number and uploaded SHA-256 all agree.
 
 ## Icon
 

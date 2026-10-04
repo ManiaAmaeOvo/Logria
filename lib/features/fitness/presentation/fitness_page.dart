@@ -171,6 +171,8 @@ class _FitnessPageState extends State<FitnessPage> {
                 onRest: _takeRest,
                 onSkip: _skipTraining,
                 onUndo: _undoTodayAction,
+                onRedo: _redoTodayAction,
+                onChooseStart: () => _chooseStart(dashboard),
                 onEditTodayWorkout: (workout) =>
                     _editTodayWorkout(dashboard, workout),
               ),
@@ -188,6 +190,83 @@ class _FitnessPageState extends State<FitnessPage> {
       ),
     );
     _reload();
+  }
+
+  Future<void> _chooseStart(FitnessDashboardData dashboard) async {
+    final l = AppLocalizations.of(context)!;
+    final dayId = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (c) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            ListTile(
+              title: Text(l.chooseStartingDay),
+              subtitle: Text(l.chooseStartingDayHint),
+            ),
+            for (final day in dashboard.planDays)
+              ListTile(
+                leading: Icon(
+                  day.dayType == 'rest'
+                      ? Icons.hotel_outlined
+                      : Icons.fitness_center,
+                ),
+                title: Text(day.name),
+                selected: day.id == dashboard.progress.nextDay?.id,
+                onTap: () => Navigator.pop(c, day.id),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (dayId == null || !mounted) return;
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(l.chooseStartingDay),
+        content: Text(l.chooseStartingDayHint),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(l.save),
+          ),
+        ],
+      ),
+    );
+    if (yes != true) return;
+    try {
+      await _repository.chooseCycleStart(dayId);
+      if (mounted) _reload();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.startingDayUnavailable)));
+      }
+    }
+  }
+
+  Future<void> _redoTodayAction() async {
+    final l = AppLocalizations.of(context)!;
+    try {
+      final restored = await _repository.redoLatestFitnessActionToday();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(restored ? l.todayActionRestored : l.redoUnavailable),
+        ),
+      );
+      _reload();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.saveFailed(error))));
+      }
+    }
   }
 
   Future<void> _showHistory() async {
@@ -503,6 +582,8 @@ class _FitnessDashboard extends StatelessWidget {
     required this.onRest,
     required this.onSkip,
     required this.onUndo,
+    required this.onRedo,
+    required this.onChooseStart,
     required this.onEditTodayWorkout,
   });
 
@@ -515,6 +596,8 @@ class _FitnessDashboard extends StatelessWidget {
   final Future<void> Function() onRest;
   final Future<void> Function() onSkip;
   final Future<void> Function() onUndo;
+  final Future<void> Function() onRedo;
+  final VoidCallback onChooseStart;
   final ValueChanged<WorkoutHistoryItem> onEditTodayWorkout;
 
   @override
@@ -576,6 +659,34 @@ class _FitnessDashboard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 20),
+        if (dashboard.canChooseStart) ...[
+          OutlinedButton.icon(
+            onPressed: onChooseStart,
+            icon: const Icon(Icons.start),
+            label: Text(AppLocalizations.of(context)!.chooseStartingDay),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (dashboard.canRedo) ...[
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(AppLocalizations.of(context)!.redoTodayHint),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: onRedo,
+                    icon: const Icon(Icons.redo),
+                    label: Text(AppLocalizations.of(context)!.redoTodayAction),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         if (dashboard.hasDraft) ...[
           Card(
             child: ListTile(
@@ -704,6 +815,11 @@ class _FitnessDashboard extends StatelessWidget {
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 12),
+        if (dashboard.unrecordedDayIds.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(AppLocalizations.of(context)!.beforeStartingDay),
+          ),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -711,7 +827,9 @@ class _FitnessDashboard extends StatelessWidget {
             for (final day in dashboard.planDays)
               Chip(
                 avatar: Icon(
-                  consumedIds.contains(day.id)
+                  dashboard.unrecordedDayIds.contains(day.id)
+                      ? Icons.remove_circle_outline
+                      : consumedIds.contains(day.id)
                       ? Icons.check_circle
                       : day.id == nextDay.id
                       ? Icons.radio_button_checked

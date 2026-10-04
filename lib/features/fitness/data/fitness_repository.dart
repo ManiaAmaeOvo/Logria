@@ -18,6 +18,9 @@ class FitnessDashboardData {
     required this.hasActionToday,
     required this.todayWorkout,
     this.hasDraft = false,
+    this.canRedo = false,
+    this.canChooseStart = false,
+    this.unrecordedDayIds = const {},
   });
 
   final TrainingPlan plan;
@@ -28,6 +31,8 @@ class FitnessDashboardData {
   final bool hasActionToday;
   final WorkoutHistoryItem? todayWorkout;
   final bool hasDraft;
+  final bool canRedo, canChooseStart;
+  final Set<String> unrecordedDayIds;
 }
 
 class FitnessDayActionLockedException implements Exception {}
@@ -89,6 +94,108 @@ class FitnessRepository {
 
   final AppDatabase database;
   final Uuid _uuid = const Uuid();
+  static const _redoKey = 'fitness.undo.today';
+
+  Future<String> _planSignature(String planId) async {
+    final plan = await (database.select(
+      database.trainingPlans,
+    )..where((r) => r.id.equals(planId))).getSingle();
+    final days =
+        await (database.select(database.planDays)
+              ..where((r) => r.planId.equals(planId))
+              ..orderBy([(r) => OrderingTerm.asc(r.position)]))
+            .get();
+    final exercises =
+        await (database.select(database.planDayExercises)
+              ..where((e) => e.planDayId.isIn(days.map((d) => d.id)))
+              ..orderBy([
+                (e) => OrderingTerm.asc(e.planDayId),
+                (e) => OrderingTerm.asc(e.position),
+              ]))
+            .get();
+    return jsonEncode([
+      plan.toJson(),
+      days.map((d) => d.toJson()).toList(),
+      exercises.map((e) => e.toJson()).toList(),
+    ]);
+  }
+
+  Future<Map<String, dynamic>?> _availableRedo() async {
+    final raw = await readSetting(_redoKey);
+    if (raw == null) return null;
+    final snapshot = Map<String, dynamic>.from(jsonDecode(raw));
+    if (snapshot['date'] != DateFormat('yyyy-MM-dd').format(DateTime.now()) ||
+        await _hasFitnessActionOnDate(DateTime.now())) {
+      return null;
+    }
+    final planId = snapshot['planId'] as String;
+    final plan =
+        await (database.select(database.trainingPlans)..where(
+              (p) =>
+                  p.id.equals(snapshot['activePlanId'] as String) &
+                  p.isActive.equals(true) &
+                  p.isArchived.equals(false),
+            ))
+            .getSingleOrNull();
+    if (plan == null ||
+        await _planSignature(planId) != snapshot['planSignature'] ||
+        await _planSignature(plan.id) != snapshot['activePlanSignature']) {
+      return null;
+    }
+    final cycle =
+        await (database.select(database.cycleInstances)..where(
+              (c) => c.id.equals((snapshot['cycle'] as Map)['id'] as String),
+            ))
+            .getSingleOrNull();
+    if (cycle == null || jsonEncode(cycle.toJson()) != snapshot['afterCycle']) {
+      return null;
+    }
+    final executions = await (database.select(
+      database.cycleDayExecutions,
+    )..where((e) => e.cycleInstanceId.equals(cycle.id))).get();
+    final ids = executions.map((e) => e.id).toList()..sort();
+    if (jsonEncode(ids) != snapshot['remainingExecutions']) return null;
+    return snapshot;
+  }
+
+  /// Changes only this unrecorded cycle's entry point, never fabricates history.
+  Future<void> chooseCycleStart(String dayId) => database.transaction(() async {
+    final dashboard = await _requiredDashboard();
+    await _ensureNoFitnessActionToday();
+    final sessions = await (database.select(
+      database.workoutSessions,
+    )..where((s) => s.cycleInstanceId.equals(dashboard.cycle.id))).get();
+    if (dashboard.executions.isNotEmpty ||
+        sessions.isNotEmpty ||
+        dashboard.hasDraft) {
+      throw StateError(
+        'Starting day can only change before recording this cycle.',
+      );
+    }
+    final day = dashboard.planDays.where((d) => d.id == dayId).firstOrNull;
+    if (day == null) throw ArgumentError('Unknown cycle day.');
+    // Do not strand another day's draft when changing the entry point.
+    for (final d in dashboard.planDays) {
+      if (await readSetting(
+            'fitness.draft.${DateFormat('yyyy-MM-dd').format(DateTime.now())}.${d.id}',
+          ) !=
+          null) {
+        throw StateError(
+          'Resume or finish the draft before changing the starting day.',
+        );
+      }
+    }
+    await writeSetting(
+      'fitness.cycle.start.${dashboard.cycle.id}',
+      jsonEncode(
+        dashboard.planDays
+            .where((d) => d.position < day.position)
+            .map((d) => d.id)
+            .toList(),
+      ),
+    );
+    await clearSetting(_redoKey);
+  });
 
   Future<String?> readSetting(String key) async => (await (database.select(
     database.appSettings,
@@ -298,10 +405,15 @@ class FitnessRepository {
       ..where((row) => row.cycleInstanceId.equals(cycle!.id))
       ..orderBy([(row) => OrderingTerm.asc(row.occurredAt)]);
     final executions = await executionsQuery.get();
+    final knownIds = planDays.map((d) => d.id).toSet();
+    final unrecordedIds = (jsonDecode(
+      await readSetting('fitness.cycle.start.${cycle.id}') ?? '[]',
+    ) as List).cast<String>().where(knownIds.contains).toSet();
     final consumedIds = executions
         .map((execution) => execution.planDayId)
         .whereType<String>()
         .toSet();
+    consumedIds.addAll(unrecordedIds);
     final progress = TrainingCycleProgress(
       cycleNumber: cycle.cycleNumber,
       days: [
@@ -325,6 +437,19 @@ class FitnessRepository {
       progress: progress,
       hasActionToday: await _hasFitnessActionOnDate(DateTime.now()),
       todayWorkout: todayWorkout,
+      unrecordedDayIds: unrecordedIds,
+      canRedo: await _availableRedo() != null,
+      canChooseStart:
+          executions.isEmpty &&
+          !await _hasFitnessActionOnDate(DateTime.now()) &&
+          (await (database.select(
+                database.workoutSessions,
+              )..where((s) => s.cycleInstanceId.equals(cycle!.id))).get())
+              .isEmpty &&
+          await readSetting(
+                'fitness.draft.${DateFormat('yyyy-MM-dd').format(DateTime.now())}.${progress.nextDay?.id}',
+              ) ==
+              null,
       hasDraft:
           await readSetting(
             'fitness.draft.${DateFormat('yyyy-MM-dd').format(DateTime.now())}.${todayWorkout?.session.id ?? progress.nextDay?.id}',
@@ -342,6 +467,7 @@ class FitnessRepository {
     final planId = _uuid.v4();
 
     await database.transaction(() async {
+      await clearSetting(_redoKey);
       await database
           .update(database.trainingPlans)
           .write(
@@ -854,8 +980,37 @@ class FitnessRepository {
           await (database.select(database.cycleInstances)
                 ..where((row) => row.id.equals(execution.cycleInstanceId)))
               .getSingleOrNull();
-      if (cycle != null &&
-          cycle.status == 'completed' &&
+      if (cycle == null) throw StateError('The original cycle is unavailable.');
+      final activePlan =
+          await (database.select(database.trainingPlans)
+                ..where(
+                  (p) => p.isActive.equals(true) & p.isArchived.equals(false),
+                )
+                ..limit(1))
+              .getSingle();
+      final snapshot = <String, dynamic>{
+        'date': DateFormat('yyyy-MM-dd').format(now),
+        'planId': cycle.planId,
+        'planSignature': await _planSignature(cycle.planId),
+        'activePlanId': activePlan.id,
+        'activePlanSignature': await _planSignature(activePlan.id),
+        'cycle': cycle.toJson(),
+        'execution': execution.toJson(),
+        'nextCycle': null,
+        'session': session?.toJson(),
+        'exercises': <Map<String, dynamic>>[],
+      };
+      if (session != null) {
+        final history = await _loadHistoryItem(session);
+        snapshot['exercises'] = [
+          for (final item in history.exercises)
+            {
+              'exercise': item.exercise.toJson(),
+              'sets': item.sets.map((s) => s.toJson()).toList(),
+            },
+        ];
+      }
+      if (cycle.status == 'completed' &&
           cycle.completedAt == execution.occurredAt) {
         final nextCycle =
             await (database.select(database.cycleInstances)..where(
@@ -865,6 +1020,7 @@ class FitnessRepository {
                 ))
                 .getSingleOrNull();
         if (nextCycle != null) {
+          snapshot['nextCycle'] = nextCycle.toJson();
           final hasNextCycleExecution = await (database.select(
             database.cycleDayExecutions,
           )..where((row) => row.cycleInstanceId.equals(nextCycle.id))).get();
@@ -899,9 +1055,74 @@ class FitnessRepository {
       await (database.delete(
         database.cycleDayExecutions,
       )..where((row) => row.id.equals(execution.id))).go();
+      final afterCycle = await (database.select(
+        database.cycleInstances,
+      )..where((c) => c.id.equals(cycle.id))).getSingle();
+      final remaining = await (database.select(
+        database.cycleDayExecutions,
+      )..where((e) => e.cycleInstanceId.equals(cycle.id))).get();
+      final ids = remaining.map((e) => e.id).toList()..sort();
+      snapshot['afterCycle'] = jsonEncode(afterCycle.toJson());
+      snapshot['remainingExecutions'] = jsonEncode(ids);
+      await writeSetting(_redoKey, jsonEncode(snapshot));
       return true;
     });
   }
+
+  Future<bool> redoLatestFitnessActionToday() => database.transaction(() async {
+    final snapshot = await _availableRedo();
+    if (snapshot == null) return false;
+    final cycle = CycleInstance.fromJson(
+      Map<String, dynamic>.from(snapshot['cycle']),
+    );
+    await database
+        .update(database.cycleInstances)
+        .replace(cycle.toCompanion(false));
+    if (snapshot['nextCycle'] != null) {
+      await database
+          .into(database.cycleInstances)
+          .insert(
+            CycleInstance.fromJson(
+              Map<String, dynamic>.from(snapshot['nextCycle']),
+            ).toCompanion(false),
+          );
+    }
+    if (snapshot['session'] != null) {
+      await database
+          .into(database.workoutSessions)
+          .insert(
+            WorkoutSession.fromJson(
+              Map<String, dynamic>.from(snapshot['session']),
+            ).toCompanion(false),
+          );
+      for (final item in snapshot['exercises'] as List) {
+        await database
+            .into(database.workoutExercises)
+            .insert(
+              WorkoutExercise.fromJson(
+                Map<String, dynamic>.from(item['exercise']),
+              ).toCompanion(false),
+            );
+        for (final set in item['sets'] as List) {
+          await database
+              .into(database.workoutSets)
+              .insert(
+                WorkoutSet.fromJson(Map<String, dynamic>.from(set))
+                    .toCompanion(false),
+              );
+        }
+      }
+    }
+    await database
+        .into(database.cycleDayExecutions)
+        .insert(
+          CycleDayExecution.fromJson(
+            Map<String, dynamic>.from(snapshot['execution']),
+          ).toCompanion(false),
+        );
+    await clearSetting(_redoKey);
+    return true;
+  });
 
   Future<void> _ensureNoFitnessActionToday() async {
     if (await _hasFitnessActionOnDate(DateTime.now())) {
@@ -944,6 +1165,7 @@ class FitnessRepository {
     FitnessDashboardData dashboard,
     CycleTransition transition,
   ) async {
+    await clearSetting(_redoKey);
     await database
         .into(database.cycleDayExecutions)
         .insert(

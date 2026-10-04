@@ -10,6 +10,41 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get chooseStartingDay => 'Choose starting day';
+
+  @override
+  String get chooseStartingDayHint =>
+      'Start this cycle at any day, such as Push 2. Earlier days are marked unrecorded, not completed or skipped workouts. The next cycle starts at day 1. Available only before recording this cycle.';
+
+  @override
+  String get startingDayUnavailable =>
+      'Finish or discard the draft first. The starting day cannot change after this cycle has recorded activity or today\'s action is locked.';
+
+  @override
+  String get beforeStartingDay => '⊖ Before starting day · not recorded';
+
+  @override
+  String get redoTodayAction => 'Restore today\'s action';
+
+  @override
+  String get redoTodayHint =>
+      'Today\'s action was undone. Restore the original log and cycle state, or record a new action to replace it.';
+
+  @override
+  String get todayActionRestored => 'Today\'s action restored.';
+
+  @override
+  String get redoUnavailable =>
+      'Cannot restore: the date, plan or today\'s action has changed.';
+
+  @override
+  String get discardWorkoutDraft => 'Discard draft';
+
+  @override
+  String get discardWorkoutDraftHint =>
+      'Discard these unsaved inputs? Saved workout records will not change.';
+
+  @override
   String get continueWorkoutDraft => 'Continue workout draft';
 
   @override

@@ -1,6 +1,6 @@
 abstract final class AppMetadata {
   static const version = '1.1.0';
-  static const build = 3;
+  static const build = 4;
   static const author = 'ManiaAmaeOvo';
   static const collaborator = 'gpt6.1sol';
   static const githubProfile = 'https://github.com/ManiaAmaeOvo';

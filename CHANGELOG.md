@@ -2,6 +2,10 @@
 
 ## 1.1.0 — 2026-10-04
 
+Reissued as Android build 4, merging the starting-day and undo-recovery additions
+into the original 1.1.0 release. The GitHub tag and release APK now refer to build 4;
+build 3 remains in Git history at commit `52a7826`.
+
 ### Added
 
 - Opt-in exercise tracking, daily maximum-load curves and manual dated PR logs.
@@ -13,15 +17,25 @@
 - Text weights retain their original label and explicitly map to numeric 0 or
   null (default). Unknown weights are excluded from PR calculations.
 - Optional reps/RIR during final recording; empty sets are omitted.
+- Manual starting-day selection before an unrecorded cycle's first action, with
+  earlier days marked unrecorded rather than fabricated workout/skip logs.
+- Persistent recovery of an undone same-day fitness action, including original
+  set data, identifiers, timestamps and completed-cycle rollover state.
+- Explicit draft discard, preserving previously saved workouts.
 
 ### Data compatibility
 
 - Additive database schema 3 preserves previous numeric sets and food records.
-- Android build number 3; the development signing identity remains unchanged.
+- Android build number 4; the development signing identity remains unchanged.
 - Drafts are keyed by local date and workout/day. Editing a completed workout
   keeps its saved record unchanged until Save changes is selected.
 - PR curves show daily maximum recorded load, not estimated 1RM. Manual records
   remain separate and can be deleted without changing a workout.
+- The starting-day override applies to one cycle only. It is blocked by existing
+  cycle activity or a current draft. The following cycle starts normally.
+- Undo recovery is valid for the same local date and unchanged plan/cycle state.
+  Recording a replacement action, changing the start or switching plans invalidates
+  it. Cardio remains independent and does not invalidate strength undo recovery.
 
 ### Fixed
 

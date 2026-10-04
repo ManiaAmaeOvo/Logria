@@ -10,6 +10,37 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get chooseStartingDay => '选择起始训练日';
+
+  @override
+  String get chooseStartingDayHint =>
+      '可从任意日开始本轮，例如 Push 2。之前的日子标为未记录，不会生成完成或跳过训练的历史；下一轮仍从第 1 天开始。仅限本轮尚未记录活动时设置。';
+
+  @override
+  String get startingDayUnavailable => '请先完成或丢弃草稿。本轮已有记录或今日操作已锁定时，不能改变起始日。';
+
+  @override
+  String get beforeStartingDay => '⊖ 起始日前 · 未记录';
+
+  @override
+  String get redoTodayAction => '恢复今日操作';
+
+  @override
+  String get redoTodayHint => '今日操作已撤销。可恢复原记录与轮次状态，或记录一个新操作来替代。';
+
+  @override
+  String get todayActionRestored => '已恢复今日操作。';
+
+  @override
+  String get redoUnavailable => '日期、计划或今日操作已改变，无法恢复。';
+
+  @override
+  String get discardWorkoutDraft => '丢弃草稿';
+
+  @override
+  String get discardWorkoutDraftHint => '丢弃这些尚未保存的输入？已保存的训练记录不会改变。';
+
+  @override
   String get continueWorkoutDraft => '继续编辑训练草稿';
 
   @override

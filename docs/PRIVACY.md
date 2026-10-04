@@ -8,6 +8,9 @@ and profile builds use network permission for development tooling.
 Workout drafts also remain in local SQLite, including incomplete raw input.
 Drafts are keyed by date and workout/day and removed when that workout is saved.
 Cardio logs, manual PR entries and selected tracking preferences are local only.
+Undo keeps one local snapshot of the removed action so it can be restored on the
+same date. An unavailable snapshot may remain in SQLite until replaced or cleared
+by a new strength-cycle action. Nothing is transmitted for undo or redo.
 
 The app requests that Android automatic backup be disabled. No backup or restore
 UI is provided in version 1.1.0. Uninstalling the app or clearing its storage can

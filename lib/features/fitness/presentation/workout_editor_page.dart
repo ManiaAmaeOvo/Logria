@@ -151,6 +151,50 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     }
   }
 
+  Future<void> _discardDraft() async {
+    if (_saving || _loading) return;
+    final l = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(l.discardWorkoutDraft),
+        content: Text(l.discardWorkoutDraftHint),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(l.discardWorkoutDraft),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _saving = true);
+    _committing = true;
+    _debounce?.cancel();
+    try {
+      await _writes.catchError((Object _) {});
+      await widget.repository.clearSetting(_draftKey);
+      _finished = true;
+      if (!mounted) return;
+      setState(() => _canPop = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.pop(context, true);
+      });
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.saveFailed(error))));
+      }
+    } finally {
+      _committing = false;
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
   @override
   void dispose() {
     _debounce?.cancel();
@@ -175,6 +219,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       },
       child: Scaffold(
         appBar: AppBar(
+          actions: [
+            IconButton(
+              tooltip: l10n.discardWorkoutDraft,
+              onPressed: _saving || _loading ? null : _discardDraft,
+              icon: const Icon(Icons.delete_sweep_outlined),
+            ),
+          ],
           leading: IconButton(
             onPressed: _saving || _loading ? null : _exit,
             icon: const Icon(Icons.arrow_back),

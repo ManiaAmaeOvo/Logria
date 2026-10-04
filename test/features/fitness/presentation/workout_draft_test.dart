@@ -153,6 +153,18 @@ void main() {
         (await repo.loadDashboard())!.progress.consumedDayIds,
         hasLength(1),
       );
+      await tester.tap(find.text('Open'));
+      await settle();
+      await tester.enterText(find.byType(TextField).at(0), 'discard this edit');
+      await tester.tap(find.byTooltip('Discard draft'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Discard draft'));
+      await settle();
+      expect(
+        (await db.select(db.workoutSets).getSingle()).weightText,
+        'unmeasured load',
+      );
+      expect((await repo.loadDashboard())!.hasDraft, isFalse);
       await tester.pumpWidget(const SizedBox());
     },
   );

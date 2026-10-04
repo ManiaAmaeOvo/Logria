@@ -10,6 +10,13 @@ Edit plan days, order, rest slots and exercise targets before training. During
 a workout, choose an existing exercise or enter a new name. New names can be
 saved as presets or kept for that workout only.
 
+Before this cycle has recorded activity, tap **Choose starting day** on Fitness
+and select any training/rest day, for example Push 2. Confirm the change. Earlier
+days are marked **Before starting day · not recorded**; no workout/skip entries
+are fabricated. This affects only the current cycle; the next cycle starts at
+day 1. To change the entry point again, first finish or discard any current draft.
+Once this cycle has recorded an action, its starting day cannot be reset.
+
 Enter numeric kilograms as `40` (not `40kg`). You may also enter a text label
 such as `bodyweight` or `heavy band`. A text weight defaults to numeric `null`
 (unknown/excluded from PR); choose `0` for no measurable external load. Both
@@ -24,6 +31,8 @@ Save changes when editing) commits the record. Blank sets are omitted; missing
 weight, reps and RIR remain unknown. Drafts belong to the date and workout/day.
 Planned sets start empty: targets are not automatically recorded as performed sets.
 Do not rely on an immediate force-stop during input to flush an unsaved keystroke.
+The editor's **Discard draft** icon asks for confirmation, removes unsaved inputs
+and returns to Fitness. It does not delete or modify the previously saved workout.
 
 ## Exercise PR and cardio
 
@@ -50,6 +59,13 @@ unchanged. Skipping a training day advances past that day.
 After one fitness action, other rest/training actions are locked for the same day.
 Undo removes the most recent action and restores cycle position. Historical
 workouts remain accessible through History and the previous-round reference.
+
+After undo, **Restore today's action** restores the original workout/rest/skip
+action, identifiers, sets, timestamps and cycle position, including a rollover to
+the next cycle. This remains available after restarting the app on the same date.
+A new recorded action, plan/day/exercise-target changes, start-day changes or a
+different date make the old recovery unavailable. Cardio is independent. Only
+one undone action is retained; redo itself can be undone again.
 
 ## Meals and nutrition
 

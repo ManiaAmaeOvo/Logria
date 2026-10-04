@@ -20,6 +20,18 @@ may be recorded for a local day; repository transaction guards enforce this.
 Independent cardio entries do not consume a cycle day or lock strength actions.
 Rest can consume a later planned rest slot without advancing pending training.
 
+Starting-day overrides store earlier plan-day IDs under a cycle-specific setting.
+Progress treats those IDs as consumed, but the UI distinguishes them as unrecorded;
+no cycle execution or workout history is inserted. An override is restricted to
+an unrecorded cycle without a current draft and does not carry to the next cycle.
+
+Undo retains a local JSON snapshot of the execution, workout/exercises/sets,
+original cycle and any next-cycle rollover before deleting the live action.
+Redo validates the local date, active plan/day/exercise-target signature, unchanged
+post-undo cycle and remaining executions, then atomically restores original rows.
+A new cycle action clears the snapshot; changing the start or switching plans
+also clears it. No schema upgrade is needed for these AppSettings records.
+
 Workout drafts store raw input JSON in AppSettings keyed by date and session/day.
 Writes are serialized, debounced and flushed on exit/background. Completion
 removes the corresponding draft after committing the workout. Drafts are not

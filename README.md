@@ -33,6 +33,10 @@ Logria is an independent project and does not share a repository or data with Su
 - Opt-in exercise PR logs and date-based daily maximum load curves, with manual entries.
 - Independent cardio logs with activity, duration, optional distance and notes.
 - Common strength and cardio activity presets.
+- Choose an unrecorded cycle's starting day (for example Push 2); earlier days
+  are marked unrecorded, and the next cycle starts at day 1.
+- Restore an undone same-day action with its original workout and cycle state.
+- Explicitly discard a draft without changing saved workouts.
 
 ### Nutrition
 
@@ -62,6 +66,8 @@ signing certificate to allow updates from earlier test APKs from this machine.
 It is not a production Google Play release. See [release details](docs/RELEASE.md).
 To upgrade from 1.0.0, install 1.1.0 over the existing app without uninstalling or
 clearing storage. The signing identity is unchanged and schema 3 is additive.
+The current 1.1.0 APK is **build 4**, reissued to include starting-day selection
+and undo recovery. It also upgrades the earlier 1.1.0 build 3 in place.
 
 ## Local data and privacy
 
