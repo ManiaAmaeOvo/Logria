@@ -1,0 +1,30 @@
+name: Bug report
+description: Report an issue in Logria
+body:
+  - type: markdown
+    attributes:
+      value: Please use synthetic data in screenshots and logs. Do not post private health records.
+  - type: input
+    id: version
+    attributes:
+      label: App version / Android version
+      placeholder: Logria 1.0.0 (2), Android 16
+    validations:
+      required: true
+  - type: dropdown
+    id: screen
+    attributes:
+      label: Screen
+      options: [Today, Fitness, Nutrition, Body, Calendar, Settings, Other]
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true

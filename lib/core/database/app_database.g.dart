@@ -4736,6 +4736,66 @@ class $FoodLogEntriesTable extends FoodLogEntries
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $FoodLogEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _proteinGramsMeta = const VerificationMeta(
+    'proteinGrams',
+  );
+  @override
+  late final GeneratedColumn<double> proteinGrams = GeneratedColumn<double>(
+    'protein_grams',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _carbohydrateGramsMeta = const VerificationMeta(
+    'carbohydrateGrams',
+  );
+  @override
+  late final GeneratedColumn<double> carbohydrateGrams =
+      GeneratedColumn<double>(
+        'carbohydrate_grams',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _fatGramsMeta = const VerificationMeta(
+    'fatGrams',
+  );
+  @override
+  late final GeneratedColumn<double> fatGrams = GeneratedColumn<double>(
+    'fat_grams',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _caloriesKcalMeta = const VerificationMeta(
+    'caloriesKcal',
+  );
+  @override
+  late final GeneratedColumn<double> caloriesKcal = GeneratedColumn<double>(
+    'calories_kcal',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _caloriesEstimatedMeta = const VerificationMeta(
+    'caloriesEstimated',
+  );
+  @override
+  late final GeneratedColumn<bool> caloriesEstimated = GeneratedColumn<bool>(
+    'calories_estimated',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("calories_estimated" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -4802,6 +4862,11 @@ class $FoodLogEntriesTable extends FoodLogEntries
   );
   @override
   List<GeneratedColumn> get $columns => [
+    proteinGrams,
+    carbohydrateGrams,
+    fatGrams,
+    caloriesKcal,
+    caloriesEstimated,
     id,
     localDate,
     textContent,
@@ -4821,6 +4886,48 @@ class $FoodLogEntriesTable extends FoodLogEntries
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('protein_grams')) {
+      context.handle(
+        _proteinGramsMeta,
+        proteinGrams.isAcceptableOrUnknown(
+          data['protein_grams']!,
+          _proteinGramsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('carbohydrate_grams')) {
+      context.handle(
+        _carbohydrateGramsMeta,
+        carbohydrateGrams.isAcceptableOrUnknown(
+          data['carbohydrate_grams']!,
+          _carbohydrateGramsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fat_grams')) {
+      context.handle(
+        _fatGramsMeta,
+        fatGrams.isAcceptableOrUnknown(data['fat_grams']!, _fatGramsMeta),
+      );
+    }
+    if (data.containsKey('calories_kcal')) {
+      context.handle(
+        _caloriesKcalMeta,
+        caloriesKcal.isAcceptableOrUnknown(
+          data['calories_kcal']!,
+          _caloriesKcalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('calories_estimated')) {
+      context.handle(
+        _caloriesEstimatedMeta,
+        caloriesEstimated.isAcceptableOrUnknown(
+          data['calories_estimated']!,
+          _caloriesEstimatedMeta,
+        ),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
@@ -4876,6 +4983,26 @@ class $FoodLogEntriesTable extends FoodLogEntries
   FoodLogEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return FoodLogEntry(
+      proteinGrams: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}protein_grams'],
+      ),
+      carbohydrateGrams: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}carbohydrate_grams'],
+      ),
+      fatGrams: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fat_grams'],
+      ),
+      caloriesKcal: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}calories_kcal'],
+      ),
+      caloriesEstimated: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}calories_estimated'],
+      )!,
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -4910,6 +5037,11 @@ class $FoodLogEntriesTable extends FoodLogEntries
 }
 
 class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
+  final double? proteinGrams;
+  final double? carbohydrateGrams;
+  final double? fatGrams;
+  final double? caloriesKcal;
+  final bool caloriesEstimated;
   final String id;
   final String localDate;
   final String textContent;
@@ -4917,6 +5049,11 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   final DateTime createdAt;
   final DateTime updatedAt;
   const FoodLogEntry({
+    this.proteinGrams,
+    this.carbohydrateGrams,
+    this.fatGrams,
+    this.caloriesKcal,
+    required this.caloriesEstimated,
     required this.id,
     required this.localDate,
     required this.textContent,
@@ -4927,6 +5064,19 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || proteinGrams != null) {
+      map['protein_grams'] = Variable<double>(proteinGrams);
+    }
+    if (!nullToAbsent || carbohydrateGrams != null) {
+      map['carbohydrate_grams'] = Variable<double>(carbohydrateGrams);
+    }
+    if (!nullToAbsent || fatGrams != null) {
+      map['fat_grams'] = Variable<double>(fatGrams);
+    }
+    if (!nullToAbsent || caloriesKcal != null) {
+      map['calories_kcal'] = Variable<double>(caloriesKcal);
+    }
+    map['calories_estimated'] = Variable<bool>(caloriesEstimated);
     map['id'] = Variable<String>(id);
     map['local_date'] = Variable<String>(localDate);
     map['text_content'] = Variable<String>(textContent);
@@ -4940,6 +5090,19 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
 
   FoodLogEntriesCompanion toCompanion(bool nullToAbsent) {
     return FoodLogEntriesCompanion(
+      proteinGrams: proteinGrams == null && nullToAbsent
+          ? const Value.absent()
+          : Value(proteinGrams),
+      carbohydrateGrams: carbohydrateGrams == null && nullToAbsent
+          ? const Value.absent()
+          : Value(carbohydrateGrams),
+      fatGrams: fatGrams == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fatGrams),
+      caloriesKcal: caloriesKcal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(caloriesKcal),
+      caloriesEstimated: Value(caloriesEstimated),
       id: Value(id),
       localDate: Value(localDate),
       textContent: Value(textContent),
@@ -4957,6 +5120,13 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FoodLogEntry(
+      proteinGrams: serializer.fromJson<double?>(json['proteinGrams']),
+      carbohydrateGrams: serializer.fromJson<double?>(
+        json['carbohydrateGrams'],
+      ),
+      fatGrams: serializer.fromJson<double?>(json['fatGrams']),
+      caloriesKcal: serializer.fromJson<double?>(json['caloriesKcal']),
+      caloriesEstimated: serializer.fromJson<bool>(json['caloriesEstimated']),
       id: serializer.fromJson<String>(json['id']),
       localDate: serializer.fromJson<String>(json['localDate']),
       textContent: serializer.fromJson<String>(json['textContent']),
@@ -4969,6 +5139,11 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'proteinGrams': serializer.toJson<double?>(proteinGrams),
+      'carbohydrateGrams': serializer.toJson<double?>(carbohydrateGrams),
+      'fatGrams': serializer.toJson<double?>(fatGrams),
+      'caloriesKcal': serializer.toJson<double?>(caloriesKcal),
+      'caloriesEstimated': serializer.toJson<bool>(caloriesEstimated),
       'id': serializer.toJson<String>(id),
       'localDate': serializer.toJson<String>(localDate),
       'textContent': serializer.toJson<String>(textContent),
@@ -4979,6 +5154,11 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   }
 
   FoodLogEntry copyWith({
+    Value<double?> proteinGrams = const Value.absent(),
+    Value<double?> carbohydrateGrams = const Value.absent(),
+    Value<double?> fatGrams = const Value.absent(),
+    Value<double?> caloriesKcal = const Value.absent(),
+    bool? caloriesEstimated,
     String? id,
     String? localDate,
     String? textContent,
@@ -4986,6 +5166,13 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => FoodLogEntry(
+    proteinGrams: proteinGrams.present ? proteinGrams.value : this.proteinGrams,
+    carbohydrateGrams: carbohydrateGrams.present
+        ? carbohydrateGrams.value
+        : this.carbohydrateGrams,
+    fatGrams: fatGrams.present ? fatGrams.value : this.fatGrams,
+    caloriesKcal: caloriesKcal.present ? caloriesKcal.value : this.caloriesKcal,
+    caloriesEstimated: caloriesEstimated ?? this.caloriesEstimated,
     id: id ?? this.id,
     localDate: localDate ?? this.localDate,
     textContent: textContent ?? this.textContent,
@@ -4995,6 +5182,19 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   );
   FoodLogEntry copyWithCompanion(FoodLogEntriesCompanion data) {
     return FoodLogEntry(
+      proteinGrams: data.proteinGrams.present
+          ? data.proteinGrams.value
+          : this.proteinGrams,
+      carbohydrateGrams: data.carbohydrateGrams.present
+          ? data.carbohydrateGrams.value
+          : this.carbohydrateGrams,
+      fatGrams: data.fatGrams.present ? data.fatGrams.value : this.fatGrams,
+      caloriesKcal: data.caloriesKcal.present
+          ? data.caloriesKcal.value
+          : this.caloriesKcal,
+      caloriesEstimated: data.caloriesEstimated.present
+          ? data.caloriesEstimated.value
+          : this.caloriesEstimated,
       id: data.id.present ? data.id.value : this.id,
       localDate: data.localDate.present ? data.localDate.value : this.localDate,
       textContent: data.textContent.present
@@ -5011,6 +5211,11 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   @override
   String toString() {
     return (StringBuffer('FoodLogEntry(')
+          ..write('proteinGrams: $proteinGrams, ')
+          ..write('carbohydrateGrams: $carbohydrateGrams, ')
+          ..write('fatGrams: $fatGrams, ')
+          ..write('caloriesKcal: $caloriesKcal, ')
+          ..write('caloriesEstimated: $caloriesEstimated, ')
           ..write('id: $id, ')
           ..write('localDate: $localDate, ')
           ..write('textContent: $textContent, ')
@@ -5022,12 +5227,28 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, localDate, textContent, occurredAt, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    proteinGrams,
+    carbohydrateGrams,
+    fatGrams,
+    caloriesKcal,
+    caloriesEstimated,
+    id,
+    localDate,
+    textContent,
+    occurredAt,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is FoodLogEntry &&
+          other.proteinGrams == this.proteinGrams &&
+          other.carbohydrateGrams == this.carbohydrateGrams &&
+          other.fatGrams == this.fatGrams &&
+          other.caloriesKcal == this.caloriesKcal &&
+          other.caloriesEstimated == this.caloriesEstimated &&
           other.id == this.id &&
           other.localDate == this.localDate &&
           other.textContent == this.textContent &&
@@ -5037,6 +5258,11 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
 }
 
 class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
+  final Value<double?> proteinGrams;
+  final Value<double?> carbohydrateGrams;
+  final Value<double?> fatGrams;
+  final Value<double?> caloriesKcal;
+  final Value<bool> caloriesEstimated;
   final Value<String> id;
   final Value<String> localDate;
   final Value<String> textContent;
@@ -5045,6 +5271,11 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
   const FoodLogEntriesCompanion({
+    this.proteinGrams = const Value.absent(),
+    this.carbohydrateGrams = const Value.absent(),
+    this.fatGrams = const Value.absent(),
+    this.caloriesKcal = const Value.absent(),
+    this.caloriesEstimated = const Value.absent(),
     this.id = const Value.absent(),
     this.localDate = const Value.absent(),
     this.textContent = const Value.absent(),
@@ -5054,6 +5285,11 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
     this.rowid = const Value.absent(),
   });
   FoodLogEntriesCompanion.insert({
+    this.proteinGrams = const Value.absent(),
+    this.carbohydrateGrams = const Value.absent(),
+    this.fatGrams = const Value.absent(),
+    this.caloriesKcal = const Value.absent(),
+    this.caloriesEstimated = const Value.absent(),
     required String id,
     required String localDate,
     required String textContent,
@@ -5067,6 +5303,11 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<FoodLogEntry> custom({
+    Expression<double>? proteinGrams,
+    Expression<double>? carbohydrateGrams,
+    Expression<double>? fatGrams,
+    Expression<double>? caloriesKcal,
+    Expression<bool>? caloriesEstimated,
     Expression<String>? id,
     Expression<String>? localDate,
     Expression<String>? textContent,
@@ -5076,6 +5317,11 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (proteinGrams != null) 'protein_grams': proteinGrams,
+      if (carbohydrateGrams != null) 'carbohydrate_grams': carbohydrateGrams,
+      if (fatGrams != null) 'fat_grams': fatGrams,
+      if (caloriesKcal != null) 'calories_kcal': caloriesKcal,
+      if (caloriesEstimated != null) 'calories_estimated': caloriesEstimated,
       if (id != null) 'id': id,
       if (localDate != null) 'local_date': localDate,
       if (textContent != null) 'text_content': textContent,
@@ -5087,6 +5333,11 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   }
 
   FoodLogEntriesCompanion copyWith({
+    Value<double?>? proteinGrams,
+    Value<double?>? carbohydrateGrams,
+    Value<double?>? fatGrams,
+    Value<double?>? caloriesKcal,
+    Value<bool>? caloriesEstimated,
     Value<String>? id,
     Value<String>? localDate,
     Value<String>? textContent,
@@ -5096,6 +5347,11 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
     Value<int>? rowid,
   }) {
     return FoodLogEntriesCompanion(
+      proteinGrams: proteinGrams ?? this.proteinGrams,
+      carbohydrateGrams: carbohydrateGrams ?? this.carbohydrateGrams,
+      fatGrams: fatGrams ?? this.fatGrams,
+      caloriesKcal: caloriesKcal ?? this.caloriesKcal,
+      caloriesEstimated: caloriesEstimated ?? this.caloriesEstimated,
       id: id ?? this.id,
       localDate: localDate ?? this.localDate,
       textContent: textContent ?? this.textContent,
@@ -5109,6 +5365,21 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (proteinGrams.present) {
+      map['protein_grams'] = Variable<double>(proteinGrams.value);
+    }
+    if (carbohydrateGrams.present) {
+      map['carbohydrate_grams'] = Variable<double>(carbohydrateGrams.value);
+    }
+    if (fatGrams.present) {
+      map['fat_grams'] = Variable<double>(fatGrams.value);
+    }
+    if (caloriesKcal.present) {
+      map['calories_kcal'] = Variable<double>(caloriesKcal.value);
+    }
+    if (caloriesEstimated.present) {
+      map['calories_estimated'] = Variable<bool>(caloriesEstimated.value);
+    }
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
@@ -5136,6 +5407,11 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   @override
   String toString() {
     return (StringBuffer('FoodLogEntriesCompanion(')
+          ..write('proteinGrams: $proteinGrams, ')
+          ..write('carbohydrateGrams: $carbohydrateGrams, ')
+          ..write('fatGrams: $fatGrams, ')
+          ..write('caloriesKcal: $caloriesKcal, ')
+          ..write('caloriesEstimated: $caloriesEstimated, ')
           ..write('id: $id, ')
           ..write('localDate: $localDate, ')
           ..write('textContent: $textContent, ')
@@ -11628,6 +11904,11 @@ typedef $$WorkoutSetsTableProcessedTableManager =
     >;
 typedef $$FoodLogEntriesTableCreateCompanionBuilder =
     FoodLogEntriesCompanion Function({
+      Value<double?> proteinGrams,
+      Value<double?> carbohydrateGrams,
+      Value<double?> fatGrams,
+      Value<double?> caloriesKcal,
+      Value<bool> caloriesEstimated,
       required String id,
       required String localDate,
       required String textContent,
@@ -11638,6 +11919,11 @@ typedef $$FoodLogEntriesTableCreateCompanionBuilder =
     });
 typedef $$FoodLogEntriesTableUpdateCompanionBuilder =
     FoodLogEntriesCompanion Function({
+      Value<double?> proteinGrams,
+      Value<double?> carbohydrateGrams,
+      Value<double?> fatGrams,
+      Value<double?> caloriesKcal,
+      Value<bool> caloriesEstimated,
       Value<String> id,
       Value<String> localDate,
       Value<String> textContent,
@@ -11656,6 +11942,31 @@ class $$FoodLogEntriesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<double> get proteinGrams => $composableBuilder(
+    column: $table.proteinGrams,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get carbohydrateGrams => $composableBuilder(
+    column: $table.carbohydrateGrams,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fatGrams => $composableBuilder(
+    column: $table.fatGrams,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get caloriesKcal => $composableBuilder(
+    column: $table.caloriesKcal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get caloriesEstimated => $composableBuilder(
+    column: $table.caloriesEstimated,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -11696,6 +12007,31 @@ class $$FoodLogEntriesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<double> get proteinGrams => $composableBuilder(
+    column: $table.proteinGrams,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get carbohydrateGrams => $composableBuilder(
+    column: $table.carbohydrateGrams,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get fatGrams => $composableBuilder(
+    column: $table.fatGrams,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get caloriesKcal => $composableBuilder(
+    column: $table.caloriesKcal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get caloriesEstimated => $composableBuilder(
+    column: $table.caloriesEstimated,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -11736,6 +12072,29 @@ class $$FoodLogEntriesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<double> get proteinGrams => $composableBuilder(
+    column: $table.proteinGrams,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get carbohydrateGrams => $composableBuilder(
+    column: $table.carbohydrateGrams,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get fatGrams =>
+      $composableBuilder(column: $table.fatGrams, builder: (column) => column);
+
+  GeneratedColumn<double> get caloriesKcal => $composableBuilder(
+    column: $table.caloriesKcal,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get caloriesEstimated => $composableBuilder(
+    column: $table.caloriesEstimated,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -11792,6 +12151,11 @@ class $$FoodLogEntriesTableTableManager
               $$FoodLogEntriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
+                Value<double?> proteinGrams = const Value.absent(),
+                Value<double?> carbohydrateGrams = const Value.absent(),
+                Value<double?> fatGrams = const Value.absent(),
+                Value<double?> caloriesKcal = const Value.absent(),
+                Value<bool> caloriesEstimated = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> localDate = const Value.absent(),
                 Value<String> textContent = const Value.absent(),
@@ -11800,6 +12164,11 @@ class $$FoodLogEntriesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FoodLogEntriesCompanion(
+                proteinGrams: proteinGrams,
+                carbohydrateGrams: carbohydrateGrams,
+                fatGrams: fatGrams,
+                caloriesKcal: caloriesKcal,
+                caloriesEstimated: caloriesEstimated,
                 id: id,
                 localDate: localDate,
                 textContent: textContent,
@@ -11810,6 +12179,11 @@ class $$FoodLogEntriesTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<double?> proteinGrams = const Value.absent(),
+                Value<double?> carbohydrateGrams = const Value.absent(),
+                Value<double?> fatGrams = const Value.absent(),
+                Value<double?> caloriesKcal = const Value.absent(),
+                Value<bool> caloriesEstimated = const Value.absent(),
                 required String id,
                 required String localDate,
                 required String textContent,
@@ -11818,6 +12192,11 @@ class $$FoodLogEntriesTableTableManager
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
               }) => FoodLogEntriesCompanion.insert(
+                proteinGrams: proteinGrams,
+                carbohydrateGrams: carbohydrateGrams,
+                fatGrams: fatGrams,
+                caloriesKcal: caloriesKcal,
+                caloriesEstimated: caloriesEstimated,
                 id: id,
                 localDate: localDate,
                 textContent: textContent,

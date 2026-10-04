@@ -5,6 +5,7 @@ import 'package:logria/core/database/app_database.dart';
 import 'package:logria/features/fitness/data/fitness_repository.dart';
 import 'package:logria/features/fitness/domain/training_plan_template.dart';
 import 'package:logria/features/fitness/presentation/workout_editor_page.dart';
+import 'package:logria/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('new exercise dialog can close without controller errors', (
@@ -18,6 +19,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: WorkoutEditorPage(repository: repository, dashboard: dashboard),
       ),
     );

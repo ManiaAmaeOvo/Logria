@@ -1,5 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
 import 'package:logria/app/logria_app.dart';
 import 'package:logria/core/database/app_database.dart';
 
@@ -10,10 +11,7 @@ void main() {
     await tester.pumpWidget(LogriaApp(database: database));
 
     expect(find.text('Logria'), findsOneWidget);
-    expect(find.text('今日'), findsAtLeastNWidgets(1));
-    expect(find.text('训练'), findsOneWidget);
-    expect(find.text('饮食'), findsOneWidget);
-    expect(find.text('身体'), findsOneWidget);
-    expect(find.text('日历'), findsOneWidget);
+    expect(find.byType(NavigationDestination), findsNWidgets(5));
+    await tester.pumpWidget(const SizedBox());
   });
 }

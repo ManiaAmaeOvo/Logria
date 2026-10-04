@@ -165,6 +165,12 @@ class WorkoutSets extends Table {
 }
 
 class FoodLogEntries extends Table {
+  RealColumn get proteinGrams => real().nullable()();
+  RealColumn get carbohydrateGrams => real().nullable()();
+  RealColumn get fatGrams => real().nullable()();
+  RealColumn get caloriesKcal => real().nullable()();
+  BoolColumn get caloriesEstimated =>
+      boolean().withDefault(const Constant(true))();
   TextColumn get id => text()();
   TextColumn get localDate => text()();
   TextColumn get textContent => text()();
@@ -250,5 +256,19 @@ final class AppDatabase extends _$AppDatabase {
   AppDatabase.defaults() : super(driftDatabase(name: 'logria'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(foodLogEntries, foodLogEntries.proteinGrams);
+        await m.addColumn(foodLogEntries, foodLogEntries.carbohydrateGrams);
+        await m.addColumn(foodLogEntries, foodLogEntries.fatGrams);
+        await m.addColumn(foodLogEntries, foodLogEntries.caloriesKcal);
+        await m.addColumn(foodLogEntries, foodLogEntries.caloriesEstimated);
+      }
+    },
+  );
 }

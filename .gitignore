@@ -46,3 +46,16 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Local health data, release binaries and credentials
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.apk
+*.aab
+*.jks
+*.keystore
+.env
+.env.*
+!*.example

@@ -27,12 +27,12 @@ void main() {
     expect(dashboard!.plan.name, 'PPL');
     expect(dashboard.cycle.cycleNumber, 1);
     expect(dashboard.planDays.map((day) => day.name), [
-      'Push',
-      'Pull',
-      'Legs',
-      'Rest',
+      'push',
+      'pull',
+      'legs',
+      'rest',
     ]);
-    expect(dashboard.progress.nextDay?.name, 'Push');
+    expect(dashboard.progress.nextDay?.name, 'push');
   });
 
   test('taking rest early consumes the planned rest slot', () async {
@@ -41,7 +41,7 @@ void main() {
 
     final dashboard = await repository.loadDashboard();
 
-    expect(dashboard!.progress.nextDay?.name, 'Push');
+    expect(dashboard!.progress.nextDay?.name, 'push');
     expect(dashboard.progress.consumedDayIds, hasLength(1));
     expect(
       dashboard.executions.single.executionType,
@@ -66,8 +66,8 @@ void main() {
     final exercises = await database.select(database.exercises).get();
     final sets = await database.select(database.workoutSets).get();
 
-    expect(updated!.progress.nextDay?.name, 'Pull');
-    expect(sessions.single.dayNameSnapshot, 'Push');
+    expect(updated!.progress.nextDay?.name, 'pull');
+    expect(sessions.single.dayNameSnapshot, 'push');
     expect(exercises.single.name, '平板卧推');
     expect(sets.single.weightValue, 80);
     expect(sets.single.reps, 8);

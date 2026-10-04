@@ -4,7 +4,39 @@ import '../../../core/database/app_database.dart';
 import '../data/fitness_repository.dart';
 import '../domain/training_cycle.dart';
 import '../domain/training_plan_template.dart';
+import '../../../l10n/app_localizations.dart';
+import 'plan_editor_page.dart';
 import 'workout_editor_page.dart';
+import 'workout_history_page.dart';
+
+String _templateName(TrainingPlanTemplate template, AppLocalizations l10n) =>
+    switch (template.id) {
+      'ppl' => 'PPL',
+      'ppl_x2' => 'PPL × 2',
+      'four_day_split' => l10n.fourSplit,
+      _ => template.name,
+    };
+
+String _templateDescription(
+  TrainingPlanTemplate template,
+  AppLocalizations l10n,
+) => switch (template.descriptionKey) {
+  'pplDescription' => l10n.pplDescription,
+  'ppl2Description' => l10n.ppl2Description,
+  'fourSplitDescription' => l10n.fourSplitDescription,
+  _ => template.descriptionKey,
+};
+
+String _templateDayName(String name, AppLocalizations l10n) => switch (name) {
+  'push' => l10n.push,
+  'pull' => l10n.pull,
+  'legs' => l10n.legs,
+  'rest' => l10n.rest,
+  'chest' => l10n.chest,
+  'back' => l10n.back,
+  'shoulders' => l10n.shoulders,
+  _ => name,
+};
 
 class FitnessPage extends StatefulWidget {
   const FitnessPage({super.key, required this.database});
@@ -27,7 +59,10 @@ class _FitnessPageState extends State<FitnessPage> {
   }
 
   void _reload() {
-    setState(() => _dashboardFuture = _repository.loadDashboard());
+    final dashboardFuture = _repository.loadDashboard();
+    setState(() {
+      _dashboardFuture = dashboardFuture;
+    });
   }
 
   @override
@@ -44,9 +79,19 @@ class _FitnessPageState extends State<FitnessPage> {
 
         final dashboard = snapshot.data;
         if (dashboard == null) {
+          final l10n = AppLocalizations.of(context)!;
           return _TemplatePicker(
+            title: l10n.selectTrainingCycle,
+            intro: l10n.templateIntro,
             onSelected: (template) async {
-              await _repository.activateTemplate(template);
+              await _repository.activateTemplate(
+                template,
+                planName: _templateName(template, l10n),
+                dayNames: [
+                  for (final day in template.days)
+                    _templateDayName(day.name, l10n),
+                ],
+              );
               _reload();
             },
           );
@@ -54,32 +99,84 @@ class _FitnessPageState extends State<FitnessPage> {
 
         return _FitnessDashboard(
           dashboard: dashboard,
+          repository: _repository,
+          onEditPlan: _editPlan,
+          onSwitchPlan: _switchPlan,
+          onShowHistory: _showHistory,
           onStartWorkout: () => _startWorkout(dashboard),
           onRest: _takeRest,
           onSkip: _skipTraining,
+          onUndo: _undoTodayAction,
+          onEditTodayWorkout: (workout) =>
+              _editTodayWorkout(dashboard, workout),
         );
       },
     );
   }
 
+  Future<void> _editPlan() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => PlanEditorPage(repository: _repository),
+      ),
+    );
+    _reload();
+  }
+
+  Future<void> _showHistory() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => WorkoutHistoryPage(repository: _repository),
+      ),
+    );
+  }
+
+  Future<void> _switchPlan() async {
+    final switched = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => _SwitchPlanPage(repository: _repository),
+      ),
+    );
+    if (switched == true) _reload();
+  }
+
   Future<void> _startWorkout(FitnessDashboardData dashboard) async {
+    if (dashboard.hasActionToday) {
+      _showActionLockedMessage();
+      return;
+    }
+    final day = dashboard.progress.nextDay!;
+    final planDay = dashboard.planDays.firstWhere((item) => item.id == day.id);
+    final planned = await _repository.loadPlanExercises([planDay]);
+    if (!mounted) return;
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) =>
-            WorkoutEditorPage(repository: _repository, dashboard: dashboard),
+        builder: (_) => WorkoutEditorPage(
+          repository: _repository,
+          dashboard: dashboard,
+          plannedExercises: planned[day.id] ?? const [],
+        ),
       ),
     );
     if (saved == true) _reload();
   }
 
   Future<void> _takeRest() async {
-    final type = await _repository.takeRest();
+    final l10n = AppLocalizations.of(context)!;
+    late final CycleExecutionType type;
+    try {
+      type = await _repository.takeRest();
+    } on FitnessDayActionLockedException {
+      if (mounted) _showActionLockedMessage();
+      _reload();
+      return;
+    }
     if (!mounted) return;
     final message = switch (type) {
-      CycleExecutionType.plannedRest => '预设休息日已完成',
-      CycleExecutionType.movedRest => '已提前使用本轮下一个预设休息日',
-      CycleExecutionType.extraRest => '已记录额外休息，训练位置保持不变',
-      _ => '休息已记录',
+      CycleExecutionType.plannedRest => l10n.plannedRestDone,
+      CycleExecutionType.movedRest => l10n.movedRestTaken,
+      CycleExecutionType.extraRest => l10n.extraRestTaken,
+      _ => l10n.restRecorded,
     };
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
@@ -90,32 +187,89 @@ class _FitnessPageState extends State<FitnessPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('跳过当前训练？'),
-        content: const Text('该训练日会标记为跳过，循环将继续到下一日。'),
+        title: Text(AppLocalizations.of(context)!.skipConfirmTitle),
+        content: Text(AppLocalizations.of(context)!.skipConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('确认跳过'),
+            child: Text(AppLocalizations.of(context)!.confirmSkip),
           ),
         ],
       ),
     );
     if (confirmed != true) return;
-    await _repository.skipCurrentTraining();
+    try {
+      await _repository.skipCurrentTraining();
+    } on FitnessDayActionLockedException {
+      if (!mounted) return;
+      _showActionLockedMessage();
+      _reload();
+      return;
+    }
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('已跳过当前训练日')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.trainingSkipped)),
+    );
     _reload();
+  }
+
+  Future<void> _undoTodayAction() async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final undone = await _repository.undoLatestFitnessActionToday();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            undone ? l10n.todayActionUndone : l10n.noTodayActionToUndo,
+          ),
+        ),
+      );
+      _reload();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.undoActionFailed('$error'))));
+    }
+  }
+
+  Future<void> _editTodayWorkout(
+    FitnessDashboardData dashboard,
+    WorkoutHistoryItem workout,
+  ) async {
+    final saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => WorkoutEditorPage(
+          repository: _repository,
+          dashboard: dashboard,
+          existingWorkout: workout,
+        ),
+      ),
+    );
+    if (saved == true) _reload();
+  }
+
+  void _showActionLockedMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.todayActionLocked)),
+    );
   }
 }
 
 class _TemplatePicker extends StatefulWidget {
-  const _TemplatePicker({required this.onSelected});
+  const _TemplatePicker({
+    required this.title,
+    required this.intro,
+    required this.onSelected,
+  });
 
+  final String title;
+  final String intro;
   final Future<void> Function(TrainingPlanTemplate template) onSelected;
 
   @override
@@ -130,9 +284,9 @@ class _TemplatePickerState extends State<_TemplatePicker> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text('选择训练循环', style: Theme.of(context).textTheme.headlineMedium),
+        Text(widget.title, style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: 8),
-        const Text('先从模板建立活动计划。预设休息日可以在每轮中提前使用。'),
+        Text(widget.intro),
         const SizedBox(height: 24),
         for (final template in builtInTrainingPlanTemplates) ...[
           Card(
@@ -142,11 +296,16 @@ class _TemplatePickerState extends State<_TemplatePicker> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    template.name,
+                    _templateName(template, AppLocalizations.of(context)!),
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 6),
-                  Text(template.description),
+                  Text(
+                    _templateDescription(
+                      template,
+                      AppLocalizations.of(context)!,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -160,7 +319,12 @@ class _TemplatePickerState extends State<_TemplatePicker> {
                                 : Icons.fitness_center,
                             size: 16,
                           ),
-                          label: Text(day.name),
+                          label: Text(
+                            _templateDayName(
+                              day.name,
+                              AppLocalizations.of(context)!,
+                            ),
+                          ),
                         ),
                     ],
                   ),
@@ -174,7 +338,12 @@ class _TemplatePickerState extends State<_TemplatePicker> {
                             } catch (error) {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('无法建立计划：$error')),
+                                SnackBar(
+                                  content: Text(
+                                    AppLocalizations.of(context)!
+                                        .createPlanError(error),
+                                  ),
+                                ),
                               );
                             } finally {
                               if (mounted) {
@@ -188,7 +357,7 @@ class _TemplatePickerState extends State<_TemplatePicker> {
                             dimension: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('使用此模板'),
+                        : Text(AppLocalizations.of(context)!.useTemplate),
                   ),
                 ],
               ),
@@ -201,24 +370,92 @@ class _TemplatePickerState extends State<_TemplatePicker> {
   }
 }
 
+class _SwitchPlanPage extends StatefulWidget {
+  const _SwitchPlanPage({required this.repository});
+
+  final FitnessRepository repository;
+
+  @override
+  State<_SwitchPlanPage> createState() => _SwitchPlanPageState();
+}
+
+class _SwitchPlanPageState extends State<_SwitchPlanPage> {
+  Future<void> _selectTemplate(TrainingPlanTemplate template) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.switchPlanConfirmTitle(_templateName(template, l10n))),
+        content: Text(l10n.switchPlanConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.confirmSwitch),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    await widget.repository.activateTemplate(
+      template,
+      planName: _templateName(template, l10n),
+      dayNames: [
+        for (final day in template.days) _templateDayName(day.name, l10n),
+      ],
+    );
+    if (mounted) Navigator.of(context).pop(true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.switchPlan)),
+      body: _TemplatePicker(
+        title: l10n.chooseDifferentPlan,
+        intro: l10n.switchPlanIntro,
+        onSelected: _selectTemplate,
+      ),
+    );
+  }
+}
+
 class _FitnessDashboard extends StatelessWidget {
   const _FitnessDashboard({
     required this.dashboard,
+    required this.repository,
+    required this.onEditPlan,
+    required this.onSwitchPlan,
+    required this.onShowHistory,
     required this.onStartWorkout,
     required this.onRest,
     required this.onSkip,
+    required this.onUndo,
+    required this.onEditTodayWorkout,
   });
 
   final FitnessDashboardData dashboard;
+  final FitnessRepository repository;
+  final VoidCallback onEditPlan;
+  final VoidCallback onSwitchPlan;
+  final VoidCallback onShowHistory;
   final VoidCallback onStartWorkout;
   final Future<void> Function() onRest;
   final Future<void> Function() onSkip;
+  final Future<void> Function() onUndo;
+  final ValueChanged<WorkoutHistoryItem> onEditTodayWorkout;
 
   @override
   Widget build(BuildContext context) {
     final nextDay = dashboard.progress.nextDay!;
     final consumedIds = dashboard.progress.consumedDayIds;
     final cycleColor = Color(dashboard.cycle.colorValue);
+    final actionLocked = dashboard.hasActionToday;
 
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -233,9 +470,33 @@ class _FitnessDashboard extends StatelessWidget {
                     dashboard.plan.name,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  Text('第 ${dashboard.cycle.cycleNumber} 轮'),
+                  Text(
+                    AppLocalizations.of(context)!
+                        .cycleNumber(dashboard.cycle.cycleNumber),
+                  ),
                 ],
               ),
+            ),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') onEditPlan();
+                if (value == 'switch') onSwitchPlan();
+                if (value == 'history') onShowHistory();
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Text(AppLocalizations.of(context)!.editPlan),
+                ),
+                PopupMenuItem(
+                  value: 'switch',
+                  child: Text(AppLocalizations.of(context)!.switchPlan),
+                ),
+                PopupMenuItem(
+                  value: 'history',
+                  child: Text(AppLocalizations.of(context)!.workoutHistory),
+                ),
+              ],
             ),
             Container(
               width: 18,
@@ -248,6 +509,13 @@ class _FitnessDashboard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 20),
+        if (dashboard.todayWorkout case final workout?) ...[
+          _TodayWorkoutCard(
+            workout: workout,
+            onEdit: () => onEditTodayWorkout(workout),
+          ),
+          const SizedBox(height: 12),
+        ],
         Card(
           color: Theme.of(context).colorScheme.surfaceContainerLowest,
           child: Padding(
@@ -255,7 +523,10 @@ class _FitnessDashboard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('当前', style: Theme.of(context).textTheme.labelLarge),
+                Text(
+                  AppLocalizations.of(context)!.current,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
                 const SizedBox(height: 4),
                 Text(
                   nextDay.name,
@@ -264,29 +535,94 @@ class _FitnessDashboard extends StatelessWidget {
                 const SizedBox(height: 18),
                 if (nextDay.type == CycleDayType.training) ...[
                   FilledButton.icon(
-                    onPressed: onStartWorkout,
+                    onPressed: actionLocked ? null : onStartWorkout,
                     icon: const Icon(Icons.play_arrow),
-                    label: const Text('开始记录训练'),
+                    label: Text(AppLocalizations.of(context)!.startWorkout),
                   ),
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
-                    onPressed: onRest,
+                    onPressed: actionLocked ? null : onRest,
                     icon: const Icon(Icons.hotel_outlined),
-                    label: const Text('今天休息'),
+                    label: Text(AppLocalizations.of(context)!.takeRest),
                   ),
-                  TextButton(onPressed: onSkip, child: const Text('跳过此训练日')),
+                  TextButton(
+                    onPressed: actionLocked ? null : onSkip,
+                    child: Text(AppLocalizations.of(context)!.skipTrainingDay),
+                  ),
                 ] else
                   FilledButton.icon(
-                    onPressed: onRest,
+                    onPressed: actionLocked ? null : onRest,
                     icon: const Icon(Icons.hotel_outlined),
-                    label: const Text('完成休息日'),
+                    label: Text(AppLocalizations.of(context)!.completeRestDay),
                   ),
               ],
             ),
           ),
         ),
+        if (actionLocked) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.lock_outline),
+                    title: Text(
+                      AppLocalizations.of(context)!.todayActionLocked,
+                    ),
+                    subtitle: Text(
+                      AppLocalizations.of(context)!.undoToChangeAction,
+                    ),
+                    trailing: TextButton.icon(
+                      onPressed: onUndo,
+                      icon: const Icon(Icons.undo),
+                      label: Text(AppLocalizations.of(context)!.undo),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+        if (nextDay.type == CycleDayType.training &&
+            dashboard.cycle.cycleNumber > 1)
+          FutureBuilder<WorkoutHistoryItem?>(
+            future: repository.previousSessionForDay(
+              planDayId: nextDay.id,
+              beforeCycleNumber: dashboard.cycle.cycleNumber,
+            ),
+            builder: (context, snapshot) {
+              final previous = snapshot.data;
+              if (previous == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.history),
+                    title: Text(
+                      AppLocalizations.of(context)!.previousRoundSameDay,
+                    ),
+                    subtitle: Text(_previousSummary(previous)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            WorkoutHistoryDetailPage(item: previous),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
         const SizedBox(height: 24),
-        Text('本轮进度', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          AppLocalizations.of(context)!.cycleProgress,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
@@ -315,6 +651,114 @@ class _FitnessDashboard extends StatelessWidget {
       ],
     );
   }
+
+  String _previousSummary(WorkoutHistoryItem item) {
+    final values = <String>[];
+    for (final exercise in item.exercises) {
+      double? best;
+      for (final set in exercise.sets.where((set) => set.isCompleted)) {
+        final weight = set.weightValue;
+        if (weight != null && (best == null || weight > best)) best = weight;
+      }
+      values.add(
+        '${exercise.exercise.exerciseNameSnapshot}: ${best == null ? '—' : '$best kg'}',
+      );
+    }
+    return 'Cycle ${item.cycleNumber ?? '—'} · ${values.join('  •  ')}';
+  }
+}
+
+class _TodayWorkoutCard extends StatelessWidget {
+  const _TodayWorkoutCard({required this.workout, required this.onEdit});
+
+  final WorkoutHistoryItem workout;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final session = workout.session;
+    final details = <String>[
+      if (session.planNameSnapshot?.isNotEmpty == true)
+        session.planNameSnapshot!,
+      if (workout.cycleNumber != null) l10n.cycleNumber(workout.cycleNumber!),
+    ];
+
+    return Card(
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.todayWorkout,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Text(
+                        [
+                          session.dayNameSnapshot ?? l10n.workout,
+                          ...details,
+                        ].join(' · '),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: l10n.editTodayWorkout,
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined),
+                ),
+              ],
+            ),
+            const Divider(height: 20),
+            for (var index = 0; index < workout.exercises.length; index++) ...[
+              if (index > 0) const SizedBox(height: 12),
+              Text(
+                workout.exercises[index].exercise.exerciseNameSnapshot,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              for (final set in workout.exercises[index].sets)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Text(
+                    l10n.setLine(
+                      set.setNumber,
+                      _formatWorkoutValue(set.weightValue),
+                      set.weightUnit,
+                      set.reps ?? '—',
+                      _formatWorkoutValue(set.rir),
+                      set.isCompleted ? '' : l10n.skippedSuffix,
+                    ),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _formatWorkoutValue(double? value) {
+  if (value == null) return '—';
+  return value == value.roundToDouble()
+      ? value.toInt().toString()
+      : value.toString();
 }
 
 class _ErrorState extends StatelessWidget {
@@ -333,11 +777,14 @@ class _ErrorState extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline, size: 40),
             const SizedBox(height: 12),
-            const Text('无法读取训练数据'),
+            Text(AppLocalizations.of(context)!.readWorkoutError),
             const SizedBox(height: 4),
             Text('$error', textAlign: TextAlign.center),
             const SizedBox(height: 12),
-            FilledButton(onPressed: onRetry, child: const Text('重试')),
+            FilledButton(
+              onPressed: onRetry,
+              child: Text(AppLocalizations.of(context)!.retry),
+            ),
           ],
         ),
       ),

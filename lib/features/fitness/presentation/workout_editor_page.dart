@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 
 import '../data/fitness_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 class WorkoutEditorPage extends StatefulWidget {
   const WorkoutEditorPage({
     super.key,
     required this.repository,
     required this.dashboard,
+    this.existingWorkout,
+    this.plannedExercises = const [],
   });
 
   final FitnessRepository repository;
   final FitnessDashboardData dashboard;
+  final WorkoutHistoryItem? existingWorkout;
+  final List<PlanExerciseData> plannedExercises;
 
   @override
   State<WorkoutEditorPage> createState() => _WorkoutEditorPageState();
@@ -19,6 +24,20 @@ class WorkoutEditorPage extends StatefulWidget {
 class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   final List<_ExerciseInput> _exercises = [];
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingWorkout case final workout?) {
+      for (final exercise in workout.exercises) {
+        _exercises.add(_ExerciseInput.fromHistory(exercise));
+      }
+    } else {
+      for (final planned in widget.plannedExercises) {
+        _exercises.add(_ExerciseInput.fromPlan(planned));
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -30,15 +49,22 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
 
   @override
   Widget build(BuildContext context) {
-    final dayName = widget.dashboard.progress.nextDay!.name;
+    final l10n = AppLocalizations.of(context)!;
+    final dayName =
+        widget.existingWorkout?.session.dayNameSnapshot ??
+        widget.dashboard.progress.nextDay!.name;
 
     return Scaffold(
-      appBar: AppBar(title: Text(dayName)),
+      appBar: AppBar(
+        title: Text(
+          widget.existingWorkout == null ? dayName : l10n.editWorkout,
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            '${widget.dashboard.plan.name} · 第 ${widget.dashboard.cycle.cycleNumber} 轮',
+            '${widget.dashboard.plan.name} · ${l10n.cycleNumber(widget.dashboard.cycle.cycleNumber)}',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
@@ -50,12 +76,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                   children: [
                     const Icon(Icons.fitness_center, size: 38),
                     const SizedBox(height: 12),
-                    const Text('添加今天的第一个动作'),
+                    Text(l10n.addFirstExercise),
                     const SizedBox(height: 12),
                     FilledButton.icon(
                       onPressed: _addExercise,
                       icon: const Icon(Icons.add),
-                      label: const Text('添加动作'),
+                      label: Text(l10n.addExercise),
                     ),
                   ],
                 ),
@@ -88,7 +114,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
             OutlinedButton.icon(
               onPressed: _addExercise,
               icon: const Icon(Icons.add),
-              label: const Text('添加动作'),
+              label: Text(l10n.addExercise),
             ),
             const SizedBox(height: 12),
             FilledButton.icon(
@@ -99,7 +125,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.check),
-              label: const Text('完成并保存训练'),
+              label: Text(
+                widget.existingWorkout == null
+                    ? l10n.finishSaveWorkout
+                    : l10n.saveWorkoutChanges,
+              ),
             ),
           ],
           const SizedBox(height: 24),
@@ -109,6 +139,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 
   Future<void> _addExercise() async {
+    final l10n = AppLocalizations.of(context)!;
     final existing = await widget.repository.listExercises();
     if (!mounted) return;
 
@@ -121,7 +152,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           child: ListView(
             shrinkWrap: true,
             children: [
-              const ListTile(title: Text('选择动作')),
+              ListTile(title: Text(l10n.chooseExercise)),
               for (final exercise in existing)
                 ListTile(
                   leading: const Icon(Icons.fitness_center),
@@ -133,7 +164,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 ),
               ListTile(
                 leading: const Icon(Icons.add),
-                title: const Text('输入新动作'),
+                title: Text(l10n.enterNewExercise),
                 onTap: () =>
                     Navigator.pop(context, const _ExerciseSelection('', true)),
               ),
@@ -160,14 +191,15 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 
   Future<void> _saveWorkout() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final drafts = <WorkoutDraftExercise>[];
       for (final exercise in _exercises) {
         if (exercise.name.trim().isEmpty) {
-          throw const FormatException('动作名称不能为空');
+          throw FormatException(l10n.emptyExerciseName);
         }
         if (exercise.sets.isEmpty) {
-          throw FormatException('${exercise.name} 至少需要一组');
+          throw FormatException(l10n.atLeastOneSet(exercise.name));
         }
 
         final sets = <WorkoutDraftSet>[];
@@ -176,13 +208,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           final reps = int.tryParse(input.reps.text);
           final rir = double.tryParse(input.rir.text);
           if (weight == null || weight < 0) {
-            throw FormatException('${exercise.name} 的重量无效');
+            throw FormatException(l10n.invalidWeight(exercise.name));
           }
           if (reps == null || reps < 0) {
-            throw FormatException('${exercise.name} 的次数无效');
+            throw FormatException(l10n.invalidReps(exercise.name));
           }
           if (rir == null || rir < 0 || rir > 10 || (rir * 2) % 1 != 0) {
-            throw FormatException('${exercise.name} 的 RIR 应为 0–10，步进 0.5');
+            throw FormatException(l10n.invalidRir(exercise.name));
           }
           sets.add(WorkoutDraftSet(weight: weight, reps: reps, rir: rir));
         }
@@ -196,17 +228,29 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       }
 
       setState(() => _saving = true);
-      await widget.repository.completeWorkout(widget.dashboard, drafts);
+      final existingWorkout = widget.existingWorkout;
+      if (existingWorkout == null) {
+        await widget.repository.completeWorkout(widget.dashboard, drafts);
+      } else {
+        await widget.repository.updateWorkoutSession(
+          existingWorkout.session.id,
+          drafts,
+        );
+      }
       if (!mounted) return;
       Navigator.pop(context, true);
     } on FormatException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(error.message)));
+    } on FitnessDayActionLockedException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.todayActionLocked)));
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('保存失败：$error')));
+          .showSnackBar(SnackBar(content: Text(l10n.saveFailed(error))));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -230,6 +274,7 @@ class _ExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -245,23 +290,23 @@ class _ExerciseCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: '删除动作',
+                  tooltip: l10n.remove,
                   onPressed: onRemoveExercise,
                   icon: const Icon(Icons.delete_outline),
                 ),
               ],
             ),
             if (!input.saveAsPreset)
-              const Text('仅保存在本次训练中', style: TextStyle(fontSize: 12)),
+              Text(l10n.workingCopyOnly, style: const TextStyle(fontSize: 12)),
             const SizedBox(height: 12),
-            const Row(
+            Row(
               children: [
-                SizedBox(width: 32, child: Text('组')),
+                SizedBox(width: 32, child: Text(l10n.setLabel)),
                 Expanded(child: Text('kg')),
                 SizedBox(width: 8),
-                Expanded(child: Text('次数')),
+                Expanded(child: Text(l10n.repsLabel)),
                 SizedBox(width: 8),
-                Expanded(child: Text('RIR')),
+                Expanded(child: Text(l10n.rirLabel)),
                 SizedBox(width: 40),
               ],
             ),
@@ -294,7 +339,7 @@ class _ExerciseCard extends StatelessWidget {
                     SizedBox(
                       width: 40,
                       child: IconButton(
-                        tooltip: '删除此组',
+                        tooltip: l10n.removeSet,
                         onPressed: input.sets.length > 1
                             ? () => onRemoveSet(setIndex)
                             : null,
@@ -307,7 +352,7 @@ class _ExerciseCard extends StatelessWidget {
             TextButton.icon(
               onPressed: onAddSet,
               icon: const Icon(Icons.add),
-              label: const Text('增加一组'),
+              label: Text(l10n.addAnotherSet),
             ),
           ],
         ),
@@ -361,29 +406,30 @@ class _NewExerciseDialogState extends State<_NewExerciseDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('输入新动作'),
+      title: Text(l10n.enterNewExercise),
       content: TextField(
         controller: _controller,
         autofocus: true,
         textInputAction: TextInputAction.done,
-        decoration: const InputDecoration(
-          labelText: '动作名称',
-          hintText: '例如：平板卧推',
+        decoration: InputDecoration(
+          labelText: l10n.exerciseName,
+          hintText: l10n.exerciseHint,
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: () => _submit(saveAsPreset: false),
-          child: const Text('仅本次'),
+          child: Text(l10n.oneTimeOnly),
         ),
         FilledButton(
           onPressed: () => _submit(saveAsPreset: true),
-          child: const Text('保存为预设'),
+          child: Text(l10n.saveAsPreset),
         ),
       ],
     );
@@ -402,6 +448,34 @@ class _ExerciseInput {
       saveAsPreset = selection.saveAsPreset,
       sets = [_SetInput()];
 
+  _ExerciseInput.fromPlan(PlanExerciseData data)
+    : name = data.exercise.name,
+      saveAsPreset = true,
+      sets = [
+        for (
+          var index = 0;
+          index < (data.planExercise.targetSets ?? 3);
+          index++
+        )
+          _SetInput(
+            weightValue: data.planExercise.targetWeight,
+            repsValue: data.planExercise.targetRepsMin,
+            rirValue: 2,
+          ),
+      ];
+
+  _ExerciseInput.fromHistory(WorkoutHistoryExercise data)
+    : name = data.exercise.exerciseNameSnapshot,
+      saveAsPreset = data.exercise.exerciseId != null,
+      sets = [
+        for (final set in data.sets)
+          _SetInput(
+            weightValue: set.weightValue,
+            repsValue: set.reps,
+            rirValue: set.rir,
+          ),
+      ];
+
   final String name;
   final bool saveAsPreset;
   final List<_SetInput> sets;
@@ -414,10 +488,10 @@ class _ExerciseInput {
 }
 
 class _SetInput {
-  _SetInput()
-    : weight = TextEditingController(),
-      reps = TextEditingController(),
-      rir = TextEditingController();
+  _SetInput({double? weightValue, int? repsValue, double? rirValue})
+    : weight = TextEditingController(text: weightValue?.toString() ?? ''),
+      reps = TextEditingController(text: repsValue?.toString() ?? ''),
+      rir = TextEditingController(text: rirValue?.toString() ?? '');
 
   final TextEditingController weight;
   final TextEditingController reps;

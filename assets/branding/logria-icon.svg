@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>Logria — three parts, one daily log</title>
+  <rect width="512" height="512" rx="112" fill="#356859"/>
+  <path d="M162 144V360H350" fill="none" stroke="#F7F8F4" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="225" y="260" width="38" height="40" rx="19" fill="#BFE0CE"/>
+  <rect x="279" y="210" width="38" height="90" rx="19" fill="#D9ECD5"/>
+  <rect x="333" y="160" width="38" height="140" rx="19" fill="#EBC78B"/>
+</svg>

@@ -191,6 +191,11 @@
       "additionalProperties": false,
       "required": ["id", "text", "occurred_at"],
       "properties": {
+        "protein_g": { "$ref": "#/$defs/nullableNumber" },
+        "carbohydrate_g": { "$ref": "#/$defs/nullableNumber" },
+        "fat_g": { "$ref": "#/$defs/nullableNumber" },
+        "calories_kcal": { "$ref": "#/$defs/nullableNumber" },
+        "calories_estimated": { "type": "boolean" },
         "id": { "$ref": "#/$defs/uuid" },
         "text": { "type": "string", "minLength": 1 },
         "occurred_at": {
@@ -214,7 +219,7 @@
         "carbohydrate_g": { "$ref": "#/$defs/nullableNumber" },
         "fat_g": { "$ref": "#/$defs/nullableNumber" },
         "calories_kcal": { "$ref": "#/$defs/nullableNumber" },
-        "source": { "enum": ["manual", "external_llm", "other"] },
+        "source": { "enum": ["manual", "meals", "external_llm", "other"] },
         "notes": { "type": ["string", "null"] }
       }
     },
