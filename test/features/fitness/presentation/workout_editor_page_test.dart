@@ -25,6 +25,7 @@ void main() {
         home: WorkoutEditorPage(repository: repository, dashboard: dashboard),
       ),
     );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('添加动作'));
     await tester.pumpAndSettle();
 

@@ -120,8 +120,8 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
                         child: Text(
                           l10n.setLine(
                             set.setNumber,
-                            _number(set.weightValue),
-                            set.weightUnit,
+                            set.weightText ?? _number(set.weightValue),
+                            set.weightText == null ? set.weightUnit : '',
                             set.reps ?? '—',
                             _number(set.rir),
                             set.isCompleted ? '' : l10n.skippedSuffix,

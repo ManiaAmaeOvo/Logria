@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -15,6 +17,7 @@ class FitnessDashboardData {
     required this.progress,
     required this.hasActionToday,
     required this.todayWorkout,
+    this.hasDraft = false,
   });
 
   final TrainingPlan plan;
@@ -24,6 +27,7 @@ class FitnessDashboardData {
   final TrainingCycleProgress progress;
   final bool hasActionToday;
   final WorkoutHistoryItem? todayWorkout;
+  final bool hasDraft;
 }
 
 class FitnessDayActionLockedException implements Exception {}
@@ -45,11 +49,13 @@ class WorkoutDraftSet {
     required this.weight,
     required this.reps,
     required this.rir,
+    this.weightText,
   });
 
-  final double weight;
-  final int reps;
-  final double rir;
+  final double? weight;
+  final String? weightText;
+  final int? reps;
+  final double? rir;
 }
 
 class PlanExerciseData {
@@ -83,6 +89,183 @@ class FitnessRepository {
 
   final AppDatabase database;
   final Uuid _uuid = const Uuid();
+
+  Future<String?> readSetting(String key) async => (await (database.select(
+    database.appSettings,
+  )..where((s) => s.keyName.equals(key))).getSingleOrNull())?.value;
+
+  Future<void> writeSetting(String key, String value) => database
+      .into(database.appSettings)
+      .insertOnConflictUpdate(
+        AppSettingsCompanion.insert(
+          keyName: key,
+          value: value,
+          updatedAt: DateTime.now(),
+        ),
+      );
+
+  Future<void> clearSetting(String key) => (database.delete(
+    database.appSettings,
+  )..where((s) => s.keyName.equals(key))).go();
+
+  Future<void> ensureCommonExercises(bool chinese) async {
+    const names = [
+      ['平板卧推', 'Bench press'],
+      ['上斜哑铃卧推', 'Incline dumbbell press'],
+      ['深蹲', 'Squat'],
+      ['硬拉', 'Deadlift'],
+      ['罗马尼亚硬拉', 'Romanian deadlift'],
+      ['高位下拉', 'Lat pulldown'],
+      ['引体向上', 'Pull-up'],
+      ['坐姿划船', 'Seated row'],
+      ['肩上推举', 'Overhead press'],
+      ['侧平举', 'Lateral raise'],
+      ['二头弯举', 'Biceps curl'],
+      ['绳索下压', 'Triceps pushdown'],
+      ['腿举', 'Leg press'],
+      ['腿弯举', 'Leg curl'],
+      ['提踵', 'Calf raise'],
+      ['俯卧撑', 'Push-up'],
+      ['平板支撑', 'Plank'],
+    ];
+    final key = 'fitness.presets.${chinese ? 'zh' : 'en'}.v1';
+    if (await readSetting(key) != null) return;
+    await database.transaction(() async {
+      for (final pair in names) {
+        await createExercisePreset(pair[chinese ? 0 : 1]);
+      }
+      await writeSetting(key, 'seeded');
+    });
+  }
+
+  Future<List<String>> trackedExercises() async =>
+      ((jsonDecode(await readSetting('fitness.pr.tracked') ?? '[]')) as List)
+          .cast<String>();
+
+  Future<void> trackExercise(String name, bool enabled) async {
+    final names = (await trackedExercises()).toSet();
+    if (enabled) {
+      names.add(name);
+    } else {
+      names.remove(name);
+    }
+    await writeSetting('fitness.pr.tracked', jsonEncode(names.toList()));
+  }
+
+  Future<List<PrPoint>> prHistory(String name) async {
+    final points = <PrPoint>[];
+    final query =
+        database.select(database.workoutSets).join([
+          innerJoin(
+            database.workoutExercises,
+            database.workoutExercises.id.equalsExp(
+              database.workoutSets.workoutExerciseId,
+            ),
+          ),
+          innerJoin(
+            database.workoutSessions,
+            database.workoutSessions.id.equalsExp(
+              database.workoutExercises.workoutSessionId,
+            ),
+          ),
+        ])..where(
+          database.workoutExercises.exerciseNameSnapshot.equals(name) &
+              database.workoutSessions.status.equals('completed') &
+              database.workoutSets.isCompleted.equals(true),
+        );
+    final daily = <String, double>{};
+    for (final row in await query.get()) {
+      final set = row.readTable(database.workoutSets);
+      final date = row.readTable(database.workoutSessions).localDate;
+      final value = set.weightValue;
+      if (value != null &&
+          value.isFinite &&
+          (daily[date] == null || value > daily[date]!)) {
+        daily[date] = value;
+      }
+    }
+    points.addAll(daily.entries.map((e) => PrPoint(e.key, e.value)));
+    for (final record in await (database.select(
+      database.personalRecords,
+    )..where((r) => r.exerciseName.equals(name))).get()) {
+      points.add(
+        PrPoint(
+          record.localDate,
+          record.weight,
+          id: record.id,
+          reps: record.reps,
+        ),
+      );
+    }
+    points.sort((a, b) => a.date.compareTo(b.date));
+    return points;
+  }
+
+  Future<void> addPr(
+    String name,
+    DateTime date,
+    double weight,
+    int? reps,
+  ) async {
+    if (!weight.isFinite || weight < 0 || (reps != null && reps < 0)) {
+      throw ArgumentError('Invalid PR');
+    }
+    await database
+        .into(database.personalRecords)
+        .insert(
+          PersonalRecordsCompanion.insert(
+            id: _uuid.v4(),
+            exerciseName: name,
+            localDate: DateFormat('yyyy-MM-dd').format(date),
+            weight: weight,
+            reps: Value(reps),
+          ),
+        );
+  }
+
+  Future<void> deletePr(String id) => (database.delete(
+    database.personalRecords,
+  )..where((r) => r.id.equals(id))).go();
+
+  Future<List<CardioLog>> cardioHistory() =>
+      (database.select(database.cardioLogs)..orderBy([
+            (r) => OrderingTerm.desc(r.localDate),
+            (r) => OrderingTerm.desc(r.recordedAt),
+          ]))
+          .get();
+
+  Future<void> saveCardio({
+    String? id,
+    required DateTime date,
+    required String activity,
+    required double minutes,
+    double? distance,
+    String? notes,
+  }) async {
+    if (activity.trim().isEmpty ||
+        !minutes.isFinite ||
+        minutes <= 0 ||
+        (distance != null && (!distance.isFinite || distance < 0))) {
+      throw ArgumentError('Invalid cardio');
+    }
+    await database
+        .into(database.cardioLogs)
+        .insertOnConflictUpdate(
+          CardioLogsCompanion.insert(
+            id: id ?? _uuid.v4(),
+            localDate: DateFormat('yyyy-MM-dd').format(date),
+            activity: activity.trim(),
+            minutes: minutes,
+            distanceKm: Value(distance),
+            notes: Value(notes),
+            recordedAt: DateTime.now(),
+          ),
+        );
+  }
+
+  Future<void> deleteCardio(String id) => (database.delete(
+    database.cardioLogs,
+  )..where((r) => r.id.equals(id))).go();
 
   static const _cycleColors = <int>[
     0xFF5B8C85,
@@ -142,6 +325,11 @@ class FitnessRepository {
       progress: progress,
       hasActionToday: await _hasFitnessActionOnDate(DateTime.now()),
       todayWorkout: todayWorkout,
+      hasDraft:
+          await readSetting(
+            'fitness.draft.${DateFormat('yyyy-MM-dd').format(DateTime.now())}.${todayWorkout?.session.id ?? progress.nextDay?.id}',
+          ) !=
+          null,
     );
   }
 
@@ -626,6 +814,7 @@ class FitnessRepository {
                 workoutExerciseId: workoutExerciseId,
                 setNumber: setIndex + 1,
                 weightValue: Value(set.weight),
+                weightText: Value(set.weightText),
                 reps: Value(set.reps),
                 rir: Value(set.rir),
                 isCompleted: const Value(true),
@@ -818,4 +1007,12 @@ class FitnessRepository {
   String _normalizeExerciseName(String name) {
     return name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
   }
+}
+
+class PrPoint {
+  const PrPoint(this.date, this.weight, {this.id, this.reps});
+  final String date;
+  final double weight;
+  final String? id;
+  final int? reps;
 }

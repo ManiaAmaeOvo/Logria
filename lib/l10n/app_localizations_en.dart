@@ -10,6 +10,83 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get continueWorkoutDraft => 'Continue workout draft';
+
+  @override
+  String get workoutDraftHint =>
+      'Inputs are saved locally as a draft. Leave and resume anytime. Only finishing advances the cycle. Blank sets are not logged.';
+
+  @override
+  String get weightInputLabel => 'kg / text';
+
+  @override
+  String get textWeightHandling => 'Text weight: numeric value';
+
+  @override
+  String get textWeightNull => 'null · unknown / exclude from PR';
+
+  @override
+  String get textWeightZero => '0 · no measurable external load';
+
+  @override
+  String get prTitle => 'Exercise PR';
+
+  @override
+  String get prExplanation =>
+      'Choose only the exercises you want to track. Curve: daily maximum logged load in kg, not estimated 1RM. Text mapped to null is excluded; 0 is included. Manual entries remain separate from workouts.';
+
+  @override
+  String get trackExercise => 'Choose an exercise to track';
+
+  @override
+  String get addPr => 'Add manual PR';
+
+  @override
+  String get manualPr => 'Manual PR';
+
+  @override
+  String get workoutPr => 'Workout daily maximum';
+
+  @override
+  String get removeTracking => 'Stop tracking (keep records)';
+
+  @override
+  String get noPr => 'No numeric weight records yet.';
+
+  @override
+  String get cardioTitle => 'Cardio';
+
+  @override
+  String get cardioHint =>
+      'Independent of your strength cycle. Also available on rest days.';
+
+  @override
+  String get addCardio => 'Add cardio';
+
+  @override
+  String get cardioActivity => 'Activity';
+
+  @override
+  String get cardioMinutes => 'Duration (minutes)';
+
+  @override
+  String get cardioDistance => 'Distance (km, optional)';
+
+  @override
+  String get cardioNotes => 'Notes (optional)';
+
+  @override
+  String get cardioPresets =>
+      'Walking,Running,Cycling,Swimming,Elliptical,Rowing,Stair climbing,Jump rope';
+
+  @override
+  String get invalidFitnessValue =>
+      'Enter a valid name and finite non-negative values. Cardio duration must be greater than zero.';
+
+  @override
+  String get dateLabel => 'Date';
+
+  @override
   String get appTagline => 'Three parts. One daily log.';
 
   @override
@@ -36,11 +113,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Records stay on this device. No account, cloud sync, analytics or built-in AI requests. GitHub links open in your browser only when tapped. Copying puts logs on the system clipboard.';
 
   @override
-  String get firstReleaseScope => 'Version 1 scope';
+  String get firstReleaseScope => 'Current features';
 
   @override
   String get firstReleaseScopeHint =>
-      'Fitness, nutrition, body, daily logs and calendar are available. JSON import/export, PR charts and weight-based nutrition templates are planned for later versions.';
+      'Fitness with resumable drafts, exercise PR curves, cardio, nutrition, body, daily logs and calendar are available. JSON import/export and weight-based nutrition templates are planned for later versions.';
 
   @override
   String get openSourceLicenses => 'Open-source licenses';

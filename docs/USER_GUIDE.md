@@ -1,4 +1,4 @@
-# Using Logria 1.0
+# Using Logria 1.1
 
 ## Start a training plan
 
@@ -10,9 +10,36 @@ Edit plan days, order, rest slots and exercise targets before training. During
 a workout, choose an existing exercise or enter a new name. New names can be
 saved as presets or kept for that workout only.
 
-Enter numbers without unit suffixes: `40`, not `40kg`. The weight unit is already
-shown by the field. Record repetitions and RIR, then finish and save. Today’s
-completed workout appears directly on Fitness and remains editable.
+Enter numeric kilograms as `40` (not `40kg`). You may also enter a text label
+such as `bodyweight` or `heavy band`. A text weight defaults to numeric `null`
+(unknown/excluded from PR); choose `0` for no measurable external load. Both
+choices retain the original text in saved logs. Unit-suffixed input such as
+`40kg` is text, not automatically parsed into kilograms.
+
+Inputs are saved as local drafts after a short debounce and flushed when you
+leave with the app/system back button or background the app. Partial and invalid
+input can be resumed. Tap Continue workout draft or open the same workout again.
+Drafts do not advance the cycle or replace completed logs. Finish and save (or
+Save changes when editing) commits the record. Blank sets are omitted; missing
+weight, reps and RIR remain unknown. Drafts belong to the date and workout/day.
+Planned sets start empty: targets are not automatically recorded as performed sets.
+Do not rely on an immediate force-stop during input to flush an unsaved keystroke.
+
+## Exercise PR and cardio
+
+Open Exercise PR from Fitness. Choose only the exercises you want to track from
+presets or your workout history, then select one to review. The curve uses the
+maximum numeric logged load per date, not estimated 1RM. Text-null weights are
+excluded; text-zero weights contribute zero. Add manual PR to backfill dated
+weights and optional reps. The log identifies manual and workout sources; manual
+entries can be deleted. Stop tracking hides the exercise without deleting records.
+Changing a workout automatically changes its contribution to the curve. Different
+exercise names (including translated names) are separate series.
+
+Cardio is independent of the strength cycle and can be recorded on rest days or
+before selecting a plan. Choose a common activity or type your own, set a date
+and duration in minutes, and optionally add distance in km and notes. Tap a log
+to edit; delete uses confirmation. Cardio appears in Today and Calendar copying.
 
 ## Rest, skip and undo
 
@@ -70,6 +97,6 @@ Settings contains English, Simplified Chinese and system-language options. Your
 choice is saved. About shows version, developers, source/profile links, privacy
 information and license notices.
 
-Version 1.0 has no restorable backup or JSON file export/import. Keep that limit
+Version 1.1 has no restorable backup or JSON file export/import. Keep that limit
 in mind before uninstalling or clearing app data. Clipboard logs are convenient
 for review but cannot be imported to restore the database.

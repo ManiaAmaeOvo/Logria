@@ -24,6 +24,7 @@ class TodayLogData {
     required this.nutrition,
     required this.bodyTypes,
     required this.measurements,
+    this.cardio = const [],
   });
   final DateTime date;
   final List<WorkoutHistoryItem> workouts;
@@ -31,6 +32,7 @@ class TodayLogData {
   final NutritionDayData nutrition;
   final Map<String, BodyMeasurementType> bodyTypes;
   final List<BodyMeasurement> measurements;
+  final List<CardioLog> cardio;
 }
 
 class TodayRepository {
@@ -89,6 +91,9 @@ class TodayRepository {
       nutrition: nutrition,
       bodyTypes: {for (final type in types) type.id: type},
       measurements: measurements,
+      cardio: await (database.select(
+        database.cardioLogs,
+      )..where((r) => r.localDate.equals(nutrition.localDate))).get(),
     );
   });
 }

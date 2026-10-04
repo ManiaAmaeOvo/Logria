@@ -10,12 +10,12 @@ Logria is an independent project and does not share a repository or data with Su
 [Download the latest APK](https://github.com/ManiaAmaeOvo/Logria/releases/latest) ·
 [Changelog](CHANGELOG.md) · [User guide](docs/USER_GUIDE.md) · [MIT License](LICENSE)
 
-## Version 1.0.0
+## Version 1.1.0
 
 | Screen | What you can do |
 | --- | --- |
 | Today | Review complete daily logs and copy all records or one section. |
-| Fitness | Edit training plans, record sets/reps/weight/RIR, move rest days, undo today’s action and review past cycles. |
+| Fitness | Resume workout drafts, record numeric/text weights, track selected exercise PRs, log cardio, edit plans and review past cycles. |
 | Nutrition | Log meals with optional P/C/F/kcal, estimate calories, edit daily totals and set goals or limits. |
 | Body | Record any subset of eight measurements and review date-based trends. |
 | Calendar | Browse month activity, locate training rounds and copy historical logs. |
@@ -26,8 +26,13 @@ Logria is an independent project and does not share a repository or data with Su
 - Editable PPL, PPL × 2 and four-day split presets; custom days and rest slots.
 - Exercise presets or one-off exercise names; sets, reps, kilograms and RIR.
 - Planned rest can be moved earlier without skipping pending training.
-- One fitness action per local day, with undo and direct editing of completed workouts.
+- One strength-cycle action per local day, with undo and direct editing of completed workouts. Cardio is independent.
 - Workout history and previous-round reference for the same training day.
+- Resumable local workout drafts, including partial and not-yet-valid input.
+- Numeric kg or text weights; text retains its label and maps explicitly to 0 or null.
+- Opt-in exercise PR logs and date-based daily maximum load curves, with manual entries.
+- Independent cardio logs with activity, duration, optional distance and notes.
+- Common strength and cardio activity presets.
 
 ### Nutrition
 
@@ -52,9 +57,11 @@ Download the APK from [Releases](https://github.com/ManiaAmaeOvo/Logria/releases
 Transfer it to an Android phone, open it and allow installation from that source.
 Android 7.0/API 24 or later is required. Android 16/arm64 has been checked locally.
 
-The initial release APK runs in release mode but uses the existing development
+The published APK runs in release mode but uses the existing development
 signing certificate to allow updates from earlier test APKs from this machine.
 It is not a production Google Play release. See [release details](docs/RELEASE.md).
+To upgrade from 1.0.0, install 1.1.0 over the existing app without uninstalling or
+clearing storage. The signing identity is unchanged and schema 3 is additive.
 
 ## Local data and privacy
 
@@ -94,10 +101,10 @@ an Android debug build. CI APKs are not signed with the published release identi
 
 ## Roadmap and current limits
 
-Not implemented in version 1.0.0:
+Not implemented in version 1.1.0:
 
 - JSON file import/export and restorable backups.
-- Exercise PR charts and broader training statistics.
+- Estimated 1RM, PR notifications and broader training statistics.
 - Weight-based nutrition templates, weekly/monthly template updates and carb cycling.
 - Custom body metric types and cloud/platform integrations.
 

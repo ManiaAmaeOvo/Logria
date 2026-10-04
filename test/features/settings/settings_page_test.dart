@@ -66,11 +66,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('ManiaAmaeOvo · gpt6.1sol'), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.text('v1.0.0 (2)'),
+        find.text('v${AppMetadata.version} (${AppMetadata.build})'),
         -300,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.text('v1.0.0 (2)'), findsOneWidget);
+      expect(
+        find.text('v${AppMetadata.version} (${AppMetadata.build})'),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },

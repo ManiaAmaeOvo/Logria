@@ -5,8 +5,12 @@ accounts, cloud synchronization, advertising, analytics or built-in LLM calls.
 The release app does not declare the Android INTERNET permission. Flutter debug
 and profile builds use network permission for development tooling.
 
+Workout drafts also remain in local SQLite, including incomplete raw input.
+Drafts are keyed by date and workout/day and removed when that workout is saved.
+Cardio logs, manual PR entries and selected tracking preferences are local only.
+
 The app requests that Android automatic backup be disabled. No backup or restore
-UI is provided in version 1.0.0. Uninstalling the app or clearing its storage can
+UI is provided in version 1.1.0. Uninstalling the app or clearing its storage can
 remove its records. Clipboard copying is text sharing, not a restorable backup.
 
 Copy buttons place selected logs on Android's system clipboard. You decide

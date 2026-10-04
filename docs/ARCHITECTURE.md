@@ -17,7 +17,16 @@ Summa and does not share its data, repository or services.
 
 Workout details retain exercise/day/plan name snapshots. Only one fitness action
 may be recorded for a local day; repository transaction guards enforce this.
+Independent cardio entries do not consume a cycle day or lock strength actions.
 Rest can consume a later planned rest slot without advancing pending training.
+
+Workout drafts store raw input JSON in AppSettings keyed by date and session/day.
+Writes are serialized, debounced and flushed on exit/background. Completion
+removes the corresponding draft after committing the workout. Drafts are not
+reported as completed activity. Text weights use `weightText` alongside nullable
+numeric `weightValue`, with an explicit 0/null choice. PR reads completed sets
+live, groups numeric loads by date, and combines separate manual PR entries for
+display. Opt-in tracked names are persisted; stopping tracking preserves data.
 
 Food descriptions can exist without nutrients. Automatic daily totals sum known
 meal values; missing values remain unrecorded. A manually edited daily total
@@ -37,7 +46,9 @@ explicit executions win over inferred spans on cycle boundary dates.
 Schema 2 adds nullable meal nutrients and calorie-estimation metadata. Tests
 cover preservation of older food notes. Any future migration must be additive
 or provide a verified conversion; never solve upgrades by clearing storage.
+Schema 3 adds nullable weight text, CardioLogs and PersonalRecords. Numeric set
+values are not converted or overwritten. Migration tests cover older sets.
 
 `docs/export/logria-health-log.schema.json` defines a planned, self-contained JSON
-contract. No JSON file exporter/importer is wired into version 1.0.0. The current
+contract. No JSON file exporter/importer is wired into version 1.1.0. The current
 sharing format is plain-text clipboard output from Today and Calendar.

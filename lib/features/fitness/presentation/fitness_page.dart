@@ -8,6 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import 'plan_editor_page.dart';
 import 'workout_editor_page.dart';
 import 'workout_history_page.dart';
+import 'fitness_extras_page.dart';
 
 String _templateName(TrainingPlanTemplate template, AppLocalizations l10n) =>
     switch (template.id) {
@@ -50,6 +51,58 @@ class FitnessPage extends StatefulWidget {
 class _FitnessPageState extends State<FitnessPage> {
   late final FitnessRepository _repository;
   late Future<FitnessDashboardData?> _dashboardFuture;
+  String? _seedLocale;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final locale = AppLocalizations.of(context)!.localeName;
+    if (_seedLocale != locale) {
+      _seedLocale = locale;
+      _repository.ensureCommonExercises(locale.startsWith('zh')).catchError((
+        Object error,
+      ) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.saveFailed(error)),
+            ),
+          );
+        }
+      });
+    }
+  }
+
+  Future<void> _extras(bool cardio) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) =>
+            FitnessExtrasPage(repository: _repository, cardio: cardio),
+      ),
+    );
+    if (mounted) _reload();
+  }
+
+  Widget _extraButtons() {
+    final l = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Wrap(
+        spacing: 12,
+        children: [
+          OutlinedButton.icon(
+            onPressed: () => _extras(false),
+            icon: const Icon(Icons.show_chart),
+            label: Text(l.prTitle),
+          ),
+          OutlinedButton.icon(
+            onPressed: () => _extras(true),
+            icon: const Icon(Icons.directions_run),
+            label: Text(l.cardioTitle),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -80,35 +133,49 @@ class _FitnessPageState extends State<FitnessPage> {
         final dashboard = snapshot.data;
         if (dashboard == null) {
           final l10n = AppLocalizations.of(context)!;
-          return _TemplatePicker(
-            title: l10n.selectTrainingCycle,
-            intro: l10n.templateIntro,
-            onSelected: (template) async {
-              await _repository.activateTemplate(
-                template,
-                planName: _templateName(template, l10n),
-                dayNames: [
-                  for (final day in template.days)
-                    _templateDayName(day.name, l10n),
-                ],
-              );
-              _reload();
-            },
+          return Column(
+            children: [
+              _extraButtons(),
+              Expanded(
+                child: _TemplatePicker(
+                  title: l10n.selectTrainingCycle,
+                  intro: l10n.templateIntro,
+                  onSelected: (template) async {
+                    await _repository.activateTemplate(
+                      template,
+                      planName: _templateName(template, l10n),
+                      dayNames: [
+                        for (final day in template.days)
+                          _templateDayName(day.name, l10n),
+                      ],
+                    );
+                    _reload();
+                  },
+                ),
+              ),
+            ],
           );
         }
 
-        return _FitnessDashboard(
-          dashboard: dashboard,
-          repository: _repository,
-          onEditPlan: _editPlan,
-          onSwitchPlan: _switchPlan,
-          onShowHistory: _showHistory,
-          onStartWorkout: () => _startWorkout(dashboard),
-          onRest: _takeRest,
-          onSkip: _skipTraining,
-          onUndo: _undoTodayAction,
-          onEditTodayWorkout: (workout) =>
-              _editTodayWorkout(dashboard, workout),
+        return Column(
+          children: [
+            _extraButtons(),
+            Expanded(
+              child: _FitnessDashboard(
+                dashboard: dashboard,
+                repository: _repository,
+                onEditPlan: _editPlan,
+                onSwitchPlan: _switchPlan,
+                onShowHistory: _showHistory,
+                onStartWorkout: () => _startWorkout(dashboard),
+                onRest: _takeRest,
+                onSkip: _skipTraining,
+                onUndo: _undoTodayAction,
+                onEditTodayWorkout: (workout) =>
+                    _editTodayWorkout(dashboard, workout),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -509,6 +576,19 @@ class _FitnessDashboard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 20),
+        if (dashboard.hasDraft) ...[
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.edit_note),
+              title: Text(AppLocalizations.of(context)!.continueWorkoutDraft),
+              subtitle: Text(AppLocalizations.of(context)!.workoutDraftHint),
+              onTap: dashboard.todayWorkout == null
+                  ? (actionLocked ? null : onStartWorkout)
+                  : () => onEditTodayWorkout(dashboard.todayWorkout!),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         if (dashboard.todayWorkout case final workout?) ...[
           _TodayWorkoutCard(
             workout: workout,
@@ -737,8 +817,8 @@ class _TodayWorkoutCard extends StatelessWidget {
                   child: Text(
                     l10n.setLine(
                       set.setNumber,
-                      _formatWorkoutValue(set.weightValue),
-                      set.weightUnit,
+                      set.weightText ?? _formatWorkoutValue(set.weightValue),
+                      set.weightText == null ? set.weightUnit : '',
                       set.reps ?? '—',
                       _formatWorkoutValue(set.rir),
                       set.isCompleted ? '' : l10n.skippedSuffix,

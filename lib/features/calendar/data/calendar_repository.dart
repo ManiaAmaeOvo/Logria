@@ -99,6 +99,16 @@ class CalendarRepository {
       final d = day(s.localDate)..training = true;
       if (s.cycleInstanceId != null) d.cycleIds.add(s.cycleInstanceId!);
     }
+    final cardio =
+        await (database.select(database.cardioLogs)..where(
+              (r) =>
+                  r.localDate.isBiggerOrEqualValue(key(start)) &
+                  r.localDate.isSmallerThanValue(key(end)),
+            ))
+            .get();
+    for (final c in cardio) {
+      day(c.localDate).training = true;
+    }
     final foods =
         await (database.select(database.foodLogEntries)..where(
               (f) =>

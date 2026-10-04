@@ -98,6 +98,150 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @continueWorkoutDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue workout draft'**
+  String get continueWorkoutDraft;
+
+  /// No description provided for @workoutDraftHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Inputs are saved locally as a draft. Leave and resume anytime. Only finishing advances the cycle. Blank sets are not logged.'**
+  String get workoutDraftHint;
+
+  /// No description provided for @weightInputLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'kg / text'**
+  String get weightInputLabel;
+
+  /// No description provided for @textWeightHandling.
+  ///
+  /// In en, this message translates to:
+  /// **'Text weight: numeric value'**
+  String get textWeightHandling;
+
+  /// No description provided for @textWeightNull.
+  ///
+  /// In en, this message translates to:
+  /// **'null · unknown / exclude from PR'**
+  String get textWeightNull;
+
+  /// No description provided for @textWeightZero.
+  ///
+  /// In en, this message translates to:
+  /// **'0 · no measurable external load'**
+  String get textWeightZero;
+
+  /// No description provided for @prTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise PR'**
+  String get prTitle;
+
+  /// No description provided for @prExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose only the exercises you want to track. Curve: daily maximum logged load in kg, not estimated 1RM. Text mapped to null is excluded; 0 is included. Manual entries remain separate from workouts.'**
+  String get prExplanation;
+
+  /// No description provided for @trackExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an exercise to track'**
+  String get trackExercise;
+
+  /// No description provided for @addPr.
+  ///
+  /// In en, this message translates to:
+  /// **'Add manual PR'**
+  String get addPr;
+
+  /// No description provided for @manualPr.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual PR'**
+  String get manualPr;
+
+  /// No description provided for @workoutPr.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout daily maximum'**
+  String get workoutPr;
+
+  /// No description provided for @removeTracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop tracking (keep records)'**
+  String get removeTracking;
+
+  /// No description provided for @noPr.
+  ///
+  /// In en, this message translates to:
+  /// **'No numeric weight records yet.'**
+  String get noPr;
+
+  /// No description provided for @cardioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cardio'**
+  String get cardioTitle;
+
+  /// No description provided for @cardioHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Independent of your strength cycle. Also available on rest days.'**
+  String get cardioHint;
+
+  /// No description provided for @addCardio.
+  ///
+  /// In en, this message translates to:
+  /// **'Add cardio'**
+  String get addCardio;
+
+  /// No description provided for @cardioActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get cardioActivity;
+
+  /// No description provided for @cardioMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (minutes)'**
+  String get cardioMinutes;
+
+  /// No description provided for @cardioDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance (km, optional)'**
+  String get cardioDistance;
+
+  /// No description provided for @cardioNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get cardioNotes;
+
+  /// No description provided for @cardioPresets.
+  ///
+  /// In en, this message translates to:
+  /// **'Walking,Running,Cycling,Swimming,Elliptical,Rowing,Stair climbing,Jump rope'**
+  String get cardioPresets;
+
+  /// No description provided for @invalidFitnessValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid name and finite non-negative values. Cardio duration must be greater than zero.'**
+  String get invalidFitnessValue;
+
+  /// No description provided for @dateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get dateLabel;
+
   /// No description provided for @appTagline.
   ///
   /// In en, this message translates to:
@@ -149,13 +293,13 @@ abstract class AppLocalizations {
   /// No description provided for @firstReleaseScope.
   ///
   /// In en, this message translates to:
-  /// **'Version 1 scope'**
+  /// **'Current features'**
   String get firstReleaseScope;
 
   /// No description provided for @firstReleaseScopeHint.
   ///
   /// In en, this message translates to:
-  /// **'Fitness, nutrition, body, daily logs and calendar are available. JSON import/export, PR charts and weight-based nutrition templates are planned for later versions.'**
+  /// **'Fitness with resumable drafts, exercise PR curves, cardio, nutrition, body, daily logs and calendar are available. JSON import/export and weight-based nutrition templates are planned for later versions.'**
   String get firstReleaseScopeHint;
 
   /// No description provided for @openSourceLicenses.

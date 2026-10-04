@@ -48,7 +48,7 @@ class TodayLogFormatter {
         lines.add(exercise.exercise.exerciseNameSnapshot);
         for (final set in exercise.sets) {
           lines.add(
-            '  ${l.setLine(set.setNumber, _value(set.weightValue), set.weightUnit, set.reps?.toString() ?? '—', _value(set.rir), !set.isCompleted ? l.skippedSuffix : '')}',
+            '  ${l.setLine(set.setNumber, set.weightText ?? _value(set.weightValue), set.weightText == null ? set.weightUnit : '', set.reps?.toString() ?? '—', _value(set.rir), !set.isCompleted ? l.skippedSuffix : '')}',
           );
           if (set.notes?.isNotEmpty ?? false) lines.add('    ${set.notes}');
         }
@@ -57,6 +57,11 @@ class TodayLogFormatter {
         }
       }
       if (session.notes?.isNotEmpty ?? false) lines.add(session.notes!);
+    }
+    for (final cardio in data.cardio) {
+      lines.add(
+        '${l.cardioTitle}: ${cardio.activity} · ${cardio.minutes} min${cardio.distanceKm == null ? '' : ' · ${cardio.distanceKm} km'}${cardio.notes?.isNotEmpty == true ? ' · ${cardio.notes}' : ''}',
+      );
     }
     return lines.isEmpty
         ? (historical ? l.noDateTraining : l.noTodayTraining)

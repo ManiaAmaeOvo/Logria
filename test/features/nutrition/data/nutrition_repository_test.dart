@@ -120,6 +120,9 @@ void main() {
             "INSERT INTO food_log_entries VALUES ('old', '2026-10-03', 'Existing note', NULL, 0, 0)",
           );
           sqlite.execute('PRAGMA user_version = 1');
+          sqlite.execute(
+            'CREATE TABLE workout_sets (id TEXT NOT NULL PRIMARY KEY)',
+          );
         },
       ),
     );

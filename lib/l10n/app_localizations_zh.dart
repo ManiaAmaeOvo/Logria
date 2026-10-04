@@ -10,6 +10,79 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get continueWorkoutDraft => '继续编辑训练草稿';
+
+  @override
+  String get workoutDraftHint => '输入会自动保存为本地草稿，可退出后继续。只有完成训练才推进轮次，空白组不会计入记录。';
+
+  @override
+  String get weightInputLabel => 'kg / 文字';
+
+  @override
+  String get textWeightHandling => '文字重量的数值处理';
+
+  @override
+  String get textWeightNull => 'null · 未知，不计入 PR';
+
+  @override
+  String get textWeightZero => '0 · 无可测量外部负重';
+
+  @override
+  String get prTitle => '动作 PR';
+
+  @override
+  String get prExplanation =>
+      '只选择想追踪的动作。曲线为每日最大记录重量（kg），不估算 1RM。文字按 null 时不参与，按 0 时参与。手动 PR 与训练记录独立保存。';
+
+  @override
+  String get trackExercise => '选择要追踪的动作';
+
+  @override
+  String get addPr => '补记 PR';
+
+  @override
+  String get manualPr => '手动 PR';
+
+  @override
+  String get workoutPr => '训练当日最大重量';
+
+  @override
+  String get removeTracking => '停止追踪（保留记录）';
+
+  @override
+  String get noPr => '暂无数值重量记录。';
+
+  @override
+  String get cardioTitle => '有氧';
+
+  @override
+  String get cardioHint => '独立于力量训练轮次，休息日也可记录。';
+
+  @override
+  String get addCardio => '添加有氧';
+
+  @override
+  String get cardioActivity => '有氧项目';
+
+  @override
+  String get cardioMinutes => '时长（分钟）';
+
+  @override
+  String get cardioDistance => '距离（km，可选）';
+
+  @override
+  String get cardioNotes => '备注（可选）';
+
+  @override
+  String get cardioPresets => '步行,跑步,骑行,游泳,椭圆机,划船机,爬楼,跳绳';
+
+  @override
+  String get invalidFitnessValue => '请填写有效名称和有限的非负数值；有氧时长需大于 0。';
+
+  @override
+  String get dateLabel => '日期';
+
+  @override
   String get appTagline => '三个板块，一份每日记录。';
 
   @override
@@ -36,11 +109,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '记录保存在当前设备，无需账号，没有云同步、分析追踪或内置 AI 请求。仅在点击 GitHub 链接时打开浏览器；复制会将日志写入系统剪贴板。';
 
   @override
-  String get firstReleaseScope => '第一版范围';
+  String get firstReleaseScope => '当前功能';
 
   @override
   String get firstReleaseScopeHint =>
-      '已提供训练、营养、身体、每日汇总和日历功能。JSON 导入导出、PR 图表和按体重计算的营养模板将在后续版本加入。';
+      '已提供可续写的训练草稿、动作 PR 曲线、有氧、营养、身体、每日汇总和日历功能。JSON 导入导出和按体重计算的营养模板将在后续版本加入。';
 
   @override
   String get openSourceLicenses => '开源许可证';

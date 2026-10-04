@@ -72,6 +72,21 @@
           "type": "array",
           "items": { "$ref": "#/$defs/fitnessSession" }
         },
+        "cardio_logs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "activity", "minutes"],
+            "properties": {
+              "id": { "$ref": "#/$defs/uuid" },
+              "activity": { "type": "string", "minLength": 1 },
+              "minutes": { "type": "number", "exclusiveMinimum": 0 },
+              "distance_km": { "$ref": "#/$defs/nullableNumber" },
+              "notes": { "type": ["string", "null"] }
+            }
+          }
+        },
         "food_log_entries": {
           "type": "array",
           "items": { "$ref": "#/$defs/foodLogEntry" }
@@ -167,6 +182,7 @@
         "weight": {
           "oneOf": [{ "$ref": "#/$defs/weight" }, { "type": "null" }]
         },
+        "weight_text": { "type": ["string", "null"] },
         "reps": { "type": ["integer", "null"], "minimum": 0 },
         "rir": {
           "type": ["number", "null"],

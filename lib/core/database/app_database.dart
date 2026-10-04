@@ -143,6 +143,7 @@ class WorkoutExercises extends Table {
 }
 
 class WorkoutSets extends Table {
+  TextColumn get weightText => text().nullable()();
   TextColumn get id => text()();
   TextColumn get workoutExerciseId =>
       text().references(WorkoutExercises, #id, onDelete: KeyAction.cascade)();
@@ -232,6 +233,28 @@ class AppSettings extends Table {
   Set<Column<Object>> get primaryKey => {keyName};
 }
 
+class CardioLogs extends Table {
+  TextColumn get id => text()();
+  TextColumn get localDate => text()();
+  TextColumn get activity => text()();
+  RealColumn get minutes => real()();
+  RealColumn get distanceKm => real().nullable()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get recordedAt => dateTime()();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class PersonalRecords extends Table {
+  TextColumn get id => text()();
+  TextColumn get exerciseName => text()();
+  TextColumn get localDate => text()();
+  RealColumn get weight => real()();
+  IntColumn get reps => integer().nullable()();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(
   tables: [
     Exercises,
@@ -248,6 +271,8 @@ class AppSettings extends Table {
     BodyMeasurementTypes,
     BodyMeasurements,
     AppSettings,
+    CardioLogs,
+    PersonalRecords,
   ],
 )
 final class AppDatabase extends _$AppDatabase {
@@ -256,10 +281,11 @@ final class AppDatabase extends _$AppDatabase {
   AppDatabase.defaults() : super(driftDatabase(name: 'logria'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
       if (from < 2) {
@@ -268,6 +294,11 @@ final class AppDatabase extends _$AppDatabase {
         await m.addColumn(foodLogEntries, foodLogEntries.fatGrams);
         await m.addColumn(foodLogEntries, foodLogEntries.caloriesKcal);
         await m.addColumn(foodLogEntries, foodLogEntries.caloriesEstimated);
+      }
+      if (from < 3) {
+        await m.addColumn(workoutSets, workoutSets.weightText);
+        await m.createTable(cardioLogs);
+        await m.createTable(personalRecords);
       }
     },
   );
