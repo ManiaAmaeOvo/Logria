@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/number_format.dart';
 import '../data/fitness_repository.dart';
 import '../domain/training_cycle.dart';
 import '../domain/training_plan_template.dart';
@@ -173,6 +174,9 @@ class _FitnessPageState extends State<FitnessPage> {
                 onUndo: _undoTodayAction,
                 onRedo: _redoTodayAction,
                 onChooseStart: () => _chooseStart(dashboard),
+                onRestart: _restartTraining,
+                onUsePrevious: () =>
+                    _startWorkout(dashboard, usePrevious: true),
                 onEditTodayWorkout: (workout) =>
                     _editTodayWorkout(dashboard, workout),
               ),
@@ -250,6 +254,40 @@ class _FitnessPageState extends State<FitnessPage> {
     }
   }
 
+  Future<void> _restartTraining() async {
+    final l = AppLocalizations.of(context)!;
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(l.restartTraining),
+        scrollable: true,
+        content: Text(l.restartTrainingHint),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(l.restartTraining),
+          ),
+        ],
+      ),
+    );
+    if (yes != true || !mounted) return;
+    try {
+      await _repository.restartTrainingCycle();
+      if (mounted) _reload();
+    } on FitnessDayActionLockedException {
+      if (mounted) _showActionLockedMessage();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.saveFailed(error))));
+      }
+    }
+  }
+
   Future<void> _redoTodayAction() async {
     final l = AppLocalizations.of(context)!;
     try {
@@ -286,7 +324,10 @@ class _FitnessPageState extends State<FitnessPage> {
     if (switched == true) _reload();
   }
 
-  Future<void> _startWorkout(FitnessDashboardData dashboard) async {
+  Future<void> _startWorkout(
+    FitnessDashboardData dashboard, {
+    bool usePrevious = false,
+  }) async {
     if (dashboard.hasActionToday) {
       _showActionLockedMessage();
       return;
@@ -294,6 +335,10 @@ class _FitnessPageState extends State<FitnessPage> {
     final day = dashboard.progress.nextDay!;
     final planDay = dashboard.planDays.firstWhere((item) => item.id == day.id);
     final planned = await _repository.loadPlanExercises([planDay]);
+    final previous = await _repository.previousSessionForDay(
+      planDayId: day.id,
+      beforeCycleNumber: dashboard.cycle.cycleNumber,
+    );
     if (!mounted) return;
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
@@ -301,6 +346,8 @@ class _FitnessPageState extends State<FitnessPage> {
           repository: _repository,
           dashboard: dashboard,
           plannedExercises: planned[day.id] ?? const [],
+          previousWorkout: previous,
+          usePreviousOnOpen: usePrevious,
         ),
       ),
     );
@@ -584,6 +631,8 @@ class _FitnessDashboard extends StatelessWidget {
     required this.onUndo,
     required this.onRedo,
     required this.onChooseStart,
+    required this.onRestart,
+    required this.onUsePrevious,
     required this.onEditTodayWorkout,
   });
 
@@ -598,6 +647,7 @@ class _FitnessDashboard extends StatelessWidget {
   final Future<void> Function() onUndo;
   final Future<void> Function() onRedo;
   final VoidCallback onChooseStart;
+  final VoidCallback onRestart, onUsePrevious;
   final ValueChanged<WorkoutHistoryItem> onEditTodayWorkout;
 
   @override
@@ -632,8 +682,13 @@ class _FitnessDashboard extends StatelessWidget {
                 if (value == 'edit') onEditPlan();
                 if (value == 'switch') onSwitchPlan();
                 if (value == 'history') onShowHistory();
+                if (value == 'restart') onRestart();
               },
               itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'restart',
+                  child: Text(AppLocalizations.of(context)!.restartTraining),
+                ),
                 PopupMenuItem(
                   value: 'edit',
                   child: Text(AppLocalizations.of(context)!.editPlan),
@@ -791,19 +846,34 @@ class _FitnessDashboard extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.history),
-                    title: Text(
-                      AppLocalizations.of(context)!.previousRoundSameDay,
-                    ),
-                    subtitle: Text(_previousSummary(previous)),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.of(context).push<void>(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            WorkoutHistoryDetailPage(item: previous),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.history),
+                        title: Text(
+                          AppLocalizations.of(context)!.previousRoundSameDay,
+                        ),
+                        subtitle: Text(_previousSummary(previous)),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.of(context).push<void>(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                WorkoutHistoryDetailPage(item: previous),
+                          ),
+                        ),
                       ),
-                    ),
+                      if (!actionLocked)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                          child: OutlinedButton.icon(
+                            onPressed: onUsePrevious,
+                            icon: const Icon(Icons.copy_outlined),
+                            label: Text(
+                              AppLocalizations.of(context)!.usePreviousTemplate,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               );
@@ -954,9 +1024,7 @@ class _TodayWorkoutCard extends StatelessWidget {
 
 String _formatWorkoutValue(double? value) {
   if (value == null) return '—';
-  return value == value.roundToDouble()
-      ? value.toInt().toString()
-      : value.toString();
+  return formatNumber(value);
 }
 
 class _ErrorState extends StatelessWidget {

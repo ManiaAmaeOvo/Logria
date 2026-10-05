@@ -25,6 +25,7 @@ class TodayLogData {
     required this.bodyTypes,
     required this.measurements,
     this.cardio = const [],
+    this.note = '',
   });
   final DateTime date;
   final List<WorkoutHistoryItem> workouts;
@@ -33,11 +34,30 @@ class TodayLogData {
   final Map<String, BodyMeasurementType> bodyTypes;
   final List<BodyMeasurement> measurements;
   final List<CardioLog> cardio;
+  final String note;
 }
 
 class TodayRepository {
   TodayRepository(this.database);
   final AppDatabase database;
+
+  Future<void> saveNote(String localDate, String content) async {
+    if (content.trim().isEmpty) {
+      await (database.delete(
+        database.dailyNotes,
+      )..where((r) => r.localDate.equals(localDate))).go();
+    } else {
+      await database
+          .into(database.dailyNotes)
+          .insertOnConflictUpdate(
+            DailyNotesCompanion.insert(
+              localDate: localDate,
+              content: content.trim(),
+              updatedAt: DateTime.now(),
+            ),
+          );
+    }
+  }
 
   Future<TodayLogData> loadDay(DateTime date) => database.transaction(() async {
     final start = DateTime(date.year, date.month, date.day);
@@ -91,6 +111,12 @@ class TodayRepository {
       nutrition: nutrition,
       bodyTypes: {for (final type in types) type.id: type},
       measurements: measurements,
+      note:
+          (await (database.select(database.dailyNotes)
+                    ..where((r) => r.localDate.equals(nutrition.localDate)))
+                  .getSingleOrNull())
+              ?.content ??
+          '',
       cardio: await (database.select(
         database.cardioLogs,
       )..where((r) => r.localDate.equals(nutrition.localDate))).get(),

@@ -10,6 +10,143 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get exerciseVariantNote => '备注变式 / 独立预设';
+
+  @override
+  String get exerciseVariantHint =>
+      '添加握法、站距等备注会创建独立的新预设，原动作及历史记录不会改变。清空备注可回到基础动作，已创建的变式预设仍会保留。';
+
+  @override
+  String get exerciseVariantExample => '正手 · 宽距 / 反手 · 窄距';
+
+  @override
+  String get foodLibrary => '食材与常用饮食方案';
+
+  @override
+  String get foodLibraryHint => '选择食物后输入摄入量。通用参考值仅作粗略估算，成熟制品请以配料表为准，全程无需联网查询。';
+
+  @override
+  String get searchFood => '搜索食材或常用方案';
+
+  @override
+  String get createFoodPreset => '创建 / 编辑食物预设';
+
+  @override
+  String get foodPresetName => '食材、制品或餐食名称';
+
+  @override
+  String get foodBasisHint =>
+      '以下营养值均对应你设定的参考量，如 100g 生肉、30g 蛋白粉、1 瓶奶或 1 份晚餐。克重、毫升与份数不会自动互换，需按标签定义基准。';
+
+  @override
+  String get foodUnit => '量纲';
+
+  @override
+  String get referenceQuantity => '标签对应的参考量';
+
+  @override
+  String get foodPreparation => '加工状态 / 称量依据';
+
+  @override
+  String get foodRaw => '生重 / 干重';
+
+  @override
+  String get foodCooked => '熟重';
+
+  @override
+  String get foodPackaged => '预包装制品';
+
+  @override
+  String get foodOther => '其他 / 自制餐食';
+
+  @override
+  String get foodPortion => '份';
+
+  @override
+  String get foodBottle => '瓶';
+
+  @override
+  String get foodScoop => '勺';
+
+  @override
+  String get foodBag => '袋';
+
+  @override
+  String get quantity => '本次摄入量';
+
+  @override
+  String get energyKilojoules => '能量（kJ）';
+
+  @override
+  String get extraNutrients => '矿物质与膳食纤维（可选）';
+
+  @override
+  String get nutrientSodium => '钠';
+
+  @override
+  String get nutrientPotassium => '钾';
+
+  @override
+  String get nutrientCalcium => '钙';
+
+  @override
+  String get nutrientIron => '铁';
+
+  @override
+  String get nutrientFiber => '膳食纤维';
+
+  @override
+  String get nutrientMinimum => '下限';
+
+  @override
+  String get foodMissingHint => '留空表示未记录，并非零摄入。汇总只累计已知数值，可能不完整；软件不会自动设置摄入标准。';
+
+  @override
+  String get invalidFoodPreset => '请填写名称、正数参考量和有效的非负营养值，未知项目可留空。';
+
+  @override
+  String get referenceFood => 'USDA 通用参考 · 只读，可复制修改';
+
+  @override
+  String get customFood => '自定义预设 / 饮食方案';
+
+  @override
+  String get copyFoodPreset => '复制为新的预设';
+
+  @override
+  String get deleteFoodPresetHint => '删除这个预设？之前已记录的饮食及其营养数值将保持不变。';
+
+  @override
+  String get foodPresetLogged => '已添加到所选日期的饮食记录。';
+
+  @override
+  String get dailyReview => '今日复盘备注';
+
+  @override
+  String get dailyReviewHint => '今天感觉如何？记录复盘或其他值得记住的事。保存后会加入复制的整日日志。';
+
+  @override
+  String get reviewSaved => '今日复盘已保存。';
+
+  @override
+  String get restartTraining => '重新开始训练轮次';
+
+  @override
+  String get restartTrainingHint =>
+      '归档被打断的当前轮次，按相同计划开启新一轮。已保存的历史训练、PR、饮食及身体数据全部保留，未完成的计划日草稿及撤销恢复记录会被清除。之后可重新选择起始日。如今日已记录训练或休息，请先撤销今日操作；重开后不能再恢复该操作。';
+
+  @override
+  String get usePreviousTemplate => '使用上次记录作为模板';
+
+  @override
+  String get replaceWorkoutTemplateHint =>
+      '用同一训练日的上次记录替换当前编辑内容？历史记录不会改变。完成今日训练前，请检查复制的数值。';
+
+  @override
+  String get firstSetFillHint =>
+      '首次编辑第一组重量或次数时，自动填充下方未手动修改的对应字段；离开输入框后不再联动。RIR 不自动填充。';
+
+  @override
   String get chooseStartingDay => '选择起始训练日';
 
   @override
@@ -884,6 +1021,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String saveFailed(Object error) {
     return '保存失败：$error';
   }
+
+  @override
+  String get quickAddFood => '从预设快捷添加';
+
+  @override
+  String get noFoodMatches => '没有匹配的预设，可在食材与常用饮食方案中创建。';
+
+  @override
+  String get userManual => '使用说明';
+
+  @override
+  String get userManualHint => '离线用户手册 · 简体中文 / English';
 
   @override
   String get kg => 'kg';

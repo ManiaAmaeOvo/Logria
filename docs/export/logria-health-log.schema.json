@@ -37,7 +37,8 @@
         "fitness": { "type": "boolean" },
         "food_log": { "type": "boolean" },
         "nutrition": { "type": "boolean" },
-        "body": { "type": "boolean" }
+        "body": { "type": "boolean" },
+        "daily_review": { "type": "boolean" }
       }
     },
     "days": {
@@ -56,6 +57,18 @@
     },
     "timestamp": { "type": "string", "format": "date-time" },
     "nullableNumber": { "type": ["number", "null"], "minimum": 0 },
+    "extraNutrients": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Absent keys are unknown. Minerals are mg; dietary fiber is g.",
+      "properties": {
+        "sodium": { "type": "number", "minimum": 0 },
+        "potassium": { "type": "number", "minimum": 0 },
+        "calcium": { "type": "number", "minimum": 0 },
+        "iron": { "type": "number", "minimum": 0 },
+        "fiber": { "type": "number", "minimum": 0 }
+      }
+    },
     "day": {
       "type": "object",
       "additionalProperties": false,
@@ -68,6 +81,7 @@
       ],
       "properties": {
         "date": { "$ref": "#/$defs/localDate" },
+        "daily_review": { "type": ["string", "null"] },
         "fitness_sessions": {
           "type": "array",
           "items": { "$ref": "#/$defs/fitnessSession" }
@@ -158,6 +172,7 @@
           "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
         },
         "exercise_name": { "type": "string", "minLength": 1 },
+        "variant_note": { "type": ["string", "null"] },
         "order": { "type": "integer", "minimum": 1 },
         "sets": {
           "type": "array",
@@ -212,6 +227,10 @@
         "fat_g": { "$ref": "#/$defs/nullableNumber" },
         "calories_kcal": { "$ref": "#/$defs/nullableNumber" },
         "calories_estimated": { "type": "boolean" },
+        "extra_nutrients": { "$ref": "#/$defs/extraNutrients" },
+        "preset_id": { "type": ["string", "null"] },
+        "quantity": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "quantity_unit": { "enum": ["g", "ml", "portion", "bottle", "scoop", "bag", null] },
         "id": { "$ref": "#/$defs/uuid" },
         "text": { "type": "string", "minLength": 1 },
         "occurred_at": {
@@ -236,6 +255,7 @@
         "fat_g": { "$ref": "#/$defs/nullableNumber" },
         "calories_kcal": { "$ref": "#/$defs/nullableNumber" },
         "source": { "enum": ["manual", "meals", "external_llm", "other"] },
+        "extra_nutrients": { "$ref": "#/$defs/extraNutrients" },
         "notes": { "type": ["string", "null"] }
       }
     },

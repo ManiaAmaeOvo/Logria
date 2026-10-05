@@ -3,8 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/number_format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/nutrition_repository.dart';
+import '../data/food_preset_repository.dart';
+import '../domain/nutrient_values.dart';
+import 'nutrition_labels.dart';
+import 'food_library_page.dart';
+import 'food_preset_picker.dart';
 
 class NutritionPage extends StatefulWidget {
   const NutritionPage({super.key, required this.database});
@@ -69,6 +75,7 @@ class _NutritionPageState extends State<NutritionPage> {
         fatGrams: values.fat,
         caloriesKcal: values.calories,
         caloriesEstimated: values.estimated,
+        extraNutrients: values.extras,
       );
     } else {
       await _repository.updateFoodEntry(
@@ -79,6 +86,7 @@ class _NutritionPageState extends State<NutritionPage> {
         fatGrams: values.fat,
         caloriesKcal: values.calories,
         caloriesEstimated: values.estimated,
+        extraNutrients: values.extras,
       );
     }
     if (mounted) _reload();
@@ -120,6 +128,7 @@ class _NutritionPageState extends State<NutritionPage> {
       carbohydrateGrams: values.carbohydrate,
       fatGrams: values.fat,
       caloriesKcal: values.calories,
+      extraNutrients: values.extras,
     );
     if (mounted) _reload();
   }
@@ -132,6 +141,49 @@ class _NutritionPageState extends State<NutritionPage> {
     if (values == null) return;
     await _repository.saveTargets(values);
     if (mounted) _reload();
+  }
+
+  Future<void> _openLibrary() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            FoodLibraryPage(database: widget.database, date: _selectedDate),
+      ),
+    );
+    if (mounted) _reload();
+  }
+
+  Future<void> _quickAddFood() async {
+    // Capture the selected date: never silently log into today instead.
+    final date = _selectedDate;
+    final l = AppLocalizations.of(context)!;
+    final repository = FoodPresetRepository(widget.database);
+    final preset = await showDialog<FoodPreset>(
+      context: context,
+      builder: (_) => FoodPresetPicker(repository: repository),
+    );
+    if (preset == null || !mounted) return;
+    final amount = await showDialog<double>(
+      context: context,
+      builder: (_) => FoodQuantityDialog(preset: preset),
+    );
+    if (amount == null || !mounted) return;
+    try {
+      await repository.log(
+        preset: preset,
+        date: date,
+        quantity: amount,
+        description:
+            '${foodName(preset, l)} · ${preparationLabel(preset.preparation, l)} · ${foodNumber(amount)} ${foodUnitLabel(preset.unit, l)}',
+      );
+      if (mounted) _reload();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.saveFailed(error))));
+      }
+    }
   }
 
   Future<void> _copyFoodLog(NutritionDayData day) async {
@@ -159,6 +211,8 @@ class _NutritionPageState extends State<NutritionPage> {
       '${l10n.carbohydrateGrams}: ${_displayOptional(record.carbohydrateGrams)}',
       '${l10n.fatGrams}: ${_displayOptional(record.fatGrams)}',
       '${l10n.caloriesKcal}: ${_displayOptional(record.caloriesKcal)}',
+      for (final e in decodeNutrients(record.extraNutrientsJson).entries)
+        '${nutrientLabel(e.key, l10n)}: ${_format(e.value)} ${extraNutrientUnits[e.key]}',
     ].join('\n');
     await Clipboard.setData(ClipboardData(text: text));
     if (!mounted) return;
@@ -208,6 +262,12 @@ class _NutritionPageState extends State<NutritionPage> {
                   : () =>
                         _selectDate(_selectedDate.add(const Duration(days: 1))),
               onPickDate: _pickDate,
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: _openLibrary,
+              icon: const Icon(Icons.kitchen_outlined),
+              label: Text(l10n.foodLibrary),
             ),
             const SizedBox(height: 12),
             Card(
@@ -310,11 +370,49 @@ class _NutritionPageState extends State<NutritionPage> {
                     if (day.targets.proteinGoalGrams == null &&
                         day.targets.carbohydrateGoalGrams == null &&
                         day.targets.fatGoalGrams == null &&
-                        day.targets.calorieLimitKcal == null)
+                        day.targets.calorieLimitKcal == null &&
+                        day.targets.extraTargets.isEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(l10n.noNutritionGoals),
                       ),
+                    for (final e in decodeNutrients(
+                      record?.extraNutrientsJson,
+                    ).entries) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        '${nutrientLabel(e.key, l10n)}: ${_format(e.value)} ${extraNutrientUnits[e.key]}',
+                      ),
+                    ],
+                    if (day.targets.extraTargets.isNotEmpty ||
+                        decodeNutrients(record?.extraNutrientsJson).isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          l10n.foodMissingHint,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    for (final e in day.targets.extraTargets.entries) ...[
+                      const SizedBox(height: 16),
+                      _ProgressMetric(
+                        title:
+                            '${nutrientLabel(e.key, l10n)} · ${targetModeLabel(e.value.mode, l10n)}',
+                        current: decodeNutrients(
+                          record?.extraNutrientsJson,
+                        )[e.key],
+                        partial:
+                            record?.source == 'meals' &&
+                            day.foodEntries.any(
+                              (entry) =>
+                                  !decodeNutrients(entry.extraNutrientsJson)
+                                      .containsKey(e.key),
+                            ),
+                        target: e.value.value,
+                        unit: extraNutrientUnits[e.key]!,
+                        isLimit: e.value.mode == 'limit',
+                      ),
+                    ],
                     if (day.targets.proteinGoalGrams case final goal?) ...[
                       const SizedBox(height: 12),
                       _ProgressMetric(
@@ -395,6 +493,15 @@ class _NutritionPageState extends State<NutritionPage> {
                     Text(
                       l10n.foodLogIndependentNote,
                       style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: TextButton.icon(
+                        key: const ValueKey('quick-add-food'),
+                        onPressed: _quickAddFood,
+                        icon: const Icon(Icons.restaurant_outlined),
+                        label: Text(l10n.quickAddFood),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     if (day.foodEntries.isEmpty)
@@ -510,6 +617,7 @@ class _ProgressMetric extends StatelessWidget {
     required this.target,
     required this.unit,
     required this.isLimit,
+    this.partial = false,
   });
 
   final String title;
@@ -517,6 +625,7 @@ class _ProgressMetric extends StatelessWidget {
   final double target;
   final String unit;
   final bool isLimit;
+  final bool partial;
 
   @override
   Widget build(BuildContext context) {
@@ -524,7 +633,11 @@ class _ProgressMetric extends StatelessWidget {
     final amount = current ?? 0;
     final fraction = target <= 0 ? 0.0 : (amount / target).clamp(0.0, 1.0);
     final difference = target - amount;
-    final detail = isLimit
+    final detail =
+        current == null ||
+            (partial && (difference > 0 || (isLimit && difference == 0)))
+        ? l10n.foodMissingHint
+        : isLimit
         ? difference >= 0
               ? l10n.remainingAllowance(_format(difference), unit)
               : l10n.overLimitAmount(_format(-difference), unit)
@@ -587,7 +700,7 @@ class _FoodEntryTile extends StatelessWidget {
       title: Text(entry.textContent),
       onTap: onEdit,
       subtitle: Text(
-        '${DateFormat.Hm(l10n.localeName).format(time)}\nP ${_displayOptional(entry.proteinGrams)} · C ${_displayOptional(entry.carbohydrateGrams)} · F ${_displayOptional(entry.fatGrams)} g · ${_displayOptional(entry.caloriesKcal)} kcal',
+        '${DateFormat.Hm(l10n.localeName).format(time)}\nP ${_displayOptional(entry.proteinGrams)} · C ${_displayOptional(entry.carbohydrateGrams)} · F ${_displayOptional(entry.fatGrams)} g · ${_displayOptional(entry.caloriesKcal)} kcal${decodeNutrients(entry.extraNutrientsJson).entries.map((e) => '\n${nutrientLabel(e.key, l10n)} ${_format(e.value)} ${extraNutrientUnits[e.key]}').join()}',
       ),
       trailing: PopupMenuButton<String>(
         tooltip: l10n.foodNoteOptions,
@@ -612,9 +725,11 @@ class _IntakeValues {
     this.calories, {
     this.text,
     this.estimated = false,
+    this.extras = const {},
   });
   final String? text;
   final bool estimated;
+  final Map<String, double> extras;
 
   final double? protein;
   final double? carbohydrate;
@@ -653,6 +768,25 @@ class _IntakeDialogState extends State<_IntakeDialog> {
   late final _calories = TextEditingController(
     text: _initial(widget.entry?.caloriesKcal ?? widget.record?.caloriesKcal),
   );
+  late final _kilojoules = TextEditingController(
+    text: _initial(
+      (widget.entry?.caloriesKcal ?? widget.record?.caloriesKcal) == null
+          ? null
+          : (widget.entry?.caloriesKcal ?? widget.record!.caloriesKcal)! *
+                kilojoulesPerKcal,
+    ),
+  );
+  late final _extras = {
+    for (final k in extraNutrientUnits.keys)
+      k: TextEditingController(
+        text: _initial(
+          decodeNutrients(
+            widget.entry?.extraNutrientsJson ??
+                widget.record?.extraNutrientsJson,
+          )[k],
+        ),
+      ),
+  };
 
   @override
   void dispose() {
@@ -661,6 +795,10 @@ class _IntakeDialogState extends State<_IntakeDialog> {
     _carbs.dispose();
     _fat.dispose();
     _calories.dispose();
+    _kilojoules.dispose();
+    for (final c in _extras.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -725,7 +863,23 @@ class _IntakeDialogState extends State<_IntakeDialog> {
               _MetricField(
                 controller: _calories,
                 label: l10n.caloriesKcal,
-                readOnly: widget.meal && _automatic,
+                onChanged: (_) => _syncEnergy(false),
+              ),
+              _MetricField(
+                controller: _kilojoules,
+                label: l10n.energyKilojoules,
+                onChanged: (_) => _syncEnergy(true),
+              ),
+              ExpansionTile(
+                title: Text(l10n.extraNutrients),
+                children: [
+                  for (final e in _extras.entries)
+                    _MetricField(
+                      controller: e.value,
+                      label:
+                          '${nutrientLabel(e.key, l10n)} (${extraNutrientUnits[e.key]})',
+                    ),
+                ],
               ),
             ],
           ),
@@ -758,6 +912,15 @@ class _IntakeDialogState extends State<_IntakeDialog> {
       );
       return;
     }
+    if (!_valid(_parse(_kilojoules.text), _kilojoules.text) ||
+        !_extras.values.every((c) => _valid(_parse(c.text), c.text))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.invalidNutritionValue),
+        ),
+      );
+      return;
+    }
     Navigator.pop(
       context,
       _IntakeValues(
@@ -767,6 +930,10 @@ class _IntakeDialogState extends State<_IntakeDialog> {
         calories,
         text: widget.meal ? _text.text : null,
         estimated: widget.meal && _automatic,
+        extras: {
+          for (final e in _extras.entries)
+            if (_parse(e.value.text) != null) e.key: _parse(e.value.text)!,
+        },
       ),
     );
   }
@@ -780,6 +947,7 @@ class _IntakeDialogState extends State<_IntakeDialog> {
         !_valid(c, _carbs.text) ||
         !_valid(f, _fat.text)) {
       _calories.clear();
+      _kilojoules.clear();
       return;
     }
     final estimate = (p ?? 0) * 4 + (c ?? 0) * 4 + (f ?? 0) * 9;
@@ -787,6 +955,23 @@ class _IntakeDialogState extends State<_IntakeDialog> {
         ? ''
         : estimate.isFinite
         ? _format(estimate)
+        : '';
+    _kilojoules.text = _parse(_calories.text) == null
+        ? ''
+        : _format(_parse(_calories.text)! * kilojoulesPerKcal);
+  }
+
+  void _syncEnergy(bool kj) {
+    setState(() => _automatic = false);
+    final value = _parse(kj ? _kilojoules.text : _calories.text);
+    final converted = value == null
+        ? null
+        : kj
+        ? value / kilojoulesPerKcal
+        : value * kilojoulesPerKcal;
+    (kj ? _calories : _kilojoules).text =
+        converted != null && converted.isFinite && converted >= 0
+        ? formatNumber(converted)
         : '';
   }
 }
@@ -801,6 +986,18 @@ class _TargetsDialog extends StatefulWidget {
 }
 
 class _TargetsDialogState extends State<_TargetsDialog> {
+  late final _extraFields = {
+    for (final k in extraNutrientUnits.keys)
+      k: TextEditingController(
+        text: _initial(widget.targets.extraTargets[k]?.value),
+      ),
+  };
+  late final _extraModes = {
+    for (final k in extraNutrientUnits.keys)
+      k:
+          widget.targets.extraTargets[k]?.mode ??
+          (k == 'sodium' ? 'limit' : 'goal'),
+  };
   late final _limits = [
     widget.targets.proteinIsLimit,
     widget.targets.carbohydrateIsLimit,
@@ -826,6 +1023,9 @@ class _TargetsDialogState extends State<_TargetsDialog> {
     _fat.dispose();
     _protein.dispose();
     _calories.dispose();
+    for (final c in _extraFields.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -857,6 +1057,31 @@ class _TargetsDialogState extends State<_TargetsDialog> {
               const SizedBox(height: 18),
             ],
             const SizedBox(height: 4),
+            ExpansionTile(
+              title: Text(l10n.extraNutrients),
+              children: [
+                for (final e in _extraFields.entries) ...[
+                  _MetricField(
+                    controller: e.value,
+                    label:
+                        '${nutrientLabel(e.key, l10n)} (${extraNutrientUnits[e.key]})',
+                  ),
+                  DropdownButtonFormField<String>(
+                    initialValue: _extraModes[e.key],
+                    isExpanded: true,
+                    items: [
+                      for (final mode in ['goal', 'minimum', 'limit'])
+                        DropdownMenuItem(
+                          value: mode,
+                          child: Text(targetModeLabel(mode, l10n)),
+                        ),
+                    ],
+                    onChanged: (v) => setState(() => _extraModes[e.key] = v!),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ],
+            ),
             Text(
               l10n.blankGoalHint,
               style: Theme.of(context).textTheme.bodySmall,
@@ -878,6 +1103,16 @@ class _TargetsDialogState extends State<_TargetsDialog> {
     final protein = _parse(_protein.text);
     final calories = _parse(_calories.text);
     final carbs = _parse(_carbs.text), fat = _parse(_fat.text);
+    if (!_extraFields.values.every(
+      (c) => _validTarget(_parse(c.text), c.text),
+    )) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.invalidTargetValue),
+        ),
+      );
+      return;
+    }
     if (!_validTarget(protein, _protein.text) ||
         !_validTarget(carbs, _carbs.text) ||
         !_validTarget(fat, _fat.text) ||
@@ -892,6 +1127,11 @@ class _TargetsDialogState extends State<_TargetsDialog> {
     Navigator.pop(
       context,
       NutritionTargets(
+        extraTargets: {
+          for (final e in _extraFields.entries)
+            if (_parse(e.value.text) != null)
+              e.key: NutrientTarget(_parse(e.value.text)!, _extraModes[e.key]!),
+        },
         proteinIsLimit: _limits[0],
         carbohydrateIsLimit: _limits[1],
         fatIsLimit: _limits[2],
@@ -910,10 +1150,8 @@ class _MetricField extends StatelessWidget {
     required this.controller,
     required this.label,
     this.onChanged,
-    this.readOnly = false,
   });
   final ValueChanged<String>? onChanged;
-  final bool readOnly;
 
   final TextEditingController controller;
   final String label;
@@ -923,7 +1161,6 @@ class _MetricField extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 10),
     child: TextFormField(
       onChanged: onChanged,
-      readOnly: readOnly,
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(labelText: label, isDense: true),
@@ -948,8 +1185,6 @@ bool _valid(double? parsed, String text) =>
 bool _validTarget(double? parsed, String text) =>
     text.trim().isEmpty || (parsed != null && parsed.isFinite && parsed > 0);
 
-String _format(double value) => value == value.roundToDouble()
-    ? value.toInt().toString()
-    : value.toString();
+String _format(double value) => formatNumber(value);
 
 String _displayOptional(double? value) => value == null ? '—' : _format(value);

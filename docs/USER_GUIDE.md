@@ -1,4 +1,20 @@
-# Using Logria 1.1
+# Using Logria 1.2
+
+Logria is an offline Android fitness, nutrition and body journal. Data stays on
+this device. Start with the Today screen, then use the five bottom tabs.
+In Settings → User manual you can read this guide offline and switch between
+English and Simplified Chinese independently of the app language.
+
+## Install and start
+
+Download the official APK from GitHub Releases and allow installation from your
+browser/file manager when Android asks. Minimum Android version: 7.0 (API 24).
+To update, install over the existing app with the same signing identity; do not
+uninstall first or clear app storage. The app does not sync between phones.
+
+Settings lets you choose English, Simplified Chinese or system language. Dates
+use the device's local time. Nutrition and Body support selecting past dates;
+training actions are for today, and past workouts are reviewed through history.
 
 ## Start a training plan
 
@@ -35,6 +51,15 @@ The editor's **Discard draft** icon asks for confirmation, removes unsaved input
 and returns to Fitness. It does not delete or modify the previously saved workout.
 
 ## Exercise PR and cardio
+
+In the workout editor, tap **Variant note / separate preset** on an exercise.
+For example, add "Overhand · wide grip" to Lat pulldown. This creates a separate
+reusable preset named `Lat pulldown [Overhand · wide grip]`, leaving the original
+preset and previous records unchanged. Variant names have separate opt-in PR
+series. The current set inputs stay in place and the choice persists in the draft.
+In a training plan, the same option is in an exercise's overflow menu; only that
+plan item switches to the new preset. Clearing the note returns to the base
+exercise but does not delete the already-created variant preset.
 
 Open Exercise PR from Fitness. Choose only the exercises you want to track from
 presets or your workout history, then select one to review. The curve uses the
@@ -84,6 +109,53 @@ Set each nutrient’s number and choose Goal or Limit. A goal displays how much 
 still needed and whether it is reached. A limit displays remaining allowance and
 highlights excess. Leave a number blank to disable that goal/limit.
 
+### Food and meal presets
+
+In the **Food log** card, tap **Quick add from presets**, search a saved food,
+choose it, then enter an amount and save. Its P/C/F, energy and recorded extra
+nutrients are calculated and added directly to the selected day's food log.
+Canceling either dialog records nothing. You can then tap the logged meal to
+edit its text/nutrients directly; this does not change its preset. Each addition
+is a separate log, so one meal can have several ingredient entries.
+
+To create, copy, edit or delete reusable presets, open **Foods & meal presets**.
+You can also log foods there. Search an ingredient, tap it and
+enter the eaten amount to preview nutrients before logging. The amount uses the
+preset's explicit unit; raw/cooked food weights are not interchangeable. Logs
+are saved to the date selected in Nutrition, not necessarily today.
+
+Use the plus button to create a label-based product or complete meal, e.g.
+protein powder per 30 g, yogurt per bottle, or dinner per portion. Enter the
+label/reference nutrients for that amount. g, mL, portions, bottles, scoops and
+bags are supported. Fractional amounts work. A meal preset stores the combined
+nutrients you enter; it is not an automatic ingredient-recipe calculator.
+
+P/C/F initially estimate kcal. Entering kcal or kJ manually disables estimation
+and updates the other energy field; later macro edits keep your label energy.
+Turn estimation back on explicitly to restore 4P + 4C + 9F calculation. This also
+works in the ordinary meal editor. Logged meals remain directly editable.
+
+Calculated values and numeric summaries display at most four decimal places,
+with trailing zeroes removed. Stored calculations retain their precision; the
+display is a rounded estimate. Editing and saving a displayed value uses the
+number in the field. User-entered text notes/weight labels are not rounded.
+
+Built-in references are read-only. Use **Copy as a new preset** to customize
+them. User presets can be edited/deleted; already logged nutrient snapshots do
+not change. See [Food data](FOOD_DATA.md) for source IDs and assumptions.
+
+### Minerals and fiber
+
+Expand **Minerals & fiber (optional)** in a meal, daily intake, or target editor
+to record sodium, potassium, calcium, iron and dietary fiber. Minerals use mg;
+fiber uses g. Each target can be a Goal, Minimum, or Limit. Leave its value blank
+to disable it. No intake standard is filled in automatically.
+
+Unknown values are not zero. Totals sum only recorded values; incomplete totals
+are labeled rather than claiming an accurate remaining allowance. Manual daily
+intake overrides apply to extra nutrients too; **Restore meal totals** resumes
+aggregation. Today/Calendar copied logs include recorded extra nutrients.
+
 ## Body measurements
 
 Select a date, then tap a metric chip to record just that measurement, or use the
@@ -94,6 +166,10 @@ Select a metric in Trends & history and choose 30 days, 90 days or All. Dates
 without measurements are not filled in. Tap a historical value to jump to its date.
 
 ## Daily review and sharing
+
+Enter a reflection directly in Today's **Daily review** card, then tap Save.
+Saving an empty note removes only that date's review. Saved reviews appear in
+Calendar and whole-day copied logs, not in individual health-module sections.
 
 Today combines complete workout sets, meal notes/nutrients, daily nutrition totals
 and measurements recorded today. Copy everything with the top button or use the
@@ -107,12 +183,54 @@ Tap Today to return to the current month/date and clear the cycle highlight.
 Copying from Calendar uses the selected date, not today. Both copy flows re-read
 the database first, include units/date and label unknown values with a dash.
 
+## Restarting and reusing workouts
+
+In Fitness, open the top-right menu and select **Restart training cycle**.
+Confirming archives the interrupted cycle and starts a fresh one with the same
+plan. Historical workouts, PRs, nutrition and measurements stay intact; unfinished
+plan-day drafts are discarded. Then use **Choose starting day**, e.g. Push 2.
+If today's training/rest/skip is already recorded, undo it before restarting.
+Restarting invalidates same-day undo recovery and is not a full data wipe.
+
+For an exercise with multiple sets, the first weight edit and first reps edit
+each fill untouched lower fields while that input is focused. After leaving the
+field, further edits no longer propagate. Editing a lower weight/reps protects
+that field independently and never changes an upper set. These flags survive
+draft exit/resume; RIR is independent. Newly added sets after the first edit are
+blank. Text labels are supported, including the first 0/null mapping choice.
+Editing an already completed workout does not auto-fill other saved sets.
+
+On a later cycle's matching training day, tap **Use last record as template**
+on the previous-record card or inside the workout editor. It copies all exercises,
+sets, weight labels/mappings, reps and RIR, and resets first-set filling for this
+new workout. Existing draft/editor inputs require replacement confirmation.
+Review all copied values before finishing; importing is a draft, not completion,
+and never changes the historical record. Cardio entries are not copied.
+
 ## Settings and data safety
 
 Settings contains English, Simplified Chinese and system-language options. Your
 choice is saved. About shows version, developers, source/profile links, privacy
 information and license notices.
 
-Version 1.1 has no restorable backup or JSON file export/import. Keep that limit
+Version 1.2 has no restorable backup or JSON file export/import. Keep that limit
 in mind before uninstalling or clearing app data. Clipboard logs are convenient
 for review but cannot be imported to restore the database.
+
+## Testing and troubleshooting
+
+For a food preset, check the reference amount and unit first: nutrients per
+100 g must not be entered as nutrients per bottle. Raw and cooked reference
+values differ; product labels take precedence over the generic food library.
+Blank nutrients remain unknown; enter 0 only when zero is genuinely known.
+
+If meal totals seem unchanged, check whether Daily intake is a manual override.
+Use Restore meal totals to return to aggregation. If training actions are locked,
+check today's completed/rest/skip action; edit a completed workout or undo that
+action before choosing another. A draft is not a completed workout.
+
+To report a bug, use the repository's Issues page and include the app version,
+Android version, language, exact steps, expected/actual result and a redacted
+screenshot. Never post private food/body logs or a database without intending
+to make them public. Nutrient references and PR curves are tracking aids, not
+medical advice. See the repository's Food data document for reference sources.

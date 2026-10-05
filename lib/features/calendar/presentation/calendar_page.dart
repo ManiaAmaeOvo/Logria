@@ -264,6 +264,7 @@ class _CalendarPageState extends State<CalendarPage>
                                 if (d.skipped) l.trainingSkipped,
                                 if (d.nutrition) l.nutrition,
                                 if (d.body) l.body,
+                                if (d.review) l.dailyReview,
                                 if (cycle != null)
                                   '${cycle.planName} · ${l.cycleNumber(cycle.cycle.cycleNumber)}',
                               ].join(', ');
@@ -331,9 +332,8 @@ class _CalendarPageState extends State<CalendarPage>
                                               ),
                                             ),
                                             const SizedBox(height: 5),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                            Wrap(
+                                              alignment: WrapAlignment.center,
                                               children: [
                                                 if (d.training)
                                                   const Icon(
@@ -359,6 +359,11 @@ class _CalendarPageState extends State<CalendarPage>
                                                   const Icon(
                                                     Icons
                                                         .monitor_weight_outlined,
+                                                    size: 10,
+                                                  ),
+                                                if (d.review)
+                                                  const Icon(
+                                                    Icons.notes_outlined,
                                                     size: 10,
                                                   ),
                                               ],
@@ -465,6 +470,23 @@ class _CalendarPageState extends State<CalendarPage>
               final f = TodayLogFormatter(snapshot.data!, l, historical: true);
               return Column(
                 children: [
+                  if (snapshot.data!.note.isNotEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              l.dailyReview,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            SelectableText(snapshot.data!.note),
+                          ],
+                        ),
+                      ),
+                    ),
                   for (final (index, title, text) in [
                     (1, l.fitness, f.fitness),
                     (2, l.nutrition, f.food),

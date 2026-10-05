@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/number_format.dart';
+
 import '../data/fitness_repository.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -148,8 +150,6 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
 
   String _number(double? value) {
     if (value == null) return '—';
-    return value == value.roundToDouble()
-        ? value.toInt().toString()
-        : value.toString();
+    return formatNumber(value);
   }
 }

@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
+import '../domain/nutrient_values.dart';
 
 class NutritionTargets {
   const NutritionTargets({
@@ -14,6 +17,7 @@ class NutritionTargets {
     this.carbohydrateIsLimit = false,
     this.fatIsLimit = false,
     this.caloriesIsLimit = true,
+    this.extraTargets = const {},
   });
 
   final double? proteinGoalGrams;
@@ -24,6 +28,7 @@ class NutritionTargets {
   final bool carbohydrateIsLimit;
   final bool fatIsLimit;
   final bool caloriesIsLimit;
+  final Map<String, NutrientTarget> extraTargets;
 }
 
 class NutritionDayData {
@@ -72,6 +77,7 @@ class NutritionRepository {
                 'nutrition.carbohydrateIsLimit',
                 'nutrition.fatIsLimit',
                 'nutrition.caloriesIsLimit',
+                'nutrition.extraTargets',
               ]),
             ))
             .get();
@@ -84,6 +90,15 @@ class NutritionRepository {
       foodEntries: entries,
       record: record ?? _mealTotal(localDate, entries),
       targets: NutritionTargets(
+        extraTargets: {
+          for (final entry in ((jsonDecode(
+            values['nutrition.extraTargets'] ?? '{}',
+          )) as Map<String, dynamic>).entries)
+            entry.key: NutrientTarget(
+              (entry.value['value'] as num).toDouble(),
+              entry.value['mode'] as String,
+            ),
+        },
         proteinIsLimit: values['nutrition.proteinIsLimit'] == '1.0',
         carbohydrateIsLimit: values['nutrition.carbohydrateIsLimit'] == '1.0',
         fatIsLimit: values['nutrition.fatIsLimit'] == '1.0',
@@ -110,15 +125,30 @@ class NutritionRepository {
     double? fatGrams,
     double? caloriesKcal,
     bool caloriesEstimated = true,
+    Map<String, double> extraNutrients = const {},
+    String? presetId,
+    double? quantity,
+    String? quantityUnit,
   }) async {
     final content = text.trim();
     if (content.isEmpty) throw ArgumentError('Food note cannot be empty.');
+    validateNutrients({
+      'protein': ?proteinGrams,
+      'carbohydrate': ?carbohydrateGrams,
+      'fat': ?fatGrams,
+      'calories': ?caloriesKcal,
+      ...extraNutrients,
+    });
     final now = DateTime.now();
     final id = _uuid.v4();
     await database
         .into(database.foodLogEntries)
         .insert(
           FoodLogEntriesCompanion.insert(
+            extraNutrientsJson: Value(jsonEncode(extraNutrients)),
+            presetId: Value(presetId),
+            quantity: Value(quantity),
+            quantityUnit: Value(quantityUnit),
             proteinGrams: Value(proteinGrams),
             carbohydrateGrams: Value(carbohydrateGrams),
             fatGrams: Value(fatGrams),
@@ -143,13 +173,22 @@ class NutritionRepository {
     double? fatGrams,
     double? caloriesKcal,
     bool caloriesEstimated = true,
+    Map<String, double> extraNutrients = const {},
   }) async {
     final content = text.trim();
     if (content.isEmpty) throw ArgumentError('Food note cannot be empty.');
+    validateNutrients({
+      'protein': ?proteinGrams,
+      'carbohydrate': ?carbohydrateGrams,
+      'fat': ?fatGrams,
+      'calories': ?caloriesKcal,
+      ...extraNutrients,
+    });
     await (database.update(
       database.foodLogEntries,
     )..where((row) => row.id.equals(id))).write(
       FoodLogEntriesCompanion(
+        extraNutrientsJson: Value(jsonEncode(extraNutrients)),
         proteinGrams: Value(proteinGrams),
         carbohydrateGrams: Value(carbohydrateGrams),
         fatGrams: Value(fatGrams),
@@ -173,12 +212,21 @@ class NutritionRepository {
     double? carbohydrateGrams,
     double? fatGrams,
     double? caloriesKcal,
+    Map<String, double> extraNutrients = const {},
   }) async {
     final localDate = dateKey(date);
+    validateNutrients({
+      'protein': ?proteinGrams,
+      'carbohydrate': ?carbohydrateGrams,
+      'fat': ?fatGrams,
+      'calories': ?caloriesKcal,
+      ...extraNutrients,
+    });
     final existing = await (database.select(
       database.dailyNutritionRecords,
     )..where((row) => row.localDate.equals(localDate))).getSingleOrNull();
     final values = DailyNutritionRecordsCompanion(
+      extraNutrientsJson: Value(jsonEncode(extraNutrients)),
       proteinGrams: Value(proteinGrams),
       carbohydrateGrams: Value(carbohydrateGrams),
       fatGrams: Value(fatGrams),
@@ -191,6 +239,7 @@ class NutritionRepository {
           .into(database.dailyNutritionRecords)
           .insert(
             DailyNutritionRecordsCompanion.insert(
+              extraNutrientsJson: Value(jsonEncode(extraNutrients)),
               id: _uuid.v4(),
               localDate: localDate,
               updatedAt: DateTime.now(),
@@ -208,8 +257,29 @@ class NutritionRepository {
   }
 
   Future<void> saveTargets(NutritionTargets targets) async {
+    for (final entry in targets.extraTargets.entries) {
+      if (!extraNutrientUnits.containsKey(entry.key) ||
+          !entry.value.value.isFinite ||
+          entry.value.value <= 0 ||
+          !['goal', 'minimum', 'limit'].contains(entry.value.mode)) {
+        throw ArgumentError('Invalid nutrient target.');
+      }
+    }
     final now = DateTime.now();
     await database.transaction(() async {
+      await database
+          .into(database.appSettings)
+          .insertOnConflictUpdate(
+            AppSettingsCompanion.insert(
+              keyName: 'nutrition.extraTargets',
+              value: jsonEncode(
+                targets.extraTargets.map(
+                  (k, v) => MapEntry(k, {'value': v.value, 'mode': v.mode}),
+                ),
+              ),
+              updatedAt: now,
+            ),
+          );
       await _saveSetting(
         'nutrition.proteinIsLimit',
         targets.proteinIsLimit ? 1 : 0,
@@ -265,8 +335,12 @@ class NutritionRepository {
     final c = sum((e) => e.carbohydrateGrams);
     final f = sum((e) => e.fatGrams);
     final kcal = sum((e) => e.caloriesKcal);
-    if (p == null && c == null && f == null && kcal == null) return null;
+    final extras = sumExtras(entries.map((e) => e.extraNutrientsJson));
+    if (p == null && c == null && f == null && kcal == null && extras.isEmpty) {
+      return null;
+    }
     return DailyNutritionRecord(
+      extraNutrientsJson: jsonEncode(extras),
       id: 'meal-total',
       localDate: date,
       proteinGrams: p,

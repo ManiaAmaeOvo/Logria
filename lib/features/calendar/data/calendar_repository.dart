@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../nutrition/domain/nutrient_values.dart';
 
 class CalendarCycle {
   const CalendarCycle(this.cycle, this.planName, this.endDate);
@@ -20,7 +21,8 @@ class CalendarDay {
       rest = false,
       skipped = false,
       nutrition = false,
-      body = false;
+      body = false,
+      review = false;
   final Set<String> cycleIds = {};
 }
 
@@ -128,11 +130,12 @@ class CalendarRepository {
             .get();
     for (final n in totals) {
       if ([
-        n.proteinGrams,
-        n.carbohydrateGrams,
-        n.fatGrams,
-        n.caloriesKcal,
-      ].any((v) => v != null)) {
+            n.proteinGrams,
+            n.carbohydrateGrams,
+            n.fatGrams,
+            n.caloriesKcal,
+          ].any((v) => v != null) ||
+          decodeNutrients(n.extraNutrientsJson).isNotEmpty) {
         day(n.localDate).nutrition = true;
       }
     }
@@ -145,6 +148,16 @@ class CalendarRepository {
             .get();
     for (final b in measurements) {
       day(b.localDate).body = true;
+    }
+    final notes =
+        await (database.select(database.dailyNotes)..where(
+              (r) =>
+                  r.localDate.isBiggerOrEqualValue(key(start)) &
+                  r.localDate.isSmallerThanValue(key(end)),
+            ))
+            .get();
+    for (final note in notes) {
+      day(note.localDate).review = true;
     }
     for (
       var date = start;

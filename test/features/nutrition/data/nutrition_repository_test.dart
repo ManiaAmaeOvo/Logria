@@ -121,6 +121,9 @@ void main() {
           );
           sqlite.execute('PRAGMA user_version = 1');
           sqlite.execute(
+            'CREATE TABLE daily_nutrition_records (id TEXT PRIMARY KEY)',
+          );
+          sqlite.execute(
             'CREATE TABLE workout_sets (id TEXT NOT NULL PRIMARY KEY)',
           );
         },

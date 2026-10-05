@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_metadata.dart';
 import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
+import 'user_manual_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
@@ -120,6 +121,19 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 8),
                   Text(l.appIntroduction),
                 ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.menu_book_outlined),
+              title: Text(l.userManual),
+              subtitle: Text(l.userManualHint),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UserManualPage()),
               ),
             ),
           ),

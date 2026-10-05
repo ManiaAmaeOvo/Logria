@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/fitness_repository.dart';
+import '../domain/exercise_variant.dart';
+import 'exercise_variant_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 
 class WorkoutEditorPage extends StatefulWidget {
@@ -14,12 +16,16 @@ class WorkoutEditorPage extends StatefulWidget {
     required this.dashboard,
     this.existingWorkout,
     this.plannedExercises = const [],
+    this.previousWorkout,
+    this.usePreviousOnOpen = false,
   });
 
   final FitnessRepository repository;
   final FitnessDashboardData dashboard;
   final WorkoutHistoryItem? existingWorkout;
   final List<PlanExerciseData> plannedExercises;
+  final WorkoutHistoryItem? previousWorkout;
+  final bool usePreviousOnOpen;
 
   @override
   State<WorkoutEditorPage> createState() => _WorkoutEditorPageState();
@@ -73,6 +79,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         _listen(e);
       }
       setState(() => _loading = false);
+      if (widget.usePreviousOnOpen && widget.previousWorkout != null) {
+        await _usePrevious(confirm: raw != null);
+      }
     } catch (error) {
       if (!mounted) return;
       for (final e in _exercises) {
@@ -91,6 +100,70 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     for (final set in input.sets) {
       for (final c in [set.weight, set.reps, set.rir]) {
         c.addListener(_changed);
+      }
+      set.weightFocus.addListener(() {
+        if (!set.weightFocus.hasFocus) {
+          input.finishFirstEdit(weight: true);
+          _changed();
+        }
+      });
+      set.repsFocus.addListener(() {
+        if (!set.repsFocus.hasFocus) {
+          input.finishFirstEdit(weight: false);
+          _changed();
+        }
+      });
+    }
+  }
+
+  Future<void> _usePrevious({bool confirm = true}) async {
+    if (_saving || _loading || widget.previousWorkout == null) return;
+    final l = AppLocalizations.of(context)!;
+    if (confirm) {
+      final yes = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: Text(l.usePreviousTemplate),
+          content: Text(l.replaceWorkoutTemplateHint),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: Text(l.usePreviousTemplate),
+            ),
+          ],
+        ),
+      );
+      if (yes != true || !mounted) return;
+    }
+    FocusManager.instance.primaryFocus?.unfocus();
+    final old = List<_ExerciseInput>.of(_exercises);
+    final replacements = widget.previousWorkout!.exercises
+        .map((e) => _ExerciseInput.fromHistory(e, asTemplate: true))
+        .toList();
+    for (final e in replacements) {
+      _listen(e);
+    }
+    setState(() {
+      _exercises
+        ..clear()
+        ..addAll(replacements);
+    });
+    // Let old TextFields detach before disposing their controllers/focus nodes.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final e in old) {
+        e.dispose();
+      }
+    });
+    try {
+      await _persistDraft();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.saveFailed(error))));
       }
     }
   }
@@ -130,6 +203,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
 
   Future<void> _exit() async {
     if (_saving || _loading) return;
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _saving = true);
     try {
       await _persistDraft();
@@ -247,6 +321,20 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                     ),
                     const SizedBox(height: 16),
                     Text(l10n.workoutDraftHint),
+                    if (widget.existingWorkout == null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.firstSetFillHint,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                    if (widget.existingWorkout == null &&
+                        widget.previousWorkout != null)
+                      OutlinedButton.icon(
+                        onPressed: () => _usePrevious(),
+                        icon: const Icon(Icons.copy_outlined),
+                        label: Text(l10n.usePreviousTemplate),
+                      ),
                     const SizedBox(height: 12),
                     if (_exercises.isEmpty)
                       Card(
@@ -277,6 +365,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                           key: ObjectKey(_exercises[index]),
                           index: index,
                           input: _exercises[index],
+                          onVariant: () => _editVariant(_exercises[index]),
                           onAddSet: () {
                             final set = _SetInput();
                             for (final c in [set.weight, set.reps, set.rir]) {
@@ -287,6 +376,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                           },
                           onRemoveSet: (setIndex) {
                             setState(() {
+                              if (setIndex == 0) {
+                                _exercises[index].weightFilled = true;
+                                _exercises[index].repsFilled = true;
+                              }
                               final removed = _exercises[index].sets.removeAt(
                                 setIndex,
                               );
@@ -301,7 +394,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                             });
                             _changed();
                           },
-                          onWeightModeChanged: _changed,
+                          onWeightModeChanged: () {
+                            setState(() {});
+                            _changed();
+                          },
                         ),
                         const SizedBox(height: 12),
                       ],
@@ -358,7 +454,15 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   title: Text(exercise.name),
                   onTap: () => Navigator.pop(
                     context,
-                    _ExerciseSelection(exercise.name, true),
+                    _ExerciseSelection(
+                      exercise.name,
+                      true,
+                      baseName: exerciseVariant(
+                        exercise.name,
+                        exercise.notes,
+                      ).base,
+                      note: exerciseVariant(exercise.name, exercise.notes).note,
+                    ),
                   ),
                 ),
               ListTile(
@@ -390,6 +494,33 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       context: context,
       builder: (context) => const _NewExerciseDialog(),
     );
+  }
+
+  Future<void> _editVariant(_ExerciseInput input) async {
+    final l = AppLocalizations.of(context)!;
+    final note = await showDialog<String>(
+      context: context,
+      builder: (_) => ExerciseVariantDialog(initial: input.variantNote ?? ''),
+    );
+    if (note == null || !mounted) return;
+    try {
+      if (note.isNotEmpty) {
+        await widget.repository.createExerciseVariant(input.baseName, note);
+      }
+      setState(() {
+        input.variantNote = note.isEmpty ? null : note;
+        input.name = note.isEmpty
+            ? input.baseName
+            : variantExerciseName(input.baseName, note);
+        input.saveAsPreset = true;
+      });
+      _changed();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.saveFailed(error))));
+      }
+    }
   }
 
   Future<void> _saveWorkout() async {
@@ -448,6 +579,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             name: exercise.name,
             saveAsPreset: exercise.saveAsPreset,
             sets: sets,
+            baseName: exercise.baseName,
+            variantNote: exercise.variantNote,
           ),
         );
       }
@@ -504,6 +637,7 @@ class _ExerciseCard extends StatelessWidget {
     required this.onRemoveSet,
     required this.onRemoveExercise,
     required this.onWeightModeChanged,
+    required this.onVariant,
   });
 
   final int index;
@@ -512,6 +646,7 @@ class _ExerciseCard extends StatelessWidget {
   final ValueChanged<int> onRemoveSet;
   final VoidCallback onRemoveExercise;
   final VoidCallback onWeightModeChanged;
+  final VoidCallback onVariant;
 
   @override
   Widget build(BuildContext context) {
@@ -539,6 +674,14 @@ class _ExerciseCard extends StatelessWidget {
             ),
             if (!input.saveAsPreset)
               Text(l10n.workingCopyOnly, style: const TextStyle(fontSize: 12)),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: onVariant,
+                icon: const Icon(Icons.note_add_outlined),
+                label: Text(l10n.exerciseVariantNote),
+              ),
+            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -565,12 +708,18 @@ class _ExerciseCard extends StatelessWidget {
                             controller: input.sets[setIndex].weight,
                             decimal: true,
                             allowText: true,
+                            focusNode: input.sets[setIndex].weightFocus,
+                            onChanged: (_) =>
+                                input.edit(setIndex, weight: true),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: _NumberField(
                             controller: input.sets[setIndex].reps,
+                            focusNode: input.sets[setIndex].repsFocus,
+                            onChanged: (_) =>
+                                input.edit(setIndex, weight: false),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -605,6 +754,7 @@ class _ExerciseCard extends StatelessWidget {
                                 return const SizedBox.shrink();
                               }
                               return DropdownButtonFormField<bool>(
+                                key: ValueKey(input.sets[setIndex].textAsZero),
                                 isExpanded: true,
                                 itemHeight: null,
                                 isDense: false,
@@ -633,6 +783,11 @@ class _ExerciseCard extends StatelessWidget {
                                     () => input.sets[setIndex].textAsZero =
                                         v ?? false,
                                   );
+                                  input.edit(
+                                    setIndex,
+                                    weight: true,
+                                    modeOnly: true,
+                                  );
                                   onWeightModeChanged();
                                 },
                               );
@@ -659,16 +814,22 @@ class _NumberField extends StatelessWidget {
     required this.controller,
     this.decimal = false,
     this.allowText = false,
+    this.focusNode,
+    this.onChanged,
   });
 
   final TextEditingController controller;
   final bool decimal;
   final bool allowText;
+  final FocusNode? focusNode;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
+      onChanged: onChanged,
       keyboardType: allowText
           ? TextInputType.text
           : TextInputType.numberWithOptions(decimal: decimal),
@@ -682,10 +843,16 @@ class _NumberField extends StatelessWidget {
 }
 
 class _ExerciseSelection {
-  const _ExerciseSelection(this.name, this.saveAsPreset);
+  const _ExerciseSelection(
+    this.name,
+    this.saveAsPreset, {
+    this.baseName,
+    this.note,
+  });
 
   final String name;
   final bool saveAsPreset;
+  final String? baseName, note;
 }
 
 class _NewExerciseDialog extends StatefulWidget {
@@ -745,11 +912,18 @@ class _NewExerciseDialogState extends State<_NewExerciseDialog> {
 class _ExerciseInput {
   _ExerciseInput(_ExerciseSelection selection)
     : name = selection.name,
+      baseName = selection.baseName ?? selection.name,
+      variantNote = selection.note,
       saveAsPreset = selection.saveAsPreset,
       sets = [_SetInput()];
 
   _ExerciseInput.fromPlan(PlanExerciseData data)
     : name = data.exercise.name,
+      baseName = exerciseVariant(data.exercise.name, data.exercise.notes).base,
+      variantNote = exerciseVariant(
+        data.exercise.name,
+        data.exercise.notes,
+      ).note,
       saveAsPreset = true,
       sets = [
         for (
@@ -760,34 +934,126 @@ class _ExerciseInput {
           _SetInput(),
       ];
 
-  _ExerciseInput.fromHistory(WorkoutHistoryExercise data)
-    : name = data.exercise.exerciseNameSnapshot,
-      saveAsPreset = data.exercise.exerciseId != null,
-      sets = [
-        for (final set in data.sets)
-          _SetInput(
-            weightValue: set.weightValue,
-            repsValue: set.reps,
-            rirValue: set.rir,
-            weightText: set.weightText,
-            textAsZero: set.weightText != null && set.weightValue == 0,
-          ),
-      ];
+  _ExerciseInput.fromHistory(
+    WorkoutHistoryExercise data, {
+    bool asTemplate = false,
+  }) : name = data.exercise.exerciseNameSnapshot,
+       baseName =
+           data.exercise.notes != null &&
+               data.exercise.exerciseNameSnapshot.endsWith(
+                 ' [${data.exercise.notes}]',
+               )
+           ? data.exercise.exerciseNameSnapshot.substring(
+               0,
+               data.exercise.exerciseNameSnapshot.length -
+                   data.exercise.notes!.length -
+                   3,
+             )
+           : data.exercise.exerciseNameSnapshot,
+       variantNote =
+           data.exercise.notes != null &&
+               data.exercise.exerciseNameSnapshot.endsWith(
+                 ' [${data.exercise.notes}]',
+               )
+           ? data.exercise.notes
+           : null,
+       saveAsPreset = data.exercise.exerciseId != null,
+       sets = [
+         for (final set in data.sets)
+           _SetInput(
+             weightValue: set.weightValue,
+             repsValue: set.reps,
+             rirValue: set.rir,
+             weightText: set.weightText,
+             textAsZero: set.weightText != null && set.weightValue == 0,
+           ),
+       ] {
+    weightFilled = !asTemplate;
+    repsFilled = !asTemplate;
+    weightModeFilled = !asTemplate;
+  }
 
-  final String name;
-  final bool saveAsPreset;
+  String name;
+  final String baseName;
+  String? variantNote;
+  bool saveAsPreset;
   final List<_SetInput> sets;
+  bool weightFilled = false, repsFilled = false;
+  bool weightModeFilled = false;
+  bool _weightEditing = false, _repsEditing = false;
+
+  void finishFirstEdit({required bool weight}) {
+    if (weight && _weightEditing) {
+      weightFilled = true;
+      _weightEditing = false;
+    }
+    if (!weight && _repsEditing) {
+      repsFilled = true;
+      _repsEditing = false;
+    }
+  }
+
+  void edit(int index, {required bool weight, bool modeOnly = false}) {
+    final source = sets[index];
+    if (index != 0) {
+      if (weight) {
+        source.weightEdited = true;
+      } else {
+        source.repsEdited = true;
+      }
+      return;
+    }
+    if (modeOnly) {
+      if (weightModeFilled) return;
+      weightModeFilled = true;
+      for (final target in sets.skip(1)) {
+        if (!target.weightEdited && target.weight.text == source.weight.text) {
+          target.textAsZero = source.textAsZero;
+        }
+      }
+      return;
+    }
+    if (weight ? weightFilled : repsFilled) return;
+    if (weight) {
+      _weightEditing = true;
+    } else {
+      _repsEditing = true;
+    }
+    for (final target in sets.skip(1)) {
+      if (weight && !target.weightEdited) {
+        target.weight.text = source.weight.text;
+        target.textAsZero = source.textAsZero;
+      } else if (!weight && !target.repsEdited) {
+        target.reps.text = source.reps.text;
+      }
+    }
+  }
 
   _ExerciseInput.fromJson(Map<String, dynamic> json)
     : name = json['name'] as String,
+      baseName = json['baseName'] as String? ?? json['name'] as String,
+      variantNote = json['variantNote'] as String?,
       saveAsPreset = json['preset'] as bool,
       sets = (json['sets'] as List)
           .map((s) => _SetInput.fromJson(Map<String, dynamic>.from(s)))
-          .toList();
+          .toList() {
+    // Legacy drafts with recorded values must not unexpectedly overwrite them.
+    weightFilled =
+        json['weightFilled'] as bool? ??
+        sets.any((s) => s.weight.text.isNotEmpty);
+    repsFilled =
+        json['repsFilled'] as bool? ?? sets.any((s) => s.reps.text.isNotEmpty);
+    weightModeFilled = json['weightModeFilled'] as bool? ?? weightFilled;
+  }
   Map<String, dynamic> toJson() => {
     'name': name,
+    'baseName': baseName,
+    'variantNote': variantNote,
     'preset': saveAsPreset,
     'sets': sets.map((s) => s.toJson()).toList(),
+    'weightFilled': weightFilled || _weightEditing,
+    'repsFilled': repsFilled || _repsEditing,
+    'weightModeFilled': weightModeFilled,
   };
 
   void dispose() {
@@ -814,21 +1080,31 @@ class _SetInput {
   final TextEditingController reps;
   final TextEditingController rir;
   bool textAsZero;
+  final weightFocus = FocusNode();
+  final repsFocus = FocusNode();
+  bool weightEdited = false, repsEdited = false;
   _SetInput.fromJson(Map<String, dynamic> json)
     : weight = TextEditingController(text: json['weight'] as String),
       reps = TextEditingController(text: json['reps'] as String),
       rir = TextEditingController(text: json['rir'] as String),
-      textAsZero = json['zero'] as bool;
+      textAsZero = json['zero'] as bool {
+    weightEdited = json['weightEdited'] as bool? ?? weight.text.isNotEmpty;
+    repsEdited = json['repsEdited'] as bool? ?? reps.text.isNotEmpty;
+  }
   Map<String, dynamic> toJson() => {
     'weight': weight.text,
     'reps': reps.text,
     'rir': rir.text,
     'zero': textAsZero,
+    'weightEdited': weightEdited,
+    'repsEdited': repsEdited,
   };
 
   void dispose() {
     weight.dispose();
     reps.dispose();
     rir.dispose();
+    weightFocus.dispose();
+    repsFocus.dispose();
   }
 }

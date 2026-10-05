@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../domain/exercise_variant.dart';
+
 import 'package:drift/drift.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -42,11 +44,14 @@ class WorkoutDraftExercise {
     required this.name,
     required this.saveAsPreset,
     required this.sets,
+    this.baseName,
+    this.variantNote,
   });
 
   final String name;
   final bool saveAsPreset;
   final List<WorkoutDraftSet> sets;
+  final String? baseName, variantNote;
 }
 
 class WorkoutDraftSet {
@@ -157,6 +162,37 @@ class FitnessRepository {
     if (jsonEncode(ids) != snapshot['remainingExecutions']) return null;
     return snapshot;
   }
+
+  /// Archives interrupted progress without deleting health history.
+  Future<void> restartTrainingCycle() => database.transaction(() async {
+    final dashboard = await _requiredDashboard();
+    await _ensureNoFitnessActionToday();
+    final now = DateTime.now();
+    final cycles = await (database.select(
+      database.cycleInstances,
+    )..where((c) => c.planId.equals(dashboard.plan.id))).get();
+    final nextNumber =
+        cycles.map((c) => c.cycleNumber).reduce((a, b) => a > b ? a : b) + 1;
+    await (database.update(
+      database.cycleInstances,
+    )..where((c) => c.id.equals(dashboard.cycle.id))).write(
+      CycleInstancesCompanion(
+        status: const Value('interrupted'),
+        completedAt: Value(now),
+      ),
+    );
+    // Only unfinished drafts belonging to this plan are discarded.
+    for (final day in dashboard.planDays) {
+      await (database.delete(database.appSettings)..where(
+            (s) =>
+                s.keyName.like('fitness.draft.%') &
+                s.keyName.like('%.${day.id}'),
+          ))
+          .go();
+    }
+    await clearSetting(_redoKey);
+    await _createCycle(dashboard.plan.id, nextNumber, now);
+  });
 
   /// Changes only this unrecorded cycle's entry point, never fabricates history.
   Future<void> chooseCycleStart(String dayId) => database.transaction(() async {
@@ -537,6 +573,61 @@ class FitnessRepository {
     return id;
   }
 
+  Future<void> replacePlanExercisePreset(
+    String planExerciseId,
+    String presetId,
+  ) async {
+    await (database.update(database.planDayExercises)
+          ..where((e) => e.id.equals(planExerciseId)))
+        .write(PlanDayExercisesCompanion(exerciseId: Value(presetId)));
+  }
+
+  Future<String> createExerciseVariant(String baseName, String note) =>
+      database.transaction(() async {
+        if (baseName.trim().isEmpty || note.trim().isEmpty) {
+          throw ArgumentError('Base and note are required.');
+        }
+        final name = variantExerciseName(baseName, note);
+        final existing =
+            await (database.select(database.exercises)..where(
+                  (e) => e.normalizedName.equals(_normalizeExerciseName(name)),
+                ))
+                .getSingleOrNull();
+        if (existing != null) {
+          final variant = exerciseVariant(existing.name, existing.notes);
+          if (variant.note == null ||
+              _normalizeExerciseName(variant.base) !=
+                  _normalizeExerciseName(baseName) ||
+              _normalizeExerciseName(variant.note!) !=
+                  _normalizeExerciseName(note)) {
+            throw StateError(
+              'This preset name is already in use. Choose a different note.',
+            );
+          }
+          return existing.id;
+        }
+        final id = _uuid.v4();
+        await database
+            .into(database.exercises)
+            .insert(
+              ExercisesCompanion.insert(
+                id: id,
+                name: name,
+                normalizedName: _normalizeExerciseName(name),
+                notes: Value(
+                  jsonEncode({
+                    'kind': 'variant',
+                    'base': baseName.trim(),
+                    'note': note.trim(),
+                  }),
+                ),
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              ),
+            );
+        return id;
+      });
+
   Future<Map<String, List<PlanExerciseData>>> loadPlanExercises(
     List<PlanDay> days,
   ) async {
@@ -897,6 +988,19 @@ class FitnessRepository {
       exerciseIndex++
     ) {
       final draft = exercises[exerciseIndex];
+      if (draft.variantNote != null) {
+        if (draft.name !=
+            variantExerciseName(
+              draft.baseName ?? draft.name,
+              draft.variantNote!,
+            )) {
+          throw ArgumentError('Variant name mismatch.');
+        }
+        await createExerciseVariant(
+          draft.baseName ?? draft.name,
+          draft.variantNote!,
+        );
+      }
       final normalizedName = _normalizeExerciseName(draft.name);
       final existingQuery = database.select(database.exercises)
         ..where((row) => row.normalizedName.equals(normalizedName))
@@ -926,7 +1030,14 @@ class FitnessRepository {
               id: workoutExerciseId,
               workoutSessionId: sessionId,
               exerciseId: Value(exerciseId),
-              exerciseNameSnapshot: draft.name.trim(),
+              exerciseNameSnapshot: draft.variantNote == null
+                  ? draft.name.trim()
+                  : existing!.name,
+              notes: Value(
+                draft.variantNote == null
+                    ? null
+                    : exerciseVariant(existing!.name, existing.notes).note,
+              ),
               position: exerciseIndex,
             ),
           );

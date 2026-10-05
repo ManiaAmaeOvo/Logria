@@ -163,6 +163,13 @@ class _TodayPageState extends State<TodayPage> with WidgetsBindingObserver {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
+              _DailyReviewCard(
+                key: ValueKey(data.nutrition.localDate),
+                repository: _repository,
+                localDate: data.nutrition.localDate,
+                initialNote: data.note,
+              ),
+              const SizedBox(height: 12),
               for (final (module, title, icon, text) in [
                 (1, l.fitness, Icons.fitness_center, formatter.fitness),
                 (2, l.nutrition, Icons.restaurant_outlined, formatter.food),
@@ -210,6 +217,82 @@ class _TodayPageState extends State<TodayPage> with WidgetsBindingObserver {
           ),
         );
       },
+    );
+  }
+}
+
+class _DailyReviewCard extends StatefulWidget {
+  const _DailyReviewCard({
+    super.key,
+    required this.repository,
+    required this.localDate,
+    required this.initialNote,
+  });
+  final TodayRepository repository;
+  final String localDate, initialNote;
+  @override
+  State<_DailyReviewCard> createState() => _DailyReviewCardState();
+}
+
+class _DailyReviewCardState extends State<_DailyReviewCard> {
+  late final _controller = TextEditingController(text: widget.initialNote);
+  bool _saving = false;
+  Future<void> _save() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    final l = AppLocalizations.of(context)!;
+    try {
+      await widget.repository.saveNote(widget.localDate, _controller.text);
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.reviewSaved)));
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.saveFailed(error))));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l.dailyReview, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            TextField(
+              key: const ValueKey('daily-review'),
+              controller: _controller,
+              enabled: !_saving,
+              minLines: 2,
+              maxLines: 6,
+              decoration: InputDecoration(hintText: l.dailyReviewHint),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: _saving ? null : _save,
+                icon: const Icon(Icons.save_outlined),
+                label: Text(l.save),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

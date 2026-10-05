@@ -10,6 +10,149 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get exerciseVariantNote => 'Variant note / separate preset';
+
+  @override
+  String get exerciseVariantHint =>
+      'A note creates a separate preset, e.g. a different grip or stance. The original preset and its records stay unchanged. Clear the note to use the base exercise; existing variant presets are kept.';
+
+  @override
+  String get exerciseVariantExample =>
+      'Overhand · wide grip / Underhand · narrow grip';
+
+  @override
+  String get foodLibrary => 'Foods & meal presets';
+
+  @override
+  String get foodLibraryHint =>
+      'Tap a food to enter its amount. Generic reference values are approximate; use your product label for branded foods. No online lookup is needed.';
+
+  @override
+  String get searchFood => 'Search foods or presets';
+
+  @override
+  String get createFoodPreset => 'Create / edit food preset';
+
+  @override
+  String get foodPresetName => 'Food, product or meal name';
+
+  @override
+  String get foodBasisHint =>
+      'Enter all values for the reference amount below, such as 100 g raw meat, 30 g protein powder, 1 bottle or 1 dinner portion. Units do not convert grams into portions or mL automatically.';
+
+  @override
+  String get foodUnit => 'Unit';
+
+  @override
+  String get referenceQuantity => 'Reference amount on label';
+
+  @override
+  String get foodPreparation => 'Preparation / weighing basis';
+
+  @override
+  String get foodRaw => 'Raw / dry weight';
+
+  @override
+  String get foodCooked => 'Cooked weight';
+
+  @override
+  String get foodPackaged => 'Packaged product';
+
+  @override
+  String get foodOther => 'Other / homemade meal';
+
+  @override
+  String get foodPortion => 'portion';
+
+  @override
+  String get foodBottle => 'bottle';
+
+  @override
+  String get foodScoop => 'scoop';
+
+  @override
+  String get foodBag => 'bag';
+
+  @override
+  String get quantity => 'Amount eaten';
+
+  @override
+  String get energyKilojoules => 'Energy (kJ)';
+
+  @override
+  String get extraNutrients => 'Minerals & fiber (optional)';
+
+  @override
+  String get nutrientSodium => 'Sodium';
+
+  @override
+  String get nutrientPotassium => 'Potassium';
+
+  @override
+  String get nutrientCalcium => 'Calcium';
+
+  @override
+  String get nutrientIron => 'Iron';
+
+  @override
+  String get nutrientFiber => 'Dietary fiber';
+
+  @override
+  String get nutrientMinimum => 'Minimum';
+
+  @override
+  String get foodMissingHint =>
+      'Blank means unrecorded, not zero. Totals count only known values and may be incomplete. No intake standards are set automatically.';
+
+  @override
+  String get invalidFoodPreset =>
+      'Enter a name, a positive reference amount and finite, non-negative nutrients. Leave unknown values blank.';
+
+  @override
+  String get referenceFood => 'USDA reference · read-only, copy to customize';
+
+  @override
+  String get customFood => 'Your preset / meal';
+
+  @override
+  String get copyFoodPreset => 'Copy as a new preset';
+
+  @override
+  String get deleteFoodPresetHint =>
+      'Delete this preset? Previously logged meals and their nutrient snapshots will stay unchanged.';
+
+  @override
+  String get foodPresetLogged => 'Food logged for the selected date.';
+
+  @override
+  String get dailyReview => 'Daily review';
+
+  @override
+  String get dailyReviewHint =>
+      'How did today feel? Add a reflection or anything worth remembering. Save to include it in your copied log.';
+
+  @override
+  String get reviewSaved => 'Daily review saved.';
+
+  @override
+  String get restartTraining => 'Restart training cycle';
+
+  @override
+  String get restartTrainingHint =>
+      'Archive this interrupted cycle and start a new one with the same plan. Saved history, PRs, nutrition and body data are kept. Unfinished plan-day drafts and undo recovery will be cleared. You can then choose a starting day. If today\'s action is recorded, undo it first; it cannot be restored after restarting.';
+
+  @override
+  String get usePreviousTemplate => 'Use last record as template';
+
+  @override
+  String get replaceWorkoutTemplateHint =>
+      'Replace the current editor inputs with the last record for this same training day? The historical record stays unchanged. Review the copied values before finishing today\'s workout.';
+
+  @override
+  String get firstSetFillHint =>
+      'The first weight/reps edit fills untouched later sets until you leave that field. Later edits stay independent; RIR is never auto-filled.';
+
+  @override
   String get chooseStartingDay => 'Choose starting day';
 
   @override
@@ -922,6 +1065,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String saveFailed(Object error) {
     return 'Could not save: $error';
   }
+
+  @override
+  String get quickAddFood => 'Quick add from presets';
+
+  @override
+  String get noFoodMatches =>
+      'No matching presets. Create one in Foods & meal presets.';
+
+  @override
+  String get userManual => 'User manual';
+
+  @override
+  String get userManualHint => 'Offline instructions · English / 简体中文';
 
   @override
   String get kg => 'kg';

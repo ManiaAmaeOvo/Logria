@@ -1,7 +1,11 @@
 import 'package:intl/intl.dart';
 
+import '../../../core/number_format.dart';
+
 import '../../../l10n/app_localizations.dart';
 import '../data/today_repository.dart';
+import '../../nutrition/domain/nutrient_values.dart';
+import '../../nutrition/presentation/nutrition_labels.dart';
 
 class TodayLogFormatter {
   TodayLogFormatter(this.data, this.l, {this.historical = false});
@@ -89,6 +93,11 @@ class TodayLogFormatter {
               : l.caloriesManualLabel,
         );
       }
+      for (final e in decodeNutrients(entry.extraNutrientsJson).entries) {
+        lines.add(
+          '${nutrientLabel(e.key, l)}: ${_value(e.value)} ${extraNutrientUnits[e.key]}',
+        );
+      }
       lines.add('');
     }
     if (lines.isEmpty) lines.add(historical ? l.noDateFood : l.noTodayFood);
@@ -106,6 +115,14 @@ class TodayLogFormatter {
       ),
     );
     lines.add(l.missingNutritionHint);
+    for (final e in decodeNutrients(record?.extraNutrientsJson).entries) {
+      lines.add(
+        '${nutrientLabel(e.key, l)}: ${_value(e.value)} ${extraNutrientUnits[e.key]}',
+      );
+    }
+    if (decodeNutrients(record?.extraNutrientsJson).isNotEmpty) {
+      lines.add(l.foodMissingHint);
+    }
     return lines.join('\n').trim();
   }
 
@@ -139,12 +156,11 @@ class TodayLogFormatter {
     section(l.fitness, fitness),
     section(l.nutrition, food),
     section(l.body, body),
+    if (data.note.isNotEmpty) section(l.dailyReview, data.note),
   ].join('\n\n');
   String _time(DateTime value) =>
       DateFormat.Hm(l.localeName).format(value.toLocal());
   String _macros(double? p, double? c, double? f, double? kcal) =>
       'P: ${_value(p)} g · C: ${_value(c)} g · F: ${_value(f)} g · kcal: ${_value(kcal)}';
-  String _value(double? value) => value == null
-      ? '—'
-      : value.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+  String _value(double? value) => value == null ? '—' : formatNumber(value);
 }

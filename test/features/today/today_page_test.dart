@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:logria/core/database/app_database.dart';
 import 'package:logria/features/nutrition/data/nutrition_repository.dart';
 import 'package:logria/features/today/presentation/today_page.dart';
+import 'package:logria/features/today/data/today_repository.dart';
 import 'package:logria/l10n/app_localizations.dart';
 
 void main() {
@@ -46,6 +47,19 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('daily-review')),
+      'Today felt strong',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      (await TodayRepository(db).loadDay(DateTime.now())).note,
+      'Today felt strong',
+    );
     await tester.runAsync(() async {
       await NutritionRepository(db).addFoodEntry(DateTime.now(), 'Fresh meal');
     });
@@ -55,6 +69,7 @@ void main() {
     });
     await tester.pumpAndSettle();
     expect(copied.single, contains('Fresh meal'));
+    expect(copied.single, contains('Today felt strong'));
     expect(copied.single, contains('Fitness'));
     expect(copied.single, contains('Body'));
     await tester.ensureVisible(find.byTooltip('Copy Nutrition'));

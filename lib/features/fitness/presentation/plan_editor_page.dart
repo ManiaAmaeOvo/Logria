@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../core/database/app_database.dart';
 import '../data/fitness_repository.dart';
 import '../domain/training_cycle.dart';
+import '../domain/exercise_variant.dart';
+import 'exercise_variant_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 
 class PlanEditorPage extends StatefulWidget {
@@ -151,11 +153,18 @@ class _PlanEditorPageState extends State<PlanEditorPage> {
                   trailing: PopupMenuButton<String>(
                     onSelected: (action) {
                       if (action == 'edit') _editTargets(item.planExercise);
+                      if (action == 'variant') _editVariant(item);
                       if (action == 'remove') {
                         _removeExercise(item.planExercise);
                       }
                     },
                     itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'variant',
+                        child: Text(
+                          AppLocalizations.of(context)!.exerciseVariantNote,
+                        ),
+                      ),
                       PopupMenuItem(
                         value: 'edit',
                         child: Text(AppLocalizations.of(context)!.editTargets),
@@ -340,6 +349,33 @@ class _PlanEditorPageState extends State<PlanEditorPage> {
       targetWeight: target.weight,
     );
     _reload();
+  }
+
+  Future<void> _editVariant(PlanExerciseData item) async {
+    final variant = exerciseVariant(item.exercise.name, item.exercise.notes);
+    final note = await showDialog<String>(
+      context: context,
+      builder: (_) => ExerciseVariantDialog(initial: variant.note ?? ''),
+    );
+    if (note == null || !mounted) return;
+    try {
+      final id = note.isEmpty
+          ? await widget.repository.createExercisePreset(variant.base)
+          : await widget.repository.createExerciseVariant(variant.base, note);
+      await widget.repository.replacePlanExercisePreset(
+        item.planExercise.id,
+        id,
+      );
+      if (mounted) _reload();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.saveFailed(error)),
+          ),
+        );
+      }
+    }
   }
 
   Future<_ExerciseTarget?> _targetDialog({PlanDayExercise? exercise}) async {

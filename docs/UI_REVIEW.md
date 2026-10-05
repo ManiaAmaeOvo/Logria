@@ -33,3 +33,31 @@ For later releases:
 - Add dark mode and broader screen-reader/2× text-scale coverage.
 
 The first release prioritizes legible recording and review over animations.
+
+## Local 1.2.0 review
+
+Daily review is an inline multiline field in Today with an explicit Save action;
+its hint explains that saved notes join whole-day copying. Restart sits in the
+Fitness overflow menu with a preservation/discard confirmation. Previous-record
+cards retain history navigation and add a separate template action. The editor
+explains one-shot filling rather than silently changing later sets indefinitely.
+
+Calendar activity indicators wrap to accommodate note markers on narrow phones.
+57 local tests pass, including English/Chinese restart confirmation and starting
+day selection at 360×800 / 1.6× text scale, protected lower-set fields, imported
+templates, draft restoration, date-bound notes and additive schema migration.
+The Today note card was visually inspected on the upgraded Android emulator.
+
+Build 6 adds a searchable food library, explicit amount preview, and separate
+food label/reference editors. Long preparation dropdown values wrap rather than
+overflow at 360×800 / 1.6× text scale. Energy editing retains the user's explicit
+label values; optional extra nutrients are collapsed in ordinary meal/target
+dialogs. The full 71-test suite covers both English and Simplified Chinese flows.
+
+Build 7 adds quick selection directly in the Food log card. Search and amount
+dialogs reuse existing presets without navigating into management. Cancellation,
+no-match search, visible keyboard, selected-date logging and fractional amounts
+are checked at 360×800 with 1.6× English/Chinese text. All 77 tests pass.
+Nutrition summaries/conversions and numeric shared logs use at most four decimal
+places. Settings links to section-based, bilingual offline manuals; switching
+manual language resets scroll to the introduction.

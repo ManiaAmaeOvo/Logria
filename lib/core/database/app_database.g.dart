@@ -4787,6 +4787,50 @@ class $FoodLogEntriesTable extends FoodLogEntries
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $FoodLogEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _extraNutrientsJsonMeta =
+      const VerificationMeta('extraNutrientsJson');
+  @override
+  late final GeneratedColumn<String> extraNutrientsJson =
+      GeneratedColumn<String>(
+        'extra_nutrients_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _presetIdMeta = const VerificationMeta(
+    'presetId',
+  );
+  @override
+  late final GeneratedColumn<String> presetId = GeneratedColumn<String>(
+    'preset_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<double> quantity = GeneratedColumn<double>(
+    'quantity',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _quantityUnitMeta = const VerificationMeta(
+    'quantityUnit',
+  );
+  @override
+  late final GeneratedColumn<String> quantityUnit = GeneratedColumn<String>(
+    'quantity_unit',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _proteinGramsMeta = const VerificationMeta(
     'proteinGrams',
   );
@@ -4913,6 +4957,10 @@ class $FoodLogEntriesTable extends FoodLogEntries
   );
   @override
   List<GeneratedColumn> get $columns => [
+    extraNutrientsJson,
+    presetId,
+    quantity,
+    quantityUnit,
     proteinGrams,
     carbohydrateGrams,
     fatGrams,
@@ -4937,6 +4985,36 @@ class $FoodLogEntriesTable extends FoodLogEntries
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('extra_nutrients_json')) {
+      context.handle(
+        _extraNutrientsJsonMeta,
+        extraNutrientsJson.isAcceptableOrUnknown(
+          data['extra_nutrients_json']!,
+          _extraNutrientsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('preset_id')) {
+      context.handle(
+        _presetIdMeta,
+        presetId.isAcceptableOrUnknown(data['preset_id']!, _presetIdMeta),
+      );
+    }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    }
+    if (data.containsKey('quantity_unit')) {
+      context.handle(
+        _quantityUnitMeta,
+        quantityUnit.isAcceptableOrUnknown(
+          data['quantity_unit']!,
+          _quantityUnitMeta,
+        ),
+      );
+    }
     if (data.containsKey('protein_grams')) {
       context.handle(
         _proteinGramsMeta,
@@ -5034,6 +5112,22 @@ class $FoodLogEntriesTable extends FoodLogEntries
   FoodLogEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return FoodLogEntry(
+      extraNutrientsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}extra_nutrients_json'],
+      ),
+      presetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}preset_id'],
+      ),
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}quantity'],
+      ),
+      quantityUnit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}quantity_unit'],
+      ),
       proteinGrams: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}protein_grams'],
@@ -5088,6 +5182,10 @@ class $FoodLogEntriesTable extends FoodLogEntries
 }
 
 class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
+  final String? extraNutrientsJson;
+  final String? presetId;
+  final double? quantity;
+  final String? quantityUnit;
   final double? proteinGrams;
   final double? carbohydrateGrams;
   final double? fatGrams;
@@ -5100,6 +5198,10 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   final DateTime createdAt;
   final DateTime updatedAt;
   const FoodLogEntry({
+    this.extraNutrientsJson,
+    this.presetId,
+    this.quantity,
+    this.quantityUnit,
     this.proteinGrams,
     this.carbohydrateGrams,
     this.fatGrams,
@@ -5115,6 +5217,18 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || extraNutrientsJson != null) {
+      map['extra_nutrients_json'] = Variable<String>(extraNutrientsJson);
+    }
+    if (!nullToAbsent || presetId != null) {
+      map['preset_id'] = Variable<String>(presetId);
+    }
+    if (!nullToAbsent || quantity != null) {
+      map['quantity'] = Variable<double>(quantity);
+    }
+    if (!nullToAbsent || quantityUnit != null) {
+      map['quantity_unit'] = Variable<String>(quantityUnit);
+    }
     if (!nullToAbsent || proteinGrams != null) {
       map['protein_grams'] = Variable<double>(proteinGrams);
     }
@@ -5141,6 +5255,18 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
 
   FoodLogEntriesCompanion toCompanion(bool nullToAbsent) {
     return FoodLogEntriesCompanion(
+      extraNutrientsJson: extraNutrientsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(extraNutrientsJson),
+      presetId: presetId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(presetId),
+      quantity: quantity == null && nullToAbsent
+          ? const Value.absent()
+          : Value(quantity),
+      quantityUnit: quantityUnit == null && nullToAbsent
+          ? const Value.absent()
+          : Value(quantityUnit),
       proteinGrams: proteinGrams == null && nullToAbsent
           ? const Value.absent()
           : Value(proteinGrams),
@@ -5171,6 +5297,12 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FoodLogEntry(
+      extraNutrientsJson: serializer.fromJson<String?>(
+        json['extraNutrientsJson'],
+      ),
+      presetId: serializer.fromJson<String?>(json['presetId']),
+      quantity: serializer.fromJson<double?>(json['quantity']),
+      quantityUnit: serializer.fromJson<String?>(json['quantityUnit']),
       proteinGrams: serializer.fromJson<double?>(json['proteinGrams']),
       carbohydrateGrams: serializer.fromJson<double?>(
         json['carbohydrateGrams'],
@@ -5190,6 +5322,10 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'extraNutrientsJson': serializer.toJson<String?>(extraNutrientsJson),
+      'presetId': serializer.toJson<String?>(presetId),
+      'quantity': serializer.toJson<double?>(quantity),
+      'quantityUnit': serializer.toJson<String?>(quantityUnit),
       'proteinGrams': serializer.toJson<double?>(proteinGrams),
       'carbohydrateGrams': serializer.toJson<double?>(carbohydrateGrams),
       'fatGrams': serializer.toJson<double?>(fatGrams),
@@ -5205,6 +5341,10 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   }
 
   FoodLogEntry copyWith({
+    Value<String?> extraNutrientsJson = const Value.absent(),
+    Value<String?> presetId = const Value.absent(),
+    Value<double?> quantity = const Value.absent(),
+    Value<String?> quantityUnit = const Value.absent(),
     Value<double?> proteinGrams = const Value.absent(),
     Value<double?> carbohydrateGrams = const Value.absent(),
     Value<double?> fatGrams = const Value.absent(),
@@ -5217,6 +5357,12 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => FoodLogEntry(
+    extraNutrientsJson: extraNutrientsJson.present
+        ? extraNutrientsJson.value
+        : this.extraNutrientsJson,
+    presetId: presetId.present ? presetId.value : this.presetId,
+    quantity: quantity.present ? quantity.value : this.quantity,
+    quantityUnit: quantityUnit.present ? quantityUnit.value : this.quantityUnit,
     proteinGrams: proteinGrams.present ? proteinGrams.value : this.proteinGrams,
     carbohydrateGrams: carbohydrateGrams.present
         ? carbohydrateGrams.value
@@ -5233,6 +5379,14 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   );
   FoodLogEntry copyWithCompanion(FoodLogEntriesCompanion data) {
     return FoodLogEntry(
+      extraNutrientsJson: data.extraNutrientsJson.present
+          ? data.extraNutrientsJson.value
+          : this.extraNutrientsJson,
+      presetId: data.presetId.present ? data.presetId.value : this.presetId,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      quantityUnit: data.quantityUnit.present
+          ? data.quantityUnit.value
+          : this.quantityUnit,
       proteinGrams: data.proteinGrams.present
           ? data.proteinGrams.value
           : this.proteinGrams,
@@ -5262,6 +5416,10 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   @override
   String toString() {
     return (StringBuffer('FoodLogEntry(')
+          ..write('extraNutrientsJson: $extraNutrientsJson, ')
+          ..write('presetId: $presetId, ')
+          ..write('quantity: $quantity, ')
+          ..write('quantityUnit: $quantityUnit, ')
           ..write('proteinGrams: $proteinGrams, ')
           ..write('carbohydrateGrams: $carbohydrateGrams, ')
           ..write('fatGrams: $fatGrams, ')
@@ -5279,6 +5437,10 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
 
   @override
   int get hashCode => Object.hash(
+    extraNutrientsJson,
+    presetId,
+    quantity,
+    quantityUnit,
     proteinGrams,
     carbohydrateGrams,
     fatGrams,
@@ -5295,6 +5457,10 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is FoodLogEntry &&
+          other.extraNutrientsJson == this.extraNutrientsJson &&
+          other.presetId == this.presetId &&
+          other.quantity == this.quantity &&
+          other.quantityUnit == this.quantityUnit &&
           other.proteinGrams == this.proteinGrams &&
           other.carbohydrateGrams == this.carbohydrateGrams &&
           other.fatGrams == this.fatGrams &&
@@ -5309,6 +5475,10 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
 }
 
 class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
+  final Value<String?> extraNutrientsJson;
+  final Value<String?> presetId;
+  final Value<double?> quantity;
+  final Value<String?> quantityUnit;
   final Value<double?> proteinGrams;
   final Value<double?> carbohydrateGrams;
   final Value<double?> fatGrams;
@@ -5322,6 +5492,10 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
   const FoodLogEntriesCompanion({
+    this.extraNutrientsJson = const Value.absent(),
+    this.presetId = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.quantityUnit = const Value.absent(),
     this.proteinGrams = const Value.absent(),
     this.carbohydrateGrams = const Value.absent(),
     this.fatGrams = const Value.absent(),
@@ -5336,6 +5510,10 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
     this.rowid = const Value.absent(),
   });
   FoodLogEntriesCompanion.insert({
+    this.extraNutrientsJson = const Value.absent(),
+    this.presetId = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.quantityUnit = const Value.absent(),
     this.proteinGrams = const Value.absent(),
     this.carbohydrateGrams = const Value.absent(),
     this.fatGrams = const Value.absent(),
@@ -5354,6 +5532,10 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<FoodLogEntry> custom({
+    Expression<String>? extraNutrientsJson,
+    Expression<String>? presetId,
+    Expression<double>? quantity,
+    Expression<String>? quantityUnit,
     Expression<double>? proteinGrams,
     Expression<double>? carbohydrateGrams,
     Expression<double>? fatGrams,
@@ -5368,6 +5550,11 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (extraNutrientsJson != null)
+        'extra_nutrients_json': extraNutrientsJson,
+      if (presetId != null) 'preset_id': presetId,
+      if (quantity != null) 'quantity': quantity,
+      if (quantityUnit != null) 'quantity_unit': quantityUnit,
       if (proteinGrams != null) 'protein_grams': proteinGrams,
       if (carbohydrateGrams != null) 'carbohydrate_grams': carbohydrateGrams,
       if (fatGrams != null) 'fat_grams': fatGrams,
@@ -5384,6 +5571,10 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   }
 
   FoodLogEntriesCompanion copyWith({
+    Value<String?>? extraNutrientsJson,
+    Value<String?>? presetId,
+    Value<double?>? quantity,
+    Value<String?>? quantityUnit,
     Value<double?>? proteinGrams,
     Value<double?>? carbohydrateGrams,
     Value<double?>? fatGrams,
@@ -5398,6 +5589,10 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
     Value<int>? rowid,
   }) {
     return FoodLogEntriesCompanion(
+      extraNutrientsJson: extraNutrientsJson ?? this.extraNutrientsJson,
+      presetId: presetId ?? this.presetId,
+      quantity: quantity ?? this.quantity,
+      quantityUnit: quantityUnit ?? this.quantityUnit,
       proteinGrams: proteinGrams ?? this.proteinGrams,
       carbohydrateGrams: carbohydrateGrams ?? this.carbohydrateGrams,
       fatGrams: fatGrams ?? this.fatGrams,
@@ -5416,6 +5611,18 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (extraNutrientsJson.present) {
+      map['extra_nutrients_json'] = Variable<String>(extraNutrientsJson.value);
+    }
+    if (presetId.present) {
+      map['preset_id'] = Variable<String>(presetId.value);
+    }
+    if (quantity.present) {
+      map['quantity'] = Variable<double>(quantity.value);
+    }
+    if (quantityUnit.present) {
+      map['quantity_unit'] = Variable<String>(quantityUnit.value);
+    }
     if (proteinGrams.present) {
       map['protein_grams'] = Variable<double>(proteinGrams.value);
     }
@@ -5458,6 +5665,10 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   @override
   String toString() {
     return (StringBuffer('FoodLogEntriesCompanion(')
+          ..write('extraNutrientsJson: $extraNutrientsJson, ')
+          ..write('presetId: $presetId, ')
+          ..write('quantity: $quantity, ')
+          ..write('quantityUnit: $quantityUnit, ')
           ..write('proteinGrams: $proteinGrams, ')
           ..write('carbohydrateGrams: $carbohydrateGrams, ')
           ..write('fatGrams: $fatGrams, ')
@@ -5481,6 +5692,17 @@ class $DailyNutritionRecordsTable extends DailyNutritionRecords
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $DailyNutritionRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _extraNutrientsJsonMeta =
+      const VerificationMeta('extraNutrientsJson');
+  @override
+  late final GeneratedColumn<String> extraNutrientsJson =
+      GeneratedColumn<String>(
+        'extra_nutrients_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -5579,6 +5801,7 @@ class $DailyNutritionRecordsTable extends DailyNutritionRecords
   );
   @override
   List<GeneratedColumn> get $columns => [
+    extraNutrientsJson,
     id,
     localDate,
     proteinGrams,
@@ -5601,6 +5824,15 @@ class $DailyNutritionRecordsTable extends DailyNutritionRecords
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('extra_nutrients_json')) {
+      context.handle(
+        _extraNutrientsJsonMeta,
+        extraNutrientsJson.isAcceptableOrUnknown(
+          data['extra_nutrients_json']!,
+          _extraNutrientsJsonMeta,
+        ),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
@@ -5676,6 +5908,10 @@ class $DailyNutritionRecordsTable extends DailyNutritionRecords
   DailyNutritionRecord map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DailyNutritionRecord(
+      extraNutrientsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}extra_nutrients_json'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -5723,6 +5959,7 @@ class $DailyNutritionRecordsTable extends DailyNutritionRecords
 
 class DailyNutritionRecord extends DataClass
     implements Insertable<DailyNutritionRecord> {
+  final String? extraNutrientsJson;
   final String id;
   final String localDate;
   final double? proteinGrams;
@@ -5733,6 +5970,7 @@ class DailyNutritionRecord extends DataClass
   final String? notes;
   final DateTime updatedAt;
   const DailyNutritionRecord({
+    this.extraNutrientsJson,
     required this.id,
     required this.localDate,
     this.proteinGrams,
@@ -5746,6 +5984,9 @@ class DailyNutritionRecord extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || extraNutrientsJson != null) {
+      map['extra_nutrients_json'] = Variable<String>(extraNutrientsJson);
+    }
     map['id'] = Variable<String>(id);
     map['local_date'] = Variable<String>(localDate);
     if (!nullToAbsent || proteinGrams != null) {
@@ -5770,6 +6011,9 @@ class DailyNutritionRecord extends DataClass
 
   DailyNutritionRecordsCompanion toCompanion(bool nullToAbsent) {
     return DailyNutritionRecordsCompanion(
+      extraNutrientsJson: extraNutrientsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(extraNutrientsJson),
       id: Value(id),
       localDate: Value(localDate),
       proteinGrams: proteinGrams == null && nullToAbsent
@@ -5798,6 +6042,9 @@ class DailyNutritionRecord extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DailyNutritionRecord(
+      extraNutrientsJson: serializer.fromJson<String?>(
+        json['extraNutrientsJson'],
+      ),
       id: serializer.fromJson<String>(json['id']),
       localDate: serializer.fromJson<String>(json['localDate']),
       proteinGrams: serializer.fromJson<double?>(json['proteinGrams']),
@@ -5815,6 +6062,7 @@ class DailyNutritionRecord extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'extraNutrientsJson': serializer.toJson<String?>(extraNutrientsJson),
       'id': serializer.toJson<String>(id),
       'localDate': serializer.toJson<String>(localDate),
       'proteinGrams': serializer.toJson<double?>(proteinGrams),
@@ -5828,6 +6076,7 @@ class DailyNutritionRecord extends DataClass
   }
 
   DailyNutritionRecord copyWith({
+    Value<String?> extraNutrientsJson = const Value.absent(),
     String? id,
     String? localDate,
     Value<double?> proteinGrams = const Value.absent(),
@@ -5838,6 +6087,9 @@ class DailyNutritionRecord extends DataClass
     Value<String?> notes = const Value.absent(),
     DateTime? updatedAt,
   }) => DailyNutritionRecord(
+    extraNutrientsJson: extraNutrientsJson.present
+        ? extraNutrientsJson.value
+        : this.extraNutrientsJson,
     id: id ?? this.id,
     localDate: localDate ?? this.localDate,
     proteinGrams: proteinGrams.present ? proteinGrams.value : this.proteinGrams,
@@ -5852,6 +6104,9 @@ class DailyNutritionRecord extends DataClass
   );
   DailyNutritionRecord copyWithCompanion(DailyNutritionRecordsCompanion data) {
     return DailyNutritionRecord(
+      extraNutrientsJson: data.extraNutrientsJson.present
+          ? data.extraNutrientsJson.value
+          : this.extraNutrientsJson,
       id: data.id.present ? data.id.value : this.id,
       localDate: data.localDate.present ? data.localDate.value : this.localDate,
       proteinGrams: data.proteinGrams.present
@@ -5873,6 +6128,7 @@ class DailyNutritionRecord extends DataClass
   @override
   String toString() {
     return (StringBuffer('DailyNutritionRecord(')
+          ..write('extraNutrientsJson: $extraNutrientsJson, ')
           ..write('id: $id, ')
           ..write('localDate: $localDate, ')
           ..write('proteinGrams: $proteinGrams, ')
@@ -5888,6 +6144,7 @@ class DailyNutritionRecord extends DataClass
 
   @override
   int get hashCode => Object.hash(
+    extraNutrientsJson,
     id,
     localDate,
     proteinGrams,
@@ -5902,6 +6159,7 @@ class DailyNutritionRecord extends DataClass
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is DailyNutritionRecord &&
+          other.extraNutrientsJson == this.extraNutrientsJson &&
           other.id == this.id &&
           other.localDate == this.localDate &&
           other.proteinGrams == this.proteinGrams &&
@@ -5915,6 +6173,7 @@ class DailyNutritionRecord extends DataClass
 
 class DailyNutritionRecordsCompanion
     extends UpdateCompanion<DailyNutritionRecord> {
+  final Value<String?> extraNutrientsJson;
   final Value<String> id;
   final Value<String> localDate;
   final Value<double?> proteinGrams;
@@ -5926,6 +6185,7 @@ class DailyNutritionRecordsCompanion
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
   const DailyNutritionRecordsCompanion({
+    this.extraNutrientsJson = const Value.absent(),
     this.id = const Value.absent(),
     this.localDate = const Value.absent(),
     this.proteinGrams = const Value.absent(),
@@ -5938,6 +6198,7 @@ class DailyNutritionRecordsCompanion
     this.rowid = const Value.absent(),
   });
   DailyNutritionRecordsCompanion.insert({
+    this.extraNutrientsJson = const Value.absent(),
     required String id,
     required String localDate,
     this.proteinGrams = const Value.absent(),
@@ -5952,6 +6213,7 @@ class DailyNutritionRecordsCompanion
        localDate = Value(localDate),
        updatedAt = Value(updatedAt);
   static Insertable<DailyNutritionRecord> custom({
+    Expression<String>? extraNutrientsJson,
     Expression<String>? id,
     Expression<String>? localDate,
     Expression<double>? proteinGrams,
@@ -5964,6 +6226,8 @@ class DailyNutritionRecordsCompanion
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (extraNutrientsJson != null)
+        'extra_nutrients_json': extraNutrientsJson,
       if (id != null) 'id': id,
       if (localDate != null) 'local_date': localDate,
       if (proteinGrams != null) 'protein_grams': proteinGrams,
@@ -5978,6 +6242,7 @@ class DailyNutritionRecordsCompanion
   }
 
   DailyNutritionRecordsCompanion copyWith({
+    Value<String?>? extraNutrientsJson,
     Value<String>? id,
     Value<String>? localDate,
     Value<double?>? proteinGrams,
@@ -5990,6 +6255,7 @@ class DailyNutritionRecordsCompanion
     Value<int>? rowid,
   }) {
     return DailyNutritionRecordsCompanion(
+      extraNutrientsJson: extraNutrientsJson ?? this.extraNutrientsJson,
       id: id ?? this.id,
       localDate: localDate ?? this.localDate,
       proteinGrams: proteinGrams ?? this.proteinGrams,
@@ -6006,6 +6272,9 @@ class DailyNutritionRecordsCompanion
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (extraNutrientsJson.present) {
+      map['extra_nutrients_json'] = Variable<String>(extraNutrientsJson.value);
+    }
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
@@ -6042,6 +6311,7 @@ class DailyNutritionRecordsCompanion
   @override
   String toString() {
     return (StringBuffer('DailyNutritionRecordsCompanion(')
+          ..write('extraNutrientsJson: $extraNutrientsJson, ')
           ..write('id: $id, ')
           ..write('localDate: $localDate, ')
           ..write('proteinGrams: $proteinGrams, ')
@@ -8048,6 +8318,946 @@ class PersonalRecordsCompanion extends UpdateCompanion<PersonalRecord> {
   }
 }
 
+class $DailyNotesTable extends DailyNotes
+    with TableInfo<$DailyNotesTable, DailyNote> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DailyNotesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _localDateMeta = const VerificationMeta(
+    'localDate',
+  );
+  @override
+  late final GeneratedColumn<String> localDate = GeneratedColumn<String>(
+    'local_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [localDate, content, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'daily_notes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DailyNote> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('local_date')) {
+      context.handle(
+        _localDateMeta,
+        localDate.isAcceptableOrUnknown(data['local_date']!, _localDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localDateMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {localDate};
+  @override
+  DailyNote map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DailyNote(
+      localDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_date'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DailyNotesTable createAlias(String alias) {
+    return $DailyNotesTable(attachedDatabase, alias);
+  }
+}
+
+class DailyNote extends DataClass implements Insertable<DailyNote> {
+  final String localDate;
+  final String content;
+  final DateTime updatedAt;
+  const DailyNote({
+    required this.localDate,
+    required this.content,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['local_date'] = Variable<String>(localDate);
+    map['content'] = Variable<String>(content);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  DailyNotesCompanion toCompanion(bool nullToAbsent) {
+    return DailyNotesCompanion(
+      localDate: Value(localDate),
+      content: Value(content),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory DailyNote.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DailyNote(
+      localDate: serializer.fromJson<String>(json['localDate']),
+      content: serializer.fromJson<String>(json['content']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'localDate': serializer.toJson<String>(localDate),
+      'content': serializer.toJson<String>(content),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  DailyNote copyWith({
+    String? localDate,
+    String? content,
+    DateTime? updatedAt,
+  }) => DailyNote(
+    localDate: localDate ?? this.localDate,
+    content: content ?? this.content,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  DailyNote copyWithCompanion(DailyNotesCompanion data) {
+    return DailyNote(
+      localDate: data.localDate.present ? data.localDate.value : this.localDate,
+      content: data.content.present ? data.content.value : this.content,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DailyNote(')
+          ..write('localDate: $localDate, ')
+          ..write('content: $content, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(localDate, content, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DailyNote &&
+          other.localDate == this.localDate &&
+          other.content == this.content &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DailyNotesCompanion extends UpdateCompanion<DailyNote> {
+  final Value<String> localDate;
+  final Value<String> content;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const DailyNotesCompanion({
+    this.localDate = const Value.absent(),
+    this.content = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DailyNotesCompanion.insert({
+    required String localDate,
+    required String content,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : localDate = Value(localDate),
+       content = Value(content),
+       updatedAt = Value(updatedAt);
+  static Insertable<DailyNote> custom({
+    Expression<String>? localDate,
+    Expression<String>? content,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (localDate != null) 'local_date': localDate,
+      if (content != null) 'content': content,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DailyNotesCompanion copyWith({
+    Value<String>? localDate,
+    Value<String>? content,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return DailyNotesCompanion(
+      localDate: localDate ?? this.localDate,
+      content: content ?? this.content,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (localDate.present) {
+      map['local_date'] = Variable<String>(localDate.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DailyNotesCompanion(')
+          ..write('localDate: $localDate, ')
+          ..write('content: $content, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FoodPresetsTable extends FoodPresets
+    with TableInfo<$FoodPresetsTable, FoodPreset> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FoodPresetsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameZhMeta = const VerificationMeta('nameZh');
+  @override
+  late final GeneratedColumn<String> nameZh = GeneratedColumn<String>(
+    'name_zh',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _referenceQuantityMeta = const VerificationMeta(
+    'referenceQuantity',
+  );
+  @override
+  late final GeneratedColumn<double> referenceQuantity =
+      GeneratedColumn<double>(
+        'reference_quantity',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _preparationMeta = const VerificationMeta(
+    'preparation',
+  );
+  @override
+  late final GeneratedColumn<String> preparation = GeneratedColumn<String>(
+    'preparation',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('other'),
+  );
+  static const VerificationMeta _nutrientsJsonMeta = const VerificationMeta(
+    'nutrientsJson',
+  );
+  @override
+  late final GeneratedColumn<String> nutrientsJson = GeneratedColumn<String>(
+    'nutrients_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _caloriesEstimatedMeta = const VerificationMeta(
+    'caloriesEstimated',
+  );
+  @override
+  late final GeneratedColumn<bool> caloriesEstimated = GeneratedColumn<bool>(
+    'calories_estimated',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("calories_estimated" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isBuiltInMeta = const VerificationMeta(
+    'isBuiltIn',
+  );
+  @override
+  late final GeneratedColumn<bool> isBuiltIn = GeneratedColumn<bool>(
+    'is_built_in',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_built_in" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    nameZh,
+    unit,
+    referenceQuantity,
+    preparation,
+    nutrientsJson,
+    caloriesEstimated,
+    source,
+    isBuiltIn,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'food_presets';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FoodPreset> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('name_zh')) {
+      context.handle(
+        _nameZhMeta,
+        nameZh.isAcceptableOrUnknown(data['name_zh']!, _nameZhMeta),
+      );
+    }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_unitMeta);
+    }
+    if (data.containsKey('reference_quantity')) {
+      context.handle(
+        _referenceQuantityMeta,
+        referenceQuantity.isAcceptableOrUnknown(
+          data['reference_quantity']!,
+          _referenceQuantityMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_referenceQuantityMeta);
+    }
+    if (data.containsKey('preparation')) {
+      context.handle(
+        _preparationMeta,
+        preparation.isAcceptableOrUnknown(
+          data['preparation']!,
+          _preparationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('nutrients_json')) {
+      context.handle(
+        _nutrientsJsonMeta,
+        nutrientsJson.isAcceptableOrUnknown(
+          data['nutrients_json']!,
+          _nutrientsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nutrientsJsonMeta);
+    }
+    if (data.containsKey('calories_estimated')) {
+      context.handle(
+        _caloriesEstimatedMeta,
+        caloriesEstimated.isAcceptableOrUnknown(
+          data['calories_estimated']!,
+          _caloriesEstimatedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('is_built_in')) {
+      context.handle(
+        _isBuiltInMeta,
+        isBuiltIn.isAcceptableOrUnknown(data['is_built_in']!, _isBuiltInMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FoodPreset map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FoodPreset(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      nameZh: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name_zh'],
+      ),
+      unit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit'],
+      )!,
+      referenceQuantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}reference_quantity'],
+      )!,
+      preparation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}preparation'],
+      )!,
+      nutrientsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nutrients_json'],
+      )!,
+      caloriesEstimated: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}calories_estimated'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      ),
+      isBuiltIn: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_built_in'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $FoodPresetsTable createAlias(String alias) {
+    return $FoodPresetsTable(attachedDatabase, alias);
+  }
+}
+
+class FoodPreset extends DataClass implements Insertable<FoodPreset> {
+  final String id;
+  final String name;
+  final String? nameZh;
+  final String unit;
+  final double referenceQuantity;
+  final String preparation;
+  final String nutrientsJson;
+  final bool caloriesEstimated;
+  final String? source;
+  final bool isBuiltIn;
+  final DateTime updatedAt;
+  const FoodPreset({
+    required this.id,
+    required this.name,
+    this.nameZh,
+    required this.unit,
+    required this.referenceQuantity,
+    required this.preparation,
+    required this.nutrientsJson,
+    required this.caloriesEstimated,
+    this.source,
+    required this.isBuiltIn,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || nameZh != null) {
+      map['name_zh'] = Variable<String>(nameZh);
+    }
+    map['unit'] = Variable<String>(unit);
+    map['reference_quantity'] = Variable<double>(referenceQuantity);
+    map['preparation'] = Variable<String>(preparation);
+    map['nutrients_json'] = Variable<String>(nutrientsJson);
+    map['calories_estimated'] = Variable<bool>(caloriesEstimated);
+    if (!nullToAbsent || source != null) {
+      map['source'] = Variable<String>(source);
+    }
+    map['is_built_in'] = Variable<bool>(isBuiltIn);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  FoodPresetsCompanion toCompanion(bool nullToAbsent) {
+    return FoodPresetsCompanion(
+      id: Value(id),
+      name: Value(name),
+      nameZh: nameZh == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nameZh),
+      unit: Value(unit),
+      referenceQuantity: Value(referenceQuantity),
+      preparation: Value(preparation),
+      nutrientsJson: Value(nutrientsJson),
+      caloriesEstimated: Value(caloriesEstimated),
+      source: source == null && nullToAbsent
+          ? const Value.absent()
+          : Value(source),
+      isBuiltIn: Value(isBuiltIn),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory FoodPreset.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FoodPreset(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      nameZh: serializer.fromJson<String?>(json['nameZh']),
+      unit: serializer.fromJson<String>(json['unit']),
+      referenceQuantity: serializer.fromJson<double>(json['referenceQuantity']),
+      preparation: serializer.fromJson<String>(json['preparation']),
+      nutrientsJson: serializer.fromJson<String>(json['nutrientsJson']),
+      caloriesEstimated: serializer.fromJson<bool>(json['caloriesEstimated']),
+      source: serializer.fromJson<String?>(json['source']),
+      isBuiltIn: serializer.fromJson<bool>(json['isBuiltIn']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'nameZh': serializer.toJson<String?>(nameZh),
+      'unit': serializer.toJson<String>(unit),
+      'referenceQuantity': serializer.toJson<double>(referenceQuantity),
+      'preparation': serializer.toJson<String>(preparation),
+      'nutrientsJson': serializer.toJson<String>(nutrientsJson),
+      'caloriesEstimated': serializer.toJson<bool>(caloriesEstimated),
+      'source': serializer.toJson<String?>(source),
+      'isBuiltIn': serializer.toJson<bool>(isBuiltIn),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  FoodPreset copyWith({
+    String? id,
+    String? name,
+    Value<String?> nameZh = const Value.absent(),
+    String? unit,
+    double? referenceQuantity,
+    String? preparation,
+    String? nutrientsJson,
+    bool? caloriesEstimated,
+    Value<String?> source = const Value.absent(),
+    bool? isBuiltIn,
+    DateTime? updatedAt,
+  }) => FoodPreset(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    nameZh: nameZh.present ? nameZh.value : this.nameZh,
+    unit: unit ?? this.unit,
+    referenceQuantity: referenceQuantity ?? this.referenceQuantity,
+    preparation: preparation ?? this.preparation,
+    nutrientsJson: nutrientsJson ?? this.nutrientsJson,
+    caloriesEstimated: caloriesEstimated ?? this.caloriesEstimated,
+    source: source.present ? source.value : this.source,
+    isBuiltIn: isBuiltIn ?? this.isBuiltIn,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  FoodPreset copyWithCompanion(FoodPresetsCompanion data) {
+    return FoodPreset(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      nameZh: data.nameZh.present ? data.nameZh.value : this.nameZh,
+      unit: data.unit.present ? data.unit.value : this.unit,
+      referenceQuantity: data.referenceQuantity.present
+          ? data.referenceQuantity.value
+          : this.referenceQuantity,
+      preparation: data.preparation.present
+          ? data.preparation.value
+          : this.preparation,
+      nutrientsJson: data.nutrientsJson.present
+          ? data.nutrientsJson.value
+          : this.nutrientsJson,
+      caloriesEstimated: data.caloriesEstimated.present
+          ? data.caloriesEstimated.value
+          : this.caloriesEstimated,
+      source: data.source.present ? data.source.value : this.source,
+      isBuiltIn: data.isBuiltIn.present ? data.isBuiltIn.value : this.isBuiltIn,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FoodPreset(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('nameZh: $nameZh, ')
+          ..write('unit: $unit, ')
+          ..write('referenceQuantity: $referenceQuantity, ')
+          ..write('preparation: $preparation, ')
+          ..write('nutrientsJson: $nutrientsJson, ')
+          ..write('caloriesEstimated: $caloriesEstimated, ')
+          ..write('source: $source, ')
+          ..write('isBuiltIn: $isBuiltIn, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    nameZh,
+    unit,
+    referenceQuantity,
+    preparation,
+    nutrientsJson,
+    caloriesEstimated,
+    source,
+    isBuiltIn,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FoodPreset &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.nameZh == this.nameZh &&
+          other.unit == this.unit &&
+          other.referenceQuantity == this.referenceQuantity &&
+          other.preparation == this.preparation &&
+          other.nutrientsJson == this.nutrientsJson &&
+          other.caloriesEstimated == this.caloriesEstimated &&
+          other.source == this.source &&
+          other.isBuiltIn == this.isBuiltIn &&
+          other.updatedAt == this.updatedAt);
+}
+
+class FoodPresetsCompanion extends UpdateCompanion<FoodPreset> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String?> nameZh;
+  final Value<String> unit;
+  final Value<double> referenceQuantity;
+  final Value<String> preparation;
+  final Value<String> nutrientsJson;
+  final Value<bool> caloriesEstimated;
+  final Value<String?> source;
+  final Value<bool> isBuiltIn;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const FoodPresetsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.nameZh = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.referenceQuantity = const Value.absent(),
+    this.preparation = const Value.absent(),
+    this.nutrientsJson = const Value.absent(),
+    this.caloriesEstimated = const Value.absent(),
+    this.source = const Value.absent(),
+    this.isBuiltIn = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FoodPresetsCompanion.insert({
+    required String id,
+    required String name,
+    this.nameZh = const Value.absent(),
+    required String unit,
+    required double referenceQuantity,
+    this.preparation = const Value.absent(),
+    required String nutrientsJson,
+    this.caloriesEstimated = const Value.absent(),
+    this.source = const Value.absent(),
+    this.isBuiltIn = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       unit = Value(unit),
+       referenceQuantity = Value(referenceQuantity),
+       nutrientsJson = Value(nutrientsJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<FoodPreset> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? nameZh,
+    Expression<String>? unit,
+    Expression<double>? referenceQuantity,
+    Expression<String>? preparation,
+    Expression<String>? nutrientsJson,
+    Expression<bool>? caloriesEstimated,
+    Expression<String>? source,
+    Expression<bool>? isBuiltIn,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (nameZh != null) 'name_zh': nameZh,
+      if (unit != null) 'unit': unit,
+      if (referenceQuantity != null) 'reference_quantity': referenceQuantity,
+      if (preparation != null) 'preparation': preparation,
+      if (nutrientsJson != null) 'nutrients_json': nutrientsJson,
+      if (caloriesEstimated != null) 'calories_estimated': caloriesEstimated,
+      if (source != null) 'source': source,
+      if (isBuiltIn != null) 'is_built_in': isBuiltIn,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FoodPresetsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String?>? nameZh,
+    Value<String>? unit,
+    Value<double>? referenceQuantity,
+    Value<String>? preparation,
+    Value<String>? nutrientsJson,
+    Value<bool>? caloriesEstimated,
+    Value<String?>? source,
+    Value<bool>? isBuiltIn,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return FoodPresetsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      nameZh: nameZh ?? this.nameZh,
+      unit: unit ?? this.unit,
+      referenceQuantity: referenceQuantity ?? this.referenceQuantity,
+      preparation: preparation ?? this.preparation,
+      nutrientsJson: nutrientsJson ?? this.nutrientsJson,
+      caloriesEstimated: caloriesEstimated ?? this.caloriesEstimated,
+      source: source ?? this.source,
+      isBuiltIn: isBuiltIn ?? this.isBuiltIn,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (nameZh.present) {
+      map['name_zh'] = Variable<String>(nameZh.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
+    if (referenceQuantity.present) {
+      map['reference_quantity'] = Variable<double>(referenceQuantity.value);
+    }
+    if (preparation.present) {
+      map['preparation'] = Variable<String>(preparation.value);
+    }
+    if (nutrientsJson.present) {
+      map['nutrients_json'] = Variable<String>(nutrientsJson.value);
+    }
+    if (caloriesEstimated.present) {
+      map['calories_estimated'] = Variable<bool>(caloriesEstimated.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (isBuiltIn.present) {
+      map['is_built_in'] = Variable<bool>(isBuiltIn.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FoodPresetsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('nameZh: $nameZh, ')
+          ..write('unit: $unit, ')
+          ..write('referenceQuantity: $referenceQuantity, ')
+          ..write('preparation: $preparation, ')
+          ..write('nutrientsJson: $nutrientsJson, ')
+          ..write('caloriesEstimated: $caloriesEstimated, ')
+          ..write('source: $source, ')
+          ..write('isBuiltIn: $isBuiltIn, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8080,6 +9290,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PersonalRecordsTable personalRecords = $PersonalRecordsTable(
     this,
   );
+  late final $DailyNotesTable dailyNotes = $DailyNotesTable(this);
+  late final $FoodPresetsTable foodPresets = $FoodPresetsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8101,6 +9313,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     appSettings,
     cardioLogs,
     personalRecords,
+    dailyNotes,
+    foodPresets,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -12812,6 +14026,10 @@ typedef $$WorkoutSetsTableProcessedTableManager =
     >;
 typedef $$FoodLogEntriesTableCreateCompanionBuilder =
     FoodLogEntriesCompanion Function({
+      Value<String?> extraNutrientsJson,
+      Value<String?> presetId,
+      Value<double?> quantity,
+      Value<String?> quantityUnit,
       Value<double?> proteinGrams,
       Value<double?> carbohydrateGrams,
       Value<double?> fatGrams,
@@ -12827,6 +14045,10 @@ typedef $$FoodLogEntriesTableCreateCompanionBuilder =
     });
 typedef $$FoodLogEntriesTableUpdateCompanionBuilder =
     FoodLogEntriesCompanion Function({
+      Value<String?> extraNutrientsJson,
+      Value<String?> presetId,
+      Value<double?> quantity,
+      Value<String?> quantityUnit,
       Value<double?> proteinGrams,
       Value<double?> carbohydrateGrams,
       Value<double?> fatGrams,
@@ -12850,6 +14072,26 @@ class $$FoodLogEntriesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get extraNutrientsJson => $composableBuilder(
+    column: $table.extraNutrientsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get presetId => $composableBuilder(
+    column: $table.presetId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get quantityUnit => $composableBuilder(
+    column: $table.quantityUnit,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<double> get proteinGrams => $composableBuilder(
     column: $table.proteinGrams,
     builder: (column) => ColumnFilters(column),
@@ -12915,6 +14157,26 @@ class $$FoodLogEntriesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get extraNutrientsJson => $composableBuilder(
+    column: $table.extraNutrientsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get presetId => $composableBuilder(
+    column: $table.presetId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get quantityUnit => $composableBuilder(
+    column: $table.quantityUnit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get proteinGrams => $composableBuilder(
     column: $table.proteinGrams,
     builder: (column) => ColumnOrderings(column),
@@ -12980,6 +14242,22 @@ class $$FoodLogEntriesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get extraNutrientsJson => $composableBuilder(
+    column: $table.extraNutrientsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get presetId =>
+      $composableBuilder(column: $table.presetId, builder: (column) => column);
+
+  GeneratedColumn<double> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<String> get quantityUnit => $composableBuilder(
+    column: $table.quantityUnit,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<double> get proteinGrams => $composableBuilder(
     column: $table.proteinGrams,
     builder: (column) => column,
@@ -13059,6 +14337,10 @@ class $$FoodLogEntriesTableTableManager
               $$FoodLogEntriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
+                Value<String?> extraNutrientsJson = const Value.absent(),
+                Value<String?> presetId = const Value.absent(),
+                Value<double?> quantity = const Value.absent(),
+                Value<String?> quantityUnit = const Value.absent(),
                 Value<double?> proteinGrams = const Value.absent(),
                 Value<double?> carbohydrateGrams = const Value.absent(),
                 Value<double?> fatGrams = const Value.absent(),
@@ -13072,6 +14354,10 @@ class $$FoodLogEntriesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FoodLogEntriesCompanion(
+                extraNutrientsJson: extraNutrientsJson,
+                presetId: presetId,
+                quantity: quantity,
+                quantityUnit: quantityUnit,
                 proteinGrams: proteinGrams,
                 carbohydrateGrams: carbohydrateGrams,
                 fatGrams: fatGrams,
@@ -13087,6 +14373,10 @@ class $$FoodLogEntriesTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<String?> extraNutrientsJson = const Value.absent(),
+                Value<String?> presetId = const Value.absent(),
+                Value<double?> quantity = const Value.absent(),
+                Value<String?> quantityUnit = const Value.absent(),
                 Value<double?> proteinGrams = const Value.absent(),
                 Value<double?> carbohydrateGrams = const Value.absent(),
                 Value<double?> fatGrams = const Value.absent(),
@@ -13100,6 +14390,10 @@ class $$FoodLogEntriesTableTableManager
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
               }) => FoodLogEntriesCompanion.insert(
+                extraNutrientsJson: extraNutrientsJson,
+                presetId: presetId,
+                quantity: quantity,
+                quantityUnit: quantityUnit,
                 proteinGrams: proteinGrams,
                 carbohydrateGrams: carbohydrateGrams,
                 fatGrams: fatGrams,
@@ -13149,6 +14443,7 @@ typedef $$FoodLogEntriesTableProcessedTableManager =
     >;
 typedef $$DailyNutritionRecordsTableCreateCompanionBuilder =
     DailyNutritionRecordsCompanion Function({
+      Value<String?> extraNutrientsJson,
       required String id,
       required String localDate,
       Value<double?> proteinGrams,
@@ -13162,6 +14457,7 @@ typedef $$DailyNutritionRecordsTableCreateCompanionBuilder =
     });
 typedef $$DailyNutritionRecordsTableUpdateCompanionBuilder =
     DailyNutritionRecordsCompanion Function({
+      Value<String?> extraNutrientsJson,
       Value<String> id,
       Value<String> localDate,
       Value<double?> proteinGrams,
@@ -13183,6 +14479,11 @@ class $$DailyNutritionRecordsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get extraNutrientsJson => $composableBuilder(
+    column: $table.extraNutrientsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -13238,6 +14539,11 @@ class $$DailyNutritionRecordsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get extraNutrientsJson => $composableBuilder(
+    column: $table.extraNutrientsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -13293,6 +14599,11 @@ class $$DailyNutritionRecordsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get extraNutrientsJson => $composableBuilder(
+    column: $table.extraNutrientsJson,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -13373,6 +14684,7 @@ class $$DailyNutritionRecordsTableTableManager
               ),
           updateCompanionCallback:
               ({
+                Value<String?> extraNutrientsJson = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> localDate = const Value.absent(),
                 Value<double?> proteinGrams = const Value.absent(),
@@ -13384,6 +14696,7 @@ class $$DailyNutritionRecordsTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DailyNutritionRecordsCompanion(
+                extraNutrientsJson: extraNutrientsJson,
                 id: id,
                 localDate: localDate,
                 proteinGrams: proteinGrams,
@@ -13397,6 +14710,7 @@ class $$DailyNutritionRecordsTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<String?> extraNutrientsJson = const Value.absent(),
                 required String id,
                 required String localDate,
                 Value<double?> proteinGrams = const Value.absent(),
@@ -13408,6 +14722,7 @@ class $$DailyNutritionRecordsTableTableManager
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
               }) => DailyNutritionRecordsCompanion.insert(
+                extraNutrientsJson: extraNutrientsJson,
                 id: id,
                 localDate: localDate,
                 proteinGrams: proteinGrams,
@@ -14812,6 +16127,503 @@ typedef $$PersonalRecordsTableProcessedTableManager =
       PersonalRecord,
       PrefetchHooks Function()
     >;
+typedef $$DailyNotesTableCreateCompanionBuilder = DailyNotesCompanion Function({
+  required String localDate,
+  required String content,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$DailyNotesTableUpdateCompanionBuilder = DailyNotesCompanion Function({
+  Value<String> localDate,
+  Value<String> content,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
+
+class $$DailyNotesTableFilterComposer
+    extends Composer<_$AppDatabase, $DailyNotesTable> {
+  $$DailyNotesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get localDate => $composableBuilder(
+    column: $table.localDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DailyNotesTableOrderingComposer
+    extends Composer<_$AppDatabase, $DailyNotesTable> {
+  $$DailyNotesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get localDate => $composableBuilder(
+    column: $table.localDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DailyNotesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DailyNotesTable> {
+  $$DailyNotesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get localDate =>
+      $composableBuilder(column: $table.localDate, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$DailyNotesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DailyNotesTable,
+          DailyNote,
+          $$DailyNotesTableFilterComposer,
+          $$DailyNotesTableOrderingComposer,
+          $$DailyNotesTableAnnotationComposer,
+          $$DailyNotesTableCreateCompanionBuilder,
+          $$DailyNotesTableUpdateCompanionBuilder,
+          (
+            DailyNote,
+            BaseReferences<_$AppDatabase, $DailyNotesTable, DailyNote>,
+          ),
+          DailyNote,
+          PrefetchHooks Function()
+        > {
+  $$DailyNotesTableTableManager(_$AppDatabase db, $DailyNotesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DailyNotesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DailyNotesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DailyNotesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> localDate = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DailyNotesCompanion(
+                localDate: localDate,
+                content: content,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String localDate,
+                required String content,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => DailyNotesCompanion.insert(
+                localDate: localDate,
+                content: content,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$DailyNotesTable, DailyNote>(table),
+                  BaseReferences<_$AppDatabase, $DailyNotesTable, DailyNote>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DailyNotesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DailyNotesTable,
+      DailyNote,
+      $$DailyNotesTableFilterComposer,
+      $$DailyNotesTableOrderingComposer,
+      $$DailyNotesTableAnnotationComposer,
+      $$DailyNotesTableCreateCompanionBuilder,
+      $$DailyNotesTableUpdateCompanionBuilder,
+      (DailyNote, BaseReferences<_$AppDatabase, $DailyNotesTable, DailyNote>),
+      DailyNote,
+      PrefetchHooks Function()
+    >;
+typedef $$FoodPresetsTableCreateCompanionBuilder =
+    FoodPresetsCompanion Function({
+      required String id,
+      required String name,
+      Value<String?> nameZh,
+      required String unit,
+      required double referenceQuantity,
+      Value<String> preparation,
+      required String nutrientsJson,
+      Value<bool> caloriesEstimated,
+      Value<String?> source,
+      Value<bool> isBuiltIn,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$FoodPresetsTableUpdateCompanionBuilder =
+    FoodPresetsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String?> nameZh,
+      Value<String> unit,
+      Value<double> referenceQuantity,
+      Value<String> preparation,
+      Value<String> nutrientsJson,
+      Value<bool> caloriesEstimated,
+      Value<String?> source,
+      Value<bool> isBuiltIn,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$FoodPresetsTableFilterComposer
+    extends Composer<_$AppDatabase, $FoodPresetsTable> {
+  $$FoodPresetsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nameZh => $composableBuilder(
+    column: $table.nameZh,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get referenceQuantity => $composableBuilder(
+    column: $table.referenceQuantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get preparation => $composableBuilder(
+    column: $table.preparation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nutrientsJson => $composableBuilder(
+    column: $table.nutrientsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get caloriesEstimated => $composableBuilder(
+    column: $table.caloriesEstimated,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isBuiltIn => $composableBuilder(
+    column: $table.isBuiltIn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FoodPresetsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FoodPresetsTable> {
+  $$FoodPresetsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nameZh => $composableBuilder(
+    column: $table.nameZh,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get referenceQuantity => $composableBuilder(
+    column: $table.referenceQuantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get preparation => $composableBuilder(
+    column: $table.preparation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nutrientsJson => $composableBuilder(
+    column: $table.nutrientsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get caloriesEstimated => $composableBuilder(
+    column: $table.caloriesEstimated,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isBuiltIn => $composableBuilder(
+    column: $table.isBuiltIn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FoodPresetsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FoodPresetsTable> {
+  $$FoodPresetsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get nameZh =>
+      $composableBuilder(column: $table.nameZh, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<double> get referenceQuantity => $composableBuilder(
+    column: $table.referenceQuantity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get preparation => $composableBuilder(
+    column: $table.preparation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nutrientsJson => $composableBuilder(
+    column: $table.nutrientsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get caloriesEstimated => $composableBuilder(
+    column: $table.caloriesEstimated,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<bool> get isBuiltIn =>
+      $composableBuilder(column: $table.isBuiltIn, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$FoodPresetsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FoodPresetsTable,
+          FoodPreset,
+          $$FoodPresetsTableFilterComposer,
+          $$FoodPresetsTableOrderingComposer,
+          $$FoodPresetsTableAnnotationComposer,
+          $$FoodPresetsTableCreateCompanionBuilder,
+          $$FoodPresetsTableUpdateCompanionBuilder,
+          (
+            FoodPreset,
+            BaseReferences<_$AppDatabase, $FoodPresetsTable, FoodPreset>,
+          ),
+          FoodPreset,
+          PrefetchHooks Function()
+        > {
+  $$FoodPresetsTableTableManager(_$AppDatabase db, $FoodPresetsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FoodPresetsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FoodPresetsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FoodPresetsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> nameZh = const Value.absent(),
+                Value<String> unit = const Value.absent(),
+                Value<double> referenceQuantity = const Value.absent(),
+                Value<String> preparation = const Value.absent(),
+                Value<String> nutrientsJson = const Value.absent(),
+                Value<bool> caloriesEstimated = const Value.absent(),
+                Value<String?> source = const Value.absent(),
+                Value<bool> isBuiltIn = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FoodPresetsCompanion(
+                id: id,
+                name: name,
+                nameZh: nameZh,
+                unit: unit,
+                referenceQuantity: referenceQuantity,
+                preparation: preparation,
+                nutrientsJson: nutrientsJson,
+                caloriesEstimated: caloriesEstimated,
+                source: source,
+                isBuiltIn: isBuiltIn,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<String?> nameZh = const Value.absent(),
+                required String unit,
+                required double referenceQuantity,
+                Value<String> preparation = const Value.absent(),
+                required String nutrientsJson,
+                Value<bool> caloriesEstimated = const Value.absent(),
+                Value<String?> source = const Value.absent(),
+                Value<bool> isBuiltIn = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => FoodPresetsCompanion.insert(
+                id: id,
+                name: name,
+                nameZh: nameZh,
+                unit: unit,
+                referenceQuantity: referenceQuantity,
+                preparation: preparation,
+                nutrientsJson: nutrientsJson,
+                caloriesEstimated: caloriesEstimated,
+                source: source,
+                isBuiltIn: isBuiltIn,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FoodPresetsTable, FoodPreset>(table),
+                  BaseReferences<_$AppDatabase, $FoodPresetsTable, FoodPreset>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FoodPresetsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FoodPresetsTable,
+      FoodPreset,
+      $$FoodPresetsTableFilterComposer,
+      $$FoodPresetsTableOrderingComposer,
+      $$FoodPresetsTableAnnotationComposer,
+      $$FoodPresetsTableCreateCompanionBuilder,
+      $$FoodPresetsTableUpdateCompanionBuilder,
+      (
+        FoodPreset,
+        BaseReferences<_$AppDatabase, $FoodPresetsTable, FoodPreset>,
+      ),
+      FoodPreset,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -14848,4 +16660,8 @@ class $AppDatabaseManager {
       $$CardioLogsTableTableManager(_db, _db.cardioLogs);
   $$PersonalRecordsTableTableManager get personalRecords =>
       $$PersonalRecordsTableTableManager(_db, _db.personalRecords);
+  $$DailyNotesTableTableManager get dailyNotes =>
+      $$DailyNotesTableTableManager(_db, _db.dailyNotes);
+  $$FoodPresetsTableTableManager get foodPresets =>
+      $$FoodPresetsTableTableManager(_db, _db.foodPresets);
 }

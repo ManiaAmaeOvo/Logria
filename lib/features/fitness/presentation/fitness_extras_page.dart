@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 import '../../../core/database/app_database.dart';
+import '../../../core/number_format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/fitness_repository.dart';
 
@@ -97,7 +98,7 @@ class _FitnessExtrasPageState extends State<FitnessExtrasPage> {
                     child: ListTile(
                       title: Text(c.activity),
                       subtitle: Text(
-                        '${c.localDate} · ${c.minutes} min${c.distanceKm == null ? '' : ' · ${c.distanceKm} km'}${c.notes?.isNotEmpty == true ? '\n${c.notes}' : ''}',
+                        '${c.localDate} · ${formatNumber(c.minutes)} min${c.distanceKm == null ? '' : ' · ${formatNumber(c.distanceKm!)} km'}${c.notes?.isNotEmpty == true ? '\n${c.notes}' : ''}',
                       ),
                       onTap: _busy ? null : () => _editCardio(c),
                       trailing: IconButton(
@@ -137,13 +138,13 @@ class _FitnessExtrasPageState extends State<FitnessExtrasPage> {
                     Text(l.noPr)
                   else ...[
                     Text(
-                      'PR: ${_points.map((p) => p.weight).reduce(math.max)} kg',
+                      'PR: ${formatNumber(_points.map((p) => p.weight).reduce(math.max))} kg',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 12),
                     Semantics(
                       label: _points
-                          .map((p) => '${p.date}: ${p.weight} kg')
+                          .map((p) => '${p.date}: ${formatNumber(p.weight)} kg')
                           .join(', '),
                       child: SizedBox(
                         height: 190,
@@ -185,7 +186,7 @@ class _FitnessExtrasPageState extends State<FitnessExtrasPage> {
                     Card(
                       child: ListTile(
                         title: Text(
-                          '${p.weight} kg${p.reps == null ? '' : ' × ${p.reps}'}',
+                          '${formatNumber(p.weight)} kg${p.reps == null ? '' : ' × ${p.reps}'}',
                         ),
                         subtitle: Text(
                           '${p.date} · ${p.id == null ? l.workoutPr : l.manualPr}',

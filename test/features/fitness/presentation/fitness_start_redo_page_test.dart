@@ -39,6 +39,29 @@ void main() {
         );
         await tester.pumpWidget(app(const ValueKey('start')));
         await settle();
+        // Cancel is harmless; confirmation opens a fresh selectable cycle.
+        final restart = find.text(
+          language == 'en' ? 'Restart training cycle' : '重新开始训练轮次',
+        );
+        await tester.tap(find.byType(PopupMenuButton<String>));
+        await settle();
+        await tester.tap(restart);
+        await settle();
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.text(language == 'en' ? 'Cancel' : '取消'));
+        await settle();
+        expect((await repo.loadDashboard())!.cycle.cycleNumber, 1);
+        await tester.tap(find.byType(PopupMenuButton<String>));
+        await settle();
+        await tester.tap(restart);
+        await settle();
+        await tester.tap(
+          find.descendant(of: find.byType(AlertDialog), matching: restart).last,
+        );
+        await settle();
+        expect((await repo.loadDashboard())!.cycle.cycleNumber, 2);
+        expect((await repo.loadDashboard())!.canChooseStart, isTrue);
+        expect(tester.takeException(), isNull);
         final choose = find.text(
           language == 'en' ? 'Choose starting day' : '选择起始训练日',
         );

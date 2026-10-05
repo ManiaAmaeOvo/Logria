@@ -166,6 +166,10 @@ class WorkoutSets extends Table {
 }
 
 class FoodLogEntries extends Table {
+  TextColumn get extraNutrientsJson => text().nullable()();
+  TextColumn get presetId => text().nullable()();
+  RealColumn get quantity => real().nullable()();
+  TextColumn get quantityUnit => text().nullable()();
   RealColumn get proteinGrams => real().nullable()();
   RealColumn get carbohydrateGrams => real().nullable()();
   RealColumn get fatGrams => real().nullable()();
@@ -184,6 +188,7 @@ class FoodLogEntries extends Table {
 }
 
 class DailyNutritionRecords extends Table {
+  TextColumn get extraNutrientsJson => text().nullable()();
   TextColumn get id => text()();
   TextColumn get localDate => text().unique()();
   RealColumn get proteinGrams => real().nullable()();
@@ -233,6 +238,31 @@ class AppSettings extends Table {
   Set<Column<Object>> get primaryKey => {keyName};
 }
 
+class DailyNotes extends Table {
+  TextColumn get localDate => text()();
+  TextColumn get content => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+  @override
+  Set<Column<Object>> get primaryKey => {localDate};
+}
+
+class FoodPresets extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get nameZh => text().nullable()();
+  TextColumn get unit => text()();
+  RealColumn get referenceQuantity => real()();
+  TextColumn get preparation => text().withDefault(const Constant('other'))();
+  TextColumn get nutrientsJson => text()();
+  BoolColumn get caloriesEstimated =>
+      boolean().withDefault(const Constant(false))();
+  TextColumn get source => text().nullable()();
+  BoolColumn get isBuiltIn => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get updatedAt => dateTime()();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class CardioLogs extends Table {
   TextColumn get id => text()();
   TextColumn get localDate => text()();
@@ -273,6 +303,8 @@ class PersonalRecords extends Table {
     AppSettings,
     CardioLogs,
     PersonalRecords,
+    DailyNotes,
+    FoodPresets,
   ],
 )
 final class AppDatabase extends _$AppDatabase {
@@ -281,7 +313,7 @@ final class AppDatabase extends _$AppDatabase {
   AppDatabase.defaults() : super(driftDatabase(name: 'logria'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -299,6 +331,18 @@ final class AppDatabase extends _$AppDatabase {
         await m.addColumn(workoutSets, workoutSets.weightText);
         await m.createTable(cardioLogs);
         await m.createTable(personalRecords);
+      }
+      if (from < 4) await m.createTable(dailyNotes);
+      if (from < 5) {
+        await m.createTable(foodPresets);
+        await m.addColumn(foodLogEntries, foodLogEntries.extraNutrientsJson);
+        await m.addColumn(foodLogEntries, foodLogEntries.presetId);
+        await m.addColumn(foodLogEntries, foodLogEntries.quantity);
+        await m.addColumn(foodLogEntries, foodLogEntries.quantityUnit);
+        await m.addColumn(
+          dailyNutritionRecords,
+          dailyNutritionRecords.extraNutrientsJson,
+        );
       }
     },
   );

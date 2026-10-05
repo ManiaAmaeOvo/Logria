@@ -8,18 +8,26 @@ fitness, nutrition and body measurements, built with Flutter and Dart.
 Logria is an independent project and does not share a repository or data with Summa.
 
 [Download the latest APK](https://github.com/ManiaAmaeOvo/Logria/releases/latest) ·
-[Changelog](CHANGELOG.md) · [User guide](docs/USER_GUIDE.md) · [MIT License](LICENSE)
+[Changelog](CHANGELOG.md) · [English manual](docs/USER_GUIDE.md) ·
+[中文使用说明](docs/USER_GUIDE.zh-CN.md) · [MIT License](LICENSE)
 
-## Version 1.1.0
+## Version 1.2.0 (Android build 7)
+
+This release adds daily review notes, non-destructive cycle restart, first-set
+filling and previous-record workout templates, independent exercise variants,
+offline food/meal presets, linked kJ/kcal editing and opt-in mineral/fiber targets.
+Quick-add foods directly in the meal log. Calculated nutrition values display at
+most four decimal places. English and Chinese manuals are bundled in Settings
+and published in this repository. See [food data sources](docs/FOOD_DATA.md).
 
 | Screen | What you can do |
 | --- | --- |
-| Today | Review complete daily logs and copy all records or one section. |
-| Fitness | Resume workout drafts, record numeric/text weights, track selected exercise PRs, log cardio, edit plans and review past cycles. |
+| Today | Save daily review notes, review complete daily logs and copy all records or one section. |
+| Fitness | Restart cycles without deleting history, reuse past workout templates, fill sets faster, resume drafts, track PRs and log cardio. |
 | Nutrition | Log meals with optional P/C/F/kcal, estimate calories, edit daily totals and set goals or limits. |
 | Body | Record any subset of eight measurements and review date-based trends. |
 | Calendar | Browse month activity, locate training rounds and copy historical logs. |
-| Settings | Choose English/简体中文, review software details and open GitHub links. |
+| Settings | Read bilingual offline manuals, choose English/简体中文, review software details and open GitHub links. |
 
 ### Fitness
 
@@ -37,6 +45,10 @@ Logria is an independent project and does not share a repository or data with Su
   are marked unrecorded, and the next cycle starts at day 1.
 - Restore an undone same-day action with its original workout and cycle state.
 - Explicitly discard a draft without changing saved workouts.
+- Restart interrupted progress while keeping historical workouts and reselecting
+  the starting day; unfinished plan-day drafts are discarded after confirmation.
+- First weight/reps editing fills untouched later sets until leaving the field.
+  Subsequent edits remain independent. Reusing a previous record resets this opportunity.
 
 ### Nutrition
 
@@ -46,6 +58,15 @@ Logria is an independent project and does not share a repository or data with Su
 - Daily totals sum known meal values and can be partial.
 - Editing a daily total creates a manual override. **Restore meal totals** resumes aggregation.
 - Each P/C/F/kcal value has an independent **Goal** or **Limit** mode.
+- Search 12 built-in reference foods, then enter grams to scale nutrients. Raw
+  and cooked food bases are distinct. Copy read-only references to customize them.
+- Quick-add built-in or custom foods directly from the Food log card, without
+  opening library management; calculation previews use at most four decimals.
+- Create products or complete meal presets per g, mL, portion, bottle, scoop or bag.
+- Energy input binds kJ and kcal; manually editing either preserves label energy
+  instead of overwriting it with macro estimates.
+- Optional sodium, potassium, calcium, iron and fiber with **Goal**, **Minimum**
+  or **Limit** modes. No intake standards are supplied automatically.
 
 ### Body and calendar
 
@@ -64,10 +85,10 @@ Android 7.0/API 24 or later is required. Android 16/arm64 has been checked local
 The published APK runs in release mode but uses the existing development
 signing certificate to allow updates from earlier test APKs from this machine.
 It is not a production Google Play release. See [release details](docs/RELEASE.md).
-To upgrade from 1.0.0, install 1.1.0 over the existing app without uninstalling or
-clearing storage. The signing identity is unchanged and schema 3 is additive.
-The current 1.1.0 APK is **build 4**, reissued to include starting-day selection
-and undo recovery. It also upgrades the earlier 1.1.0 build 3 in place.
+To upgrade from 1.0.0, 1.1.0 or local 1.2.0 builds, install **1.2.0 build 7** over
+the existing app without uninstalling or clearing storage. The signing identity
+is unchanged; schema 5 migrations preserve existing records. Keep your data on
+the device: restorable backup/export/import is not available yet.
 
 ## Local data and privacy
 
@@ -107,7 +128,7 @@ an Android debug build. CI APKs are not signed with the published release identi
 
 ## Roadmap and current limits
 
-Not implemented in version 1.1.0:
+Not implemented in the current version:
 
 - JSON file import/export and restorable backups.
 - Estimated 1RM, PR notifications and broader training statistics.

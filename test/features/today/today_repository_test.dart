@@ -10,6 +10,7 @@ import 'package:logria/features/nutrition/data/nutrition_repository.dart';
 import 'package:logria/features/today/data/today_repository.dart';
 import 'package:logria/features/today/presentation/today_log_formatter.dart';
 import 'package:logria/l10n/app_localizations.dart';
+import 'package:logria/features/calendar/data/calendar_repository.dart';
 
 void main() {
   setUpAll(() async {
@@ -20,6 +21,33 @@ void main() {
   final today = DateUtils.dateOnly(DateTime.now());
   setUp(() => db = AppDatabase(NativeDatabase.memory()));
   tearDown(() => db.close());
+
+  test(
+    'daily reviews are independent, date-bound, copied and clearable',
+    () async {
+      final repo = TodayRepository(db);
+      await repo.saveNote('2026-10-03', ' Yesterday reflection ');
+      await repo.saveNote('2026-10-04', 'Good recovery today');
+      final data = await repo.loadDay(DateTime(2026, 10, 4));
+      expect(data.note, 'Good recovery today');
+      expect(data.workouts, isEmpty);
+      final text = TodayLogFormatter(
+        data,
+        lookupAppLocalizations(const Locale('en')),
+      ).all;
+      expect(text, contains('Daily review · 2026-10-04\nGood recovery today'));
+      expect(text, isNot(contains('Yesterday reflection')));
+      final calendar = await CalendarRepository(db)
+          .loadMonth(DateTime(2026, 10), now: DateTime(2026, 10, 5));
+      expect(calendar.days['2026-10-04']!.review, isTrue);
+      await repo.saveNote('2026-10-04', '  ');
+      expect((await repo.loadDay(DateTime(2026, 10, 4))).note, isEmpty);
+      expect(
+        (await repo.loadDay(DateTime(2026, 10, 3))).note,
+        'Yesterday reflection',
+      );
+    },
+  );
 
   test('today reads complete workout details, meals and only same-date measurements', () async {
     final fitness = FitnessRepository(db);

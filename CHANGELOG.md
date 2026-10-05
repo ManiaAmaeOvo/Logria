@@ -1,5 +1,45 @@
 # Changelog
 
+## 1.2.0 — 2026-10-05 (Android build 7)
+
+- Quick-add built-in and custom food presets directly inside the daily Food log,
+  with searchable selection, amount preview, date-safe logging and cancellation.
+- Nutrition totals, energy conversions, food amounts and copied numeric logs
+  display at most four decimals without floating-point tails; stored calculations
+  retain precision.
+- Complete English and Simplified Chinese user manuals, bundled offline in
+  Settings with an independent language switch and published in `docs/`.
+
+- Date-bound daily review notes directly in Today, with explicit save/clear,
+  historical calendar markers and inclusion in whole-day clipboard logs.
+- Non-destructive training-cycle restart: archive interrupted progress, preserve
+  history and other health data, discard unfinished plan-day drafts, and enable
+  starting-day selection again. Recorded same-day actions must be undone first.
+- One-shot first-set weight/reps filling during the first editing focus session.
+  Manually edited lower fields are protected independently; later first-set edits
+  do not overwrite them. Drafts retain these flags. RIR is never auto-filled.
+- Reuse the last completed same-day-of-plan record as a new workout template,
+  including exercises, set count, numeric/text weights, reps and RIR. First-set
+  filling is available afresh; replacing an existing draft requires confirmation.
+- Additive SQLite schema 4 adds DailyNotes without altering existing records.
+- Exercise variant notes create independent reusable presets, with separate names
+  and PR series. Editing a plan or workout variant never changes the base preset
+  or previous workouts.
+- Offline food/meal library with 12 verified USDA SR Legacy reference foods;
+  raw/cooked weighing bases are separate. Built-ins are read-only and copyable.
+- Custom label-based products and homemade meal presets with a reference amount
+  in g, mL, portions, bottles, scoops or bags; entered amounts scale all known
+  nutrients. Editing/deleting a preset never changes previously logged snapshots.
+- Linked kcal/kJ input (1 kcal = 4.184 kJ). P/C/F initially estimate energy;
+  manual energy edits disable estimation until explicitly re-enabled.
+- Optional sodium, potassium, calcium, iron and dietary fiber in meals, presets,
+  daily overrides and shared logs, with opt-in goal/minimum/limit modes. Unknown
+  values are absent, not zero, and partial totals are labeled incomplete.
+- Additive schema 5 adds FoodPresets and optional extra-nutrient/quantity snapshot
+  fields, preserving older meals, measurements, workout drafts and daily reviews.
+
+Build 7 merges the previously local build 5/6 features into the 1.2.0 release.
+
 ## 1.1.0 — 2026-10-04
 
 Reissued as Android build 4, merging the starting-day and undo-recovery additions

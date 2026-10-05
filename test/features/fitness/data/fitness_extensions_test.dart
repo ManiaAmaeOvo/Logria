@@ -168,6 +168,12 @@ void main() {
               "INSERT INTO workout_sets (id, workout_exercise_id, set_number, weight_value, reps) VALUES ('old', 'exercise', 1, 40, 8)",
             );
             sqlite.execute('PRAGMA user_version = 2');
+            sqlite.execute(
+              'CREATE TABLE food_log_entries (id TEXT PRIMARY KEY)',
+            );
+            sqlite.execute(
+              'CREATE TABLE daily_nutrition_records (id TEXT PRIMARY KEY)',
+            );
           },
         ),
       );

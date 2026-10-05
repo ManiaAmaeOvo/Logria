@@ -98,6 +98,270 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @exerciseVariantNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Variant note / separate preset'**
+  String get exerciseVariantNote;
+
+  /// No description provided for @exerciseVariantHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A note creates a separate preset, e.g. a different grip or stance. The original preset and its records stay unchanged. Clear the note to use the base exercise; existing variant presets are kept.'**
+  String get exerciseVariantHint;
+
+  /// No description provided for @exerciseVariantExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Overhand · wide grip / Underhand · narrow grip'**
+  String get exerciseVariantExample;
+
+  /// No description provided for @foodLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Foods & meal presets'**
+  String get foodLibrary;
+
+  /// No description provided for @foodLibraryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a food to enter its amount. Generic reference values are approximate; use your product label for branded foods. No online lookup is needed.'**
+  String get foodLibraryHint;
+
+  /// No description provided for @searchFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Search foods or presets'**
+  String get searchFood;
+
+  /// No description provided for @createFoodPreset.
+  ///
+  /// In en, this message translates to:
+  /// **'Create / edit food preset'**
+  String get createFoodPreset;
+
+  /// No description provided for @foodPresetName.
+  ///
+  /// In en, this message translates to:
+  /// **'Food, product or meal name'**
+  String get foodPresetName;
+
+  /// No description provided for @foodBasisHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter all values for the reference amount below, such as 100 g raw meat, 30 g protein powder, 1 bottle or 1 dinner portion. Units do not convert grams into portions or mL automatically.'**
+  String get foodBasisHint;
+
+  /// No description provided for @foodUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get foodUnit;
+
+  /// No description provided for @referenceQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference amount on label'**
+  String get referenceQuantity;
+
+  /// No description provided for @foodPreparation.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparation / weighing basis'**
+  String get foodPreparation;
+
+  /// No description provided for @foodRaw.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw / dry weight'**
+  String get foodRaw;
+
+  /// No description provided for @foodCooked.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooked weight'**
+  String get foodCooked;
+
+  /// No description provided for @foodPackaged.
+  ///
+  /// In en, this message translates to:
+  /// **'Packaged product'**
+  String get foodPackaged;
+
+  /// No description provided for @foodOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other / homemade meal'**
+  String get foodOther;
+
+  /// No description provided for @foodPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'portion'**
+  String get foodPortion;
+
+  /// No description provided for @foodBottle.
+  ///
+  /// In en, this message translates to:
+  /// **'bottle'**
+  String get foodBottle;
+
+  /// No description provided for @foodScoop.
+  ///
+  /// In en, this message translates to:
+  /// **'scoop'**
+  String get foodScoop;
+
+  /// No description provided for @foodBag.
+  ///
+  /// In en, this message translates to:
+  /// **'bag'**
+  String get foodBag;
+
+  /// No description provided for @quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount eaten'**
+  String get quantity;
+
+  /// No description provided for @energyKilojoules.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy (kJ)'**
+  String get energyKilojoules;
+
+  /// No description provided for @extraNutrients.
+  ///
+  /// In en, this message translates to:
+  /// **'Minerals & fiber (optional)'**
+  String get extraNutrients;
+
+  /// No description provided for @nutrientSodium.
+  ///
+  /// In en, this message translates to:
+  /// **'Sodium'**
+  String get nutrientSodium;
+
+  /// No description provided for @nutrientPotassium.
+  ///
+  /// In en, this message translates to:
+  /// **'Potassium'**
+  String get nutrientPotassium;
+
+  /// No description provided for @nutrientCalcium.
+  ///
+  /// In en, this message translates to:
+  /// **'Calcium'**
+  String get nutrientCalcium;
+
+  /// No description provided for @nutrientIron.
+  ///
+  /// In en, this message translates to:
+  /// **'Iron'**
+  String get nutrientIron;
+
+  /// No description provided for @nutrientFiber.
+  ///
+  /// In en, this message translates to:
+  /// **'Dietary fiber'**
+  String get nutrientFiber;
+
+  /// No description provided for @nutrientMinimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum'**
+  String get nutrientMinimum;
+
+  /// No description provided for @foodMissingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank means unrecorded, not zero. Totals count only known values and may be incomplete. No intake standards are set automatically.'**
+  String get foodMissingHint;
+
+  /// No description provided for @invalidFoodPreset.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name, a positive reference amount and finite, non-negative nutrients. Leave unknown values blank.'**
+  String get invalidFoodPreset;
+
+  /// No description provided for @referenceFood.
+  ///
+  /// In en, this message translates to:
+  /// **'USDA reference · read-only, copy to customize'**
+  String get referenceFood;
+
+  /// No description provided for @customFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Your preset / meal'**
+  String get customFood;
+
+  /// No description provided for @copyFoodPreset.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy as a new preset'**
+  String get copyFoodPreset;
+
+  /// No description provided for @deleteFoodPresetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this preset? Previously logged meals and their nutrient snapshots will stay unchanged.'**
+  String get deleteFoodPresetHint;
+
+  /// No description provided for @foodPresetLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Food logged for the selected date.'**
+  String get foodPresetLogged;
+
+  /// No description provided for @dailyReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily review'**
+  String get dailyReview;
+
+  /// No description provided for @dailyReviewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How did today feel? Add a reflection or anything worth remembering. Save to include it in your copied log.'**
+  String get dailyReviewHint;
+
+  /// No description provided for @reviewSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily review saved.'**
+  String get reviewSaved;
+
+  /// No description provided for @restartTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart training cycle'**
+  String get restartTraining;
+
+  /// No description provided for @restartTrainingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive this interrupted cycle and start a new one with the same plan. Saved history, PRs, nutrition and body data are kept. Unfinished plan-day drafts and undo recovery will be cleared. You can then choose a starting day. If today\'s action is recorded, undo it first; it cannot be restored after restarting.'**
+  String get restartTrainingHint;
+
+  /// No description provided for @usePreviousTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Use last record as template'**
+  String get usePreviousTemplate;
+
+  /// No description provided for @replaceWorkoutTemplateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace the current editor inputs with the last record for this same training day? The historical record stays unchanged. Review the copied values before finishing today\'s workout.'**
+  String get replaceWorkoutTemplateHint;
+
+  /// No description provided for @firstSetFillHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The first weight/reps edit fills untouched later sets until you leave that field. Later edits stay independent; RIR is never auto-filled.'**
+  String get firstSetFillHint;
+
   /// No description provided for @chooseStartingDay.
   ///
   /// In en, this message translates to:
@@ -1730,6 +1994,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not save: {error}'**
   String saveFailed(Object error);
+
+  /// No description provided for @quickAddFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick add from presets'**
+  String get quickAddFood;
+
+  /// No description provided for @noFoodMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching presets. Create one in Foods & meal presets.'**
+  String get noFoodMatches;
+
+  /// No description provided for @userManual.
+  ///
+  /// In en, this message translates to:
+  /// **'User manual'**
+  String get userManual;
+
+  /// No description provided for @userManualHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline instructions · English / 简体中文'**
+  String get userManualHint;
 
   /// No description provided for @kg.
   ///

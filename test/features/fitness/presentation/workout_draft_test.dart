@@ -76,6 +76,8 @@ void main() {
         );
       }
       await tester.enterText(find.byType(TextField).at(0), 'bodyweight + band');
+      // Explicitly omit the auto-filled second set for this single-set draft.
+      await tester.enterText(find.byType(TextField).at(3), '');
       await tester.enterText(find.byType(TextField).at(1), '');
       await tester.enterText(find.byType(TextField).at(2), '');
       await tester.tap(find.byIcon(Icons.arrow_back));
@@ -95,6 +97,7 @@ void main() {
         '',
       );
       await tester.enterText(find.byType(TextField).at(1), '12');
+      await tester.enterText(find.byType(TextField).at(4), '');
       // Verify the Android/system back path also flushes before popping.
       await tester.binding.handlePopRoute();
       await settle();
