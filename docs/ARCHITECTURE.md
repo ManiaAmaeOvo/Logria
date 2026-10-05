@@ -83,6 +83,11 @@ English and Chinese manuals are `docs/USER_GUIDE.md` and
 files offline and displays expandable sections with selectable text. The manual
 language switch is independent of the saved application locale.
 
+Local build 8 also bundles `CHANGELOG.md` and `CHANGELOG.zh-CN.md` directly.
+The Settings changelog route observes the resolved application locale in
+didChangeDependencies, reloads the matching local asset and resets the section
+view when the language changes. It never fetches remote release metadata.
+
 DailyNotes is keyed by local date with review text and update time. Empty saves
 delete only that note. Today/Calendar transactional reads include it; whole-day
 clipboard output includes saved notes while module-only output does not.

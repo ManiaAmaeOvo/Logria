@@ -2,6 +2,8 @@
 
 # Logria
 
+[简体中文](README.zh-CN.md)
+
 **Three parts. One daily log.** A private, fully offline Android journal for
 fitness, nutrition and body measurements, built with Flutter and Dart.
 
@@ -12,6 +14,11 @@ Logria is an independent project and does not share a repository or data with Su
 [中文使用说明](docs/USER_GUIDE.zh-CN.md) · [MIT License](LICENSE)
 
 ## Version 1.2.0 (Android build 7)
+
+The published release/tag/APK remains build 7. Main now includes Chinese reader
+docs and an offline, app-language-aware changelog as **local build 8**. Its APK
+is shared manually only; these changes will join the next release without
+replacing the existing v1.2.0 assets or tag.
 
 This release adds daily review notes, non-destructive cycle restart, first-set
 filling and previous-record workout templates, independent exercise variants,

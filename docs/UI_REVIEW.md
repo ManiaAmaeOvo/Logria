@@ -61,3 +61,9 @@ are checked at 360×800 with 1.6× English/Chinese text. All 77 tests pass.
 Nutrition summaries/conversions and numeric shared logs use at most four decimal
 places. Settings links to section-based, bilingual offline manuals; switching
 manual language resets scroll to the introduction.
+
+Local build 8 adds a separate changelog card below the user manual. Its versions
+expand individually, latest local changes open by default, and content follows
+the app locale rather than adding another language preference. System locale
+resolution, live locale changes and 360×800 / 1.6× layouts are tested in English
+and Chinese. Reader-facing docs now have linked Chinese editions.

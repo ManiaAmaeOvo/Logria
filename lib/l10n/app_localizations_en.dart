@@ -1077,6 +1077,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get userManual => 'User manual';
 
   @override
+  String get changelog => 'Changelog';
+
+  @override
+  String get changelogHint => 'Offline version history · follows app language';
+
+  @override
   String get userManualHint => 'Offline instructions · English / 简体中文';
 
   @override

@@ -2013,6 +2013,18 @@ abstract class AppLocalizations {
   /// **'User manual'**
   String get userManual;
 
+  /// No description provided for @changelog.
+  ///
+  /// In en, this message translates to:
+  /// **'Changelog'**
+  String get changelog;
+
+  /// No description provided for @changelogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline version history · follows app language'**
+  String get changelogHint;
+
   /// No description provided for @userManualHint.
   ///
   /// In en, this message translates to:

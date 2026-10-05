@@ -1032,6 +1032,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get userManual => '使用说明';
 
   @override
+  String get changelog => '更新日志';
+
+  @override
+  String get changelogHint => '离线版本记录 · 跟随应用语言';
+
+  @override
   String get userManualHint => '离线用户手册 · 简体中文 / English';
 
   @override

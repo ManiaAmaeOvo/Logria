@@ -36,7 +36,12 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('简体中文'));
+      await tester.scrollUntilVisible(
+        find.text('简体中文'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('简体中文'));
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 100));

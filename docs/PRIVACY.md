@@ -1,5 +1,7 @@
 # Privacy and local data
 
+[简体中文](PRIVACY.zh-CN.md)
+
 Logria stores records in SQLite on the current Android device. It has no user
 accounts, cloud synchronization, advertising, analytics or built-in LLM calls.
 The release app does not declare the Android INTERNET permission. Flutter debug
@@ -29,6 +31,9 @@ the operating system apply their own clipboard and privacy rules.
 
 GitHub links open the external browser only when selected. Any subsequent
 network traffic belongs to the browser and GitHub, not log storage.
+
+User manuals and changelogs are bundled in English and Chinese and read offline;
+the app does not fetch these documents from GitHub.
 
 Please use synthetic data in public bug reports. The app's storage is protected
 by Android's app sandbox; Logria does not add database encryption in this version.

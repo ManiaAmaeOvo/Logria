@@ -343,6 +343,8 @@
   "quickAddFood": "从预设快捷添加",
   "noFoodMatches": "没有匹配的预设，可在食材与常用饮食方案中创建。",
   "userManual": "使用说明",
+  "changelog": "更新日志",
+  "changelogHint": "离线版本记录 · 跟随应用语言",
   "userManualHint": "离线用户手册 · 简体中文 / English",
   "kg": "kg",
   "editDay": "重命名训练日",

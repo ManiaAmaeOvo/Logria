@@ -4,6 +4,18 @@ Current release is 1.2.0 (Android build 7). It uses Flutter 3.47.2 / Dart 3.13.2
 `com.logria.logria`. The UI version in `lib/core/app_metadata.dart` must match
 `pubspec.yaml`. Build numbers must increase for updates.
 
+Main's source is now 1.2.0 build 8: Chinese reader docs and a bundled localized
+changelog. This APK is local/manual distribution only. Do not move the v1.2.0
+tag, replace its build 7 assets or create a release for build 8; merge into the
+next release when requested.
+
+Local build 8 validation: all 80 tests, analysis and format checks pass. The
+emulator upgraded from build 7 without clearing data; the Settings changelog was
+checked in Chinese and English, then the original Chinese preference restored.
+Both changelogs and manuals are bundled; certificate unchanged, versionCode 8,
+no Internet permission. Local APK: `build/releases/logria-v1.2.0-build8-android.apk`.
+SHA-256: `49bd094011b76f3cd31324263379bc82b9f9e8660022aef901d66cc9b4a77571`.
+
 ## Checks and build
 
 ```sh

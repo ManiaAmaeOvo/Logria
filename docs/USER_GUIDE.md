@@ -1,5 +1,7 @@
 # Using Logria 1.2
 
+[简体中文](USER_GUIDE.zh-CN.md)
+
 Logria is an offline Android fitness, nutrition and body journal. Data stays on
 this device. Start with the Today screen, then use the five bottom tabs.
 In Settings → User manual you can read this guide offline and switch between
@@ -212,6 +214,11 @@ and never changes the historical record. Cardio entries are not copied.
 Settings contains English, Simplified Chinese and system-language options. Your
 choice is saved. About shows version, developers, source/profile links, privacy
 information and license notices.
+
+Local build 8 adds Settings → Changelog. Its bundled version history follows
+the app language automatically, including system default; unlike the manual it
+has no independent language switch. The published 1.2.0 build 7 APK does not
+include this entry yet. The local build will be merged into a later release.
 
 Version 1.2 has no restorable backup or JSON file export/import. Keep that limit
 in mind before uninstalling or clearing app data. Clipboard logs are convenient

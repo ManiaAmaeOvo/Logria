@@ -1,5 +1,16 @@
 # Changelog
 
+[简体中文](CHANGELOG.zh-CN.md)
+
+## Unreleased — local Android build 8
+
+- Chinese editions of the README, complete changelog, privacy, food references,
+  testing checklist and contribution guide; bilingual navigation links.
+- Offline changelog in Settings automatically follows the app's English/Chinese
+  language, including system-language resolution and changes while open.
+- Source/docs are pushed to main; this local APK does not replace the published
+  1.2.0 build 7 release, its assets or tag. Merge into the next release.
+
 ## 1.2.0 — 2026-10-05 (Android build 7)
 
 - Quick-add built-in and custom food presets directly inside the daily Food log,

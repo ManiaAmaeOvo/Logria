@@ -1,5 +1,12 @@
 # 1.2.0 testing guide
 
+[简体中文](TESTING.zh-CN.md)
+
+Local build 8 additionally bundles an app-language-aware changelog and Chinese
+reader docs; it does not replace the published release's build 7 APK or tag.
+Its full 80-test suite, static analysis and formatting checks pass, including
+system locale selection, live changelog language changes and translated links.
+
 Use Android build 7 for shared testing. Install the official release APK over an
 existing installation rather than uninstalling or clearing data. A fresh install
 starts without private logs. There is no restorable backup/import yet.
@@ -39,6 +46,8 @@ quick-food picker, rounded summaries and preservation of existing food/body data
   their curves and verify missing measurements are not fabricated.
 - Open Settings → User manual. Expand sections, copy text and switch languages
   while the phone is offline; repeat with large system text and the keyboard.
+- On local build 8, open Settings → Changelog and expand older versions. Verify
+  automatic English/Chinese/system language matching and readable large text.
 - Close/reopen the app and verify saved records and language preference remain.
 
 ## Reporting

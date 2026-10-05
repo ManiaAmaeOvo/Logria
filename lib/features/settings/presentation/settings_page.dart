@@ -6,6 +6,7 @@ import '../../../core/app_metadata.dart';
 import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import 'user_manual_page.dart';
+import 'changelog_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
@@ -134,6 +135,19 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const UserManualPage()),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.history_outlined),
+              title: Text(l.changelog),
+              subtitle: Text(l.changelogHint),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ChangelogPage()),
               ),
             ),
           ),

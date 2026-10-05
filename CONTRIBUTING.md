@@ -1,5 +1,7 @@
 # Contributing
 
+[简体中文](CONTRIBUTING.zh-CN.md)
+
 Issues and pull requests are welcome. Describe the affected screen, language,
 Android version, steps to reproduce, expected behavior and actual behavior.
 Use synthetic logs in screenshots and examples.
@@ -25,3 +27,6 @@ paths or credentials. Add focused tests for changes to cycle progression,
 nutrition aggregation, date selection, migrations and clipboard output.
 
 By contributing, you agree that your contributions use the MIT license.
+
+Keep reader-facing docs and changelogs synchronized in English and Chinese.
+Both guides and changelogs are bundled directly as app assets.

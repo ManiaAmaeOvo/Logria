@@ -1,5 +1,7 @@
 # Offline food references and label entry
 
+[简体中文](FOOD_DATA.zh-CN.md)
+
 Logria includes a small, static selection from the public USDA FoodData Central
 [SR Legacy dataset, April 2018](https://fdc.nal.usda.gov/download-datasets/).
 The CSV archive was checked on 2026-10-05. All values are per **100 g edible
@@ -27,7 +29,7 @@ minerals. The original dataset's energy is kept, not recomputed with 4/4/9 facto
 Each built-in preset displays its source/FDC ID. These are generic estimates,
 not exact measurements of a particular brand, recipe, seasoning or cooking yield.
 
-References seed into local SQLite only when opening the food library. Runtime
+References seed into local SQLite when opening the food library or quick picker. Runtime
 does not use the USDA API, fetch updates or require Internet permission. Built-in
 records cannot be overwritten; copies are ordinary editable user presets. USDA
 food composition data are public domain; this does not imply USDA endorsement.
