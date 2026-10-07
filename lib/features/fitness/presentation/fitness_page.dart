@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/record_day.dart';
+import '../../../core/record_day_watcher.dart';
+import 'historical_fitness_page.dart';
+
 import '../../../core/database/app_database.dart';
 import '../../../core/number_format.dart';
 import '../data/fitness_repository.dart';
@@ -53,6 +57,27 @@ class _FitnessPageState extends State<FitnessPage> {
   late final FitnessRepository _repository;
   late Future<FitnessDashboardData?> _dashboardFuture;
   String? _seedLocale;
+  late final RecordDayWatcher _dayWatcher;
+
+  Future<void> _editHistoricalDate() async {
+    final today = RecordDay.today();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime(today.year, today.month, today.day - 1),
+      firstDate: DateTime(2000),
+      lastDate: today,
+    );
+    if (date == null || !mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            HistoricalFitnessPage(repository: _repository, date: date),
+      ),
+    );
+    if (mounted) _reload();
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -100,6 +125,12 @@ class _FitnessPageState extends State<FitnessPage> {
             icon: const Icon(Icons.directions_run),
             label: Text(l.cardioTitle),
           ),
+          OutlinedButton.icon(
+            onPressed: _editHistoricalDate,
+            icon: const Icon(Icons.edit_calendar),
+            label: Text(l.editDateFitness),
+          ),
+          Text(l.recordDayHint, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );
@@ -110,6 +141,15 @@ class _FitnessPageState extends State<FitnessPage> {
     super.initState();
     _repository = FitnessRepository(widget.database);
     _dashboardFuture = _repository.loadDashboard();
+    _dayWatcher = RecordDayWatcher((_, _) {
+      if (mounted) _reload();
+    });
+  }
+
+  @override
+  void dispose() {
+    _dayWatcher.dispose();
+    super.dispose();
   }
 
   void _reload() {

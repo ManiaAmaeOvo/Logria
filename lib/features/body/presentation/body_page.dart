@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 import '../../../core/database/app_database.dart';
+import '../../../core/record_day.dart';
+import '../../../core/record_day_watcher.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/body_repository.dart';
 
@@ -16,10 +18,25 @@ class BodyPage extends StatefulWidget {
 
 class _BodyPageState extends State<BodyPage> {
   late final _repository = BodyRepository(widget.database);
-  DateTime _date = DateUtils.dateOnly(DateTime.now());
+  DateTime _date = RecordDay.today();
+  late final RecordDayWatcher _dayWatcher;
   late Future<BodyDayData> _future = _repository.loadDay(_date);
   String? _typeId;
   int _range = 90;
+
+  @override
+  void initState() {
+    super.initState();
+    _dayWatcher = RecordDayWatcher((previous, current) {
+      if (mounted) _reload(_date == previous ? current : _date);
+    });
+  }
+
+  @override
+  void dispose() {
+    _dayWatcher.dispose();
+    super.dispose();
+  }
 
   void _reload([DateTime? date]) {
     setState(() {
@@ -137,7 +154,7 @@ class _BodyPageState extends State<BodyPage> {
                         context: context,
                         initialDate: _date,
                         firstDate: DateTime(2000),
-                        lastDate: DateUtils.dateOnly(DateTime.now()),
+                        lastDate: RecordDay.today(),
                       );
                       if (date != null && mounted) _reload(date);
                     },
@@ -145,7 +162,7 @@ class _BodyPageState extends State<BodyPage> {
                 ),
                 IconButton(
                   tooltip: l.nextDay,
-                  onPressed: _date.isBefore(DateUtils.dateOnly(DateTime.now()))
+                  onPressed: _date.isBefore(RecordDay.today())
                       ? () => _reload(
                           DateTime(_date.year, _date.month, _date.day + 1),
                         )

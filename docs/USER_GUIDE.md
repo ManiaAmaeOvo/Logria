@@ -1,4 +1,4 @@
-# Using Logria 1.2
+# Using Logria 1.3
 
 [简体中文](USER_GUIDE.zh-CN.md)
 
@@ -15,8 +15,35 @@ To update, install over the existing app with the same signing identity; do not
 uninstall first or clear app storage. The app does not sync between phones.
 
 Settings lets you choose English, Simplified Chinese or system language. Dates
-use the device's local time. Nutrition and Body support selecting past dates;
-training actions are for today, and past workouts are reviewed through history.
+use the device's local time. A journal day runs from 04:00 to the next 04:00:
+at 02:00, the default date is yesterday. This applies to Today, strength/cardio/PR,
+Nutrition and Body. Calendar selections are explicit date labels, not shifted
+again. Existing entries retain their original dates. The workout editor displays
+and pins its date even if you finish after the boundary; reopen for a new date.
+
+## Backfill or correct a date
+
+Use **Backfill / edit a training date** in Fitness, or select a date in Calendar and use
+the same action. Choose Training, Rest or Skip, then the compatible plan/round
+and plan day. A day already recorded elsewhere in that round is disabled.
+Rest can use a planned rest slot or extra rest; skip requires a training day.
+Training opens the draft-capable editor, allowing partial input and later resume.
+Cancellation leaves saved records untouched; confirm and save to replace that date.
+
+Only the selected date is changed. Later workouts are never renamed or shifted;
+the current round's pending day is recalculated from its recorded slots. Correcting
+a closed round keeps it closed instead of deleting subsequent rounds. Filling the
+last missing slot in the live round starts the next round. The current round is
+also available for backfilling dates before recording began; check the round carefully.
+Changing training to rest/skip removes that date's strength sets and their workout
+PR contribution, but not independent manual PR, cardio, meals or body data.
+Existing occurrence timestamps are preserved. New past entries use noon as a
+placeholder, not a claim about the actual workout time.
+
+Dates without a recorded strength action display **implicit rest**, including
+cardio-only dates. This is not a saved action and never consumes a planned rest
+slot or advances training. Explicitly recording rest still applies normal plan
+rules. Future dates cannot be recorded.
 
 ## Start a training plan
 
@@ -215,12 +242,13 @@ Settings contains English, Simplified Chinese and system-language options. Your
 choice is saved. About shows version, developers, source/profile links, privacy
 information and license notices.
 
-Local build 8 adds Settings → Changelog. Its bundled version history follows
+Settings → Changelog was introduced in local build 8 and is published in 1.3.0.
+Its bundled version history follows
 the app language automatically, including system default; unlike the manual it
 has no independent language switch. The published 1.2.0 build 7 APK does not
-include this entry yet. The local build will be merged into a later release.
+include this entry; upgrade to 1.3.0 to access it.
 
-Version 1.2 has no restorable backup or JSON file export/import. Keep that limit
+Version 1.3 has no restorable backup or JSON file export/import. Keep that limit
 in mind before uninstalling or clearing app data. Clipboard logs are convenient
 for review but cannot be imported to restore the database.
 

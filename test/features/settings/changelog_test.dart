@@ -60,8 +60,8 @@ void main() {
         await tester.tap(find.text(l.changelog));
         await settle();
         final title = language == 'zh'
-            ? '尚未发布 — 本地 Android build 8'
-            : 'Unreleased — local Android build 8';
+            ? '1.3.0 — 2026-10-07（Android build 10）'
+            : '1.3.0 — 2026-10-07 (Android build 10)';
         expect(find.text(title), findsOneWidget);
         expect(find.byType(SegmentedButton<String>), findsNothing);
         const oldTitle = '1.1.0 — 2026-10-04';
@@ -88,8 +88,8 @@ void main() {
         await settle();
         expect(find.text(other == 'zh' ? '更新日志' : 'Changelog'), findsOneWidget);
         final otherTitle = other == 'zh'
-            ? '尚未发布 — 本地 Android build 8'
-            : 'Unreleased — local Android build 8';
+            ? '1.3.0 — 2026-10-07（Android build 10）'
+            : '1.3.0 — 2026-10-07 (Android build 10)';
         expect(find.text(otherTitle), findsOneWidget);
         expect(tester.getTopLeft(find.text(otherTitle)).dy, lessThan(650));
         expect(find.text(title), findsNothing);
@@ -125,10 +125,10 @@ void main() {
     }
     final english = File('CHANGELOG.md').readAsStringSync();
     final chinese = File('CHANGELOG.zh-CN.md').readAsStringSync();
-    for (final version in ['1.0.0', '1.1.0', '1.2.0']) {
+    for (final version in ['1.0.0', '1.1.0', '1.2.0', '1.3.0']) {
       expect(english, contains('## $version'));
       expect(chinese, contains('## $version'));
     }
-    expect(chinese, contains('build 8'));
+    expect(chinese, contains('build 10'));
   });
 }

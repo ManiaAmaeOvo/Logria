@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/record_day.dart';
 import '../../nutrition/domain/nutrient_values.dart';
 
 class CalendarCycle {
@@ -9,15 +10,18 @@ class CalendarCycle {
   final CycleInstance cycle;
   final String planName;
   final DateTime endDate;
-  DateTime get startDate => DateTime(
-    cycle.startedAt.year,
-    cycle.startedAt.month,
-    cycle.startedAt.day,
-  );
+  DateTime get startDate => cycle.startLocalDate != null
+      ? DateTime.parse(cycle.startLocalDate!)
+      : DateTime(
+          cycle.startedAt.year,
+          cycle.startedAt.month,
+          cycle.startedAt.day,
+        );
 }
 
 class CalendarDay {
   bool training = false,
+      strengthTraining = false,
       rest = false,
       skipped = false,
       nutrition = false,
@@ -41,7 +45,8 @@ class CalendarRepository {
     DateTime month, {
     DateTime? now,
   }) => database.transaction(() async {
-    final today = now ?? DateTime.now();
+    final instant = now ?? DateTime.now();
+    final today = RecordDay.today(now: instant);
     final start = DateTime(month.year, month.month);
     final end = DateTime(month.year, month.month + 1);
     final days = <String, CalendarDay>{};
@@ -57,12 +62,19 @@ class CalendarRepository {
     final cycles = <CalendarCycle>[];
     for (var i = 0; i < allCycles.length; i++) {
       final cycle = allCycles[i];
-      if (cycle.startedAt.isAfter(today)) continue;
+      if (cycle.startedAt.isAfter(instant)) continue;
       // Switching plans leaves older cycles active; the next cycle's start caps their span.
-      var until = cycle.completedAt ?? today;
+      var until = cycle.endLocalDate != null
+          ? DateTime.parse(cycle.endLocalDate!)
+          : RecordDay.dateOnly(cycle.completedAt ?? today);
       if (i + 1 < allCycles.length &&
-          allCycles[i + 1].startedAt.isBefore(until)) {
-        until = allCycles[i + 1].startedAt;
+          (allCycles[i + 1].startLocalDate != null
+                  ? DateTime.parse(allCycles[i + 1].startLocalDate!)
+                  : RecordDay.dateOnly(allCycles[i + 1].startedAt))
+              .isBefore(until)) {
+        until = allCycles[i + 1].startLocalDate != null
+            ? DateTime.parse(allCycles[i + 1].startLocalDate!)
+            : RecordDay.dateOnly(allCycles[i + 1].startedAt);
       }
       if (until.isAfter(today)) until = today;
       cycles.add(
@@ -76,14 +88,20 @@ class CalendarRepository {
     final executions =
         await (database.select(database.cycleDayExecutions)..where(
               (e) =>
-                  e.occurredAt.isBiggerOrEqualValue(start) &
-                  e.occurredAt.isSmallerThanValue(end),
+                  (e.localDate.isBiggerOrEqualValue(key(start)) &
+                      e.localDate.isSmallerThanValue(key(end))) |
+                  (e.localDate.isNull() &
+                      e.occurredAt.isBiggerOrEqualValue(start) &
+                      e.occurredAt.isSmallerThanValue(end)),
             ))
             .get();
     for (final e in executions) {
-      final d = day(key(e.occurredAt));
+      final d = day(e.localDate ?? key(e.occurredAt));
       d.cycleIds.add(e.cycleInstanceId);
-      if (e.executionType == 'completedTraining') d.training = true;
+      if (e.executionType == 'completedTraining') {
+        d.training = true;
+        d.strengthTraining = true;
+      }
       if (e.executionType == 'skippedTraining') d.skipped = true;
       if (['plannedRest', 'movedRest', 'extraRest'].contains(e.executionType)) {
         d.rest = true;
@@ -99,6 +117,7 @@ class CalendarRepository {
             .get();
     for (final s in workouts) {
       final d = day(s.localDate)..training = true;
+      d.strengthTraining = true;
       if (s.cycleInstanceId != null) d.cycleIds.add(s.cycleInstanceId!);
     }
     final cardio =
@@ -166,6 +185,7 @@ class CalendarRepository {
       date = DateTime(date.year, date.month, date.day + 1)
     ) {
       final d = day(key(date));
+      if (!d.strengthTraining && !d.skipped && !d.rest) d.rest = true;
       // Explicit records win on the day a completed round creates the next round.
       if (d.cycleIds.isNotEmpty) continue;
       for (final cycle in cycles.reversed) {

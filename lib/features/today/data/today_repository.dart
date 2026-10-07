@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/record_day.dart';
 import '../../fitness/data/fitness_repository.dart';
 import '../../nutrition/data/nutrition_repository.dart';
 
@@ -61,15 +62,13 @@ class TodayRepository {
 
   Future<TodayLogData> loadDay(DateTime date) => database.transaction(() async {
     final start = DateTime(date.year, date.month, date.day);
-    final end = DateTime(date.year, date.month, date.day + 1);
     final nutrition = await NutritionRepository(database).loadDay(start);
     final workouts = await FitnessRepository(database).workoutsOnDate(start);
     final executions =
         await (database.select(database.cycleDayExecutions)
               ..where(
                 (row) =>
-                    row.occurredAt.isBiggerOrEqualValue(start) &
-                    row.occurredAt.isSmallerThanValue(end),
+                    RecordDay.matches(row.localDate, row.occurredAt, start),
               )
               ..orderBy([(row) => OrderingTerm.asc(row.occurredAt)]))
             .get();

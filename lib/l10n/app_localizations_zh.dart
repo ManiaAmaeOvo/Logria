@@ -1035,6 +1035,50 @@ class AppLocalizationsZh extends AppLocalizations {
   String get changelog => '更新日志';
 
   @override
+  String get editDateFitness => '补录／修改训练日期';
+
+  @override
+  String get historyTraining => '训练';
+
+  @override
+  String get historyRest => '休息';
+
+  @override
+  String get historySkip => '跳过';
+
+  @override
+  String get historyExtraRest => '额外休息 · 保持待训练日不变';
+
+  @override
+  String get recordDayHint => '记录日以凌晨 4 点分界；4 点前的今日记录归属于前一天。';
+
+  @override
+  String get defaultRest => '休息 · 未记录力量操作时的默认状态（不消耗计划日）。';
+
+  @override
+  String get historicalCompatibilityHint =>
+      '选择对应的计划、轮次和日程。其他日期的训练不会被挪动，同轮已占用日程不能重复记录。历史轮次保持结束；修改当前轮次会更新其待训练日。';
+
+  @override
+  String get replaceDateFitnessWarning =>
+      '是否替换该日期的力量操作？训练改为休息或跳过会移除该日训练及其 PR 贡献。其他日期、有氧、饮食和身体数据不变。新补录以 12:00 作为占位时间。退出训练编辑器不会替换已保存操作。';
+
+  @override
+  String get continueLabel => '继续';
+
+  @override
+  String get noPlanForHistory => '请先创建训练计划；未记录的日期已默认按休息显示。';
+
+  @override
+  String get planDayForDate => '该日期对应的计划日';
+
+  @override
+  String get chooseHistoryDay => '选择训练日';
+
+  @override
+  String get alreadyRecordedDay => '已在其他日期记录';
+
+  @override
   String get changelogHint => '离线版本记录 · 跟随应用语言';
 
   @override

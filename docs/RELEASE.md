@@ -1,20 +1,34 @@
 # Release process
 
-Current release is 1.2.0 (Android build 7). It uses Flutter 3.47.2 / Dart 3.13.2 and Android application ID
+Current release is 1.3.0 (Android build 10). It uses Flutter 3.47.2 / Dart 3.13.2 and Android application ID
 `com.logria.logria`. The UI version in `lib/core/app_metadata.dart` must match
 `pubspec.yaml`. Build numbers must increase for updates.
 
-Main's source is now 1.2.0 build 8: Chinese reader docs and a bundled localized
-changelog. This APK is local/manual distribution only. Do not move the v1.2.0
-tag, replace its build 7 assets or create a release for build 8; merge into the
-next release when requested.
+Version 1.3.0 combines historical fitness correction, implicit rest and a
+device-local 04:00 cutoff with the previously local-only build 8/9 changes.
+Publish a new v1.3.0 tag and release; do not move or replace v1.2.0 assets/tag.
+Release notes: `docs/releases/1.3.0.md` (English and Simplified Chinese).
 
-Local build 8 validation: all 80 tests, analysis and format checks pass. The
+1.3.0 validation: 96 automated tests, static analysis and formatting checks pass;
+final bilingual embedded-doc tests also pass. The APK retains certificate SHA-256
+`d8419bb31e02ad9916fb3ccd57ab4bb59a1fcc6b91e8e4b3e1b47900ea611aa0`,
+versionCode 10 / versionName 1.3.0, and does not request Internet permission.
+APK: `build/releases/logria-v1.3.0-android.apk`.
+SHA-256: `7e2ebe0a6d694943d7781db285fa62f82b34cd02c8502a7bd02ae66a5444acc1`.
+
+Previous local build 8 validation: all 80 tests, analysis and format checks pass. The
 emulator upgraded from build 7 without clearing data; the Settings changelog was
 checked in Chinese and English, then the original Chinese preference restored.
 Both changelogs and manuals are bundled; certificate unchanged, versionCode 8,
 no Internet permission. Local APK: `build/releases/logria-v1.2.0-build8-android.apk`.
 SHA-256: `49bd094011b76f3cd31324263379bc82b9f9e8660022aef901d66cc9b4a77571`.
+
+Local build 9 validation: all 96 tests, static analysis and format checks pass.
+The emulator upgraded in place with existing PPL × 2 plan retained and no observed
+crash/migration errors. VersionCode 9, unchanged signing certificate, no Internet
+permission. Local APK: `build/releases/logria-v1.2.0-build9-android.apk`.
+SHA-256: `ad20e1a7b4eb84af3a8cd065cf73b4aecb84a9a98354f1badd253c854e5c4238`.
+Build 9 was local-only; its changes are included in 1.3.0 build 10.
 
 ## Checks and build
 
@@ -32,7 +46,7 @@ The universal APK is `build/app/outputs/flutter-apk/app-release.apk`. It include
 the supported Android ABIs. A debug APK remains available through
 `flutter build apk --debug` for local development.
 
-For versions 1.0.0 through the current local build, release mode uses the existing local development
+For versions 1.0.0 through 1.3.0, release mode uses the existing local development
 signing certificate. This preserves update compatibility with earlier test APKs
 from this machine. It is not a production Google Play signing setup. CI-produced
 APKs use that runner's development certificate and are not interchangeable
@@ -44,12 +58,12 @@ keystore or signing credentials to Git.
 
 ## Publish
 
-After checks pass, commit the release, tag `v1.2.0`, push the branch and tag, then
+After checks pass, commit the release, tag `v1.3.0`, push the branch and tag, then
 create a GitHub release with the APK, its SHA-256 checksum and release notes.
 Release attachments should contain binaries/checksums only, never user databases.
 
-The 1.2.0 assets are `logria-v1.2.0-android.apk` and `SHA256SUMS`. Publish only
-the corresponding 1.2.0 Changelog section as the release notes, and set it as the
+The 1.3.0 assets are `logria-v1.3.0-android.apk` and `SHA256SUMS`. Publish
+`docs/releases/1.3.0.md` as the bilingual release notes, and set it as the
 latest stable release. Confirm the uploaded APK digest matches the local checksum.
 
 ## Upgrade from 1.0.0

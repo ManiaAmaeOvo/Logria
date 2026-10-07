@@ -34,7 +34,12 @@ void main() {
         );
     await db
         .update(db.cycleDayExecutions)
-        .write(CycleDayExecutionsCompanion(occurredAt: Value(yesterday)));
+        .write(
+          CycleDayExecutionsCompanion(
+            occurredAt: Value(yesterday),
+            localDate: Value(DateFormat('yyyy-MM-dd').format(yesterday)),
+          ),
+        );
     final history = (await repo.listWorkoutHistory()).single;
     final key =
         'fitness.draft.${DateFormat('yyyy-MM-dd').format(DateTime.now())}.${old.planDays[1].id}';

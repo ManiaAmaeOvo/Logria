@@ -216,6 +216,7 @@ void main() {
       )..where((r) => r.id.equals(e.id))).write(
         CycleDayExecutionsCompanion(
           occurredAt: Value(DateTime.now().subtract(const Duration(days: 1))),
+          localDate: const Value(null),
         ),
       );
       final d = (await repo.loadDashboard())!;

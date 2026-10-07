@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/number_format.dart';
+import '../../../core/record_day.dart';
+import '../../../core/record_day_watcher.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/nutrition_repository.dart';
 import '../data/food_preset_repository.dart';
@@ -25,14 +27,24 @@ class _NutritionPageState extends State<NutritionPage> {
   late final NutritionRepository _repository;
   late DateTime _selectedDate;
   late Future<NutritionDayData> _dayFuture;
+  late final RecordDayWatcher _dayWatcher;
 
   @override
   void initState() {
     super.initState();
     _repository = NutritionRepository(widget.database);
-    final now = DateTime.now();
-    _selectedDate = DateTime(now.year, now.month, now.day);
+    _selectedDate = RecordDay.today();
     _dayFuture = _repository.loadDay(_selectedDate);
+    _dayWatcher = RecordDayWatcher((previous, current) {
+      if (_selectedDate == previous) _selectedDate = current;
+      if (mounted) _reload();
+    });
+  }
+
+  @override
+  void dispose() {
+    _dayWatcher.dispose();
+    super.dispose();
   }
 
   void _reload() {
@@ -50,7 +62,7 @@ class _NutritionPageState extends State<NutritionPage> {
   }
 
   Future<void> _pickDate() async {
-    final now = DateTime.now();
+    final now = RecordDay.today();
     final date = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
@@ -61,6 +73,7 @@ class _NutritionPageState extends State<NutritionPage> {
   }
 
   Future<void> _editFoodEntry({FoodLogEntry? entry}) async {
+    final date = _selectedDate;
     final values = await showDialog<_IntakeValues>(
       context: context,
       builder: (_) => _IntakeDialog(record: null, meal: true, entry: entry),
@@ -68,7 +81,7 @@ class _NutritionPageState extends State<NutritionPage> {
     if (values == null || !mounted) return;
     if (entry == null) {
       await _repository.addFoodEntry(
-        _selectedDate,
+        date,
         values.text!,
         proteinGrams: values.protein,
         carbohydrateGrams: values.carbohydrate,
@@ -117,13 +130,14 @@ class _NutritionPageState extends State<NutritionPage> {
   }
 
   Future<void> _editIntake(DailyNutritionRecord? record) async {
+    final date = _selectedDate;
     final values = await showDialog<_IntakeValues>(
       context: context,
       builder: (_) => _IntakeDialog(record: record),
     );
     if (values == null) return;
     await _repository.saveDailyIntake(
-      date: _selectedDate,
+      date: date,
       proteinGrams: values.protein,
       carbohydrateGrams: values.carbohydrate,
       fatGrams: values.fat,
@@ -223,7 +237,7 @@ class _NutritionPageState extends State<NutritionPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final today = DateTime.now();
+    final today = RecordDay.today();
     final isToday =
         _selectedDate.year == today.year &&
         _selectedDate.month == today.month &&

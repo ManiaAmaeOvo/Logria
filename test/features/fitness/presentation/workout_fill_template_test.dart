@@ -64,7 +64,12 @@ void main() {
               );
           await db
               .update(db.cycleDayExecutions)
-              .write(CycleDayExecutionsCompanion(occurredAt: Value(yesterday)));
+              .write(
+                CycleDayExecutionsCompanion(
+                  occurredAt: Value(yesterday),
+                  localDate: Value(DateFormat('yyyy-MM-dd').format(yesterday)),
+                ),
+              );
           await repo.restartTrainingCycle();
           dashboard = (await repo.loadDashboard())!;
         }

@@ -13,12 +13,11 @@ Logria is an independent project and does not share a repository or data with Su
 [Changelog](CHANGELOG.md) · [English manual](docs/USER_GUIDE.md) ·
 [中文使用说明](docs/USER_GUIDE.zh-CN.md) · [MIT License](LICENSE)
 
-## Version 1.2.0 (Android build 7)
+## Version 1.3.0 (Android build 10)
 
-The published release/tag/APK remains build 7. Main now includes Chinese reader
-docs and an offline, app-language-aware changelog as **local build 8**. Its APK
-is shared manually only; these changes will join the next release without
-replacing the existing v1.2.0 assets or tag.
+This release adds historical fitness correction, implicit rest and a 04:00
+journal-day cutoff, and includes previously local-only Chinese reader docs and
+the app-language-aware offline changelog. The v1.2.0 release/assets/tag are unchanged.
 
 This release adds daily review notes, non-destructive cycle restart, first-set
 filling and previous-record workout templates, independent exercise variants,
@@ -92,9 +91,9 @@ Android 7.0/API 24 or later is required. Android 16/arm64 has been checked local
 The published APK runs in release mode but uses the existing development
 signing certificate to allow updates from earlier test APKs from this machine.
 It is not a production Google Play release. See [release details](docs/RELEASE.md).
-To upgrade from 1.0.0, 1.1.0 or local 1.2.0 builds, install **1.2.0 build 7** over
+To upgrade from earlier releases or local builds, install **1.3.0 build 10** over
 the existing app without uninstalling or clearing storage. The signing identity
-is unchanged; schema 5 migrations preserve existing records. Keep your data on
+is unchanged; additive migrations through schema 6 preserve existing records. Keep your data on
 the device: restorable backup/export/import is not available yet.
 
 ## Local data and privacy

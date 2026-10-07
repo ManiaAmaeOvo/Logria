@@ -1080,6 +1080,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changelog => 'Changelog';
 
   @override
+  String get editDateFitness => 'Backfill / edit a training date';
+
+  @override
+  String get historyTraining => 'Training';
+
+  @override
+  String get historyRest => 'Rest';
+
+  @override
+  String get historySkip => 'Skip';
+
+  @override
+  String get historyExtraRest => 'Extra rest · keep pending training';
+
+  @override
+  String get recordDayHint =>
+      'Journal days run from 04:00 to 04:00. Before 04:00, today\'s log belongs to the previous date.';
+
+  @override
+  String get defaultRest =>
+      'Rest · assumed because no strength action was recorded (does not consume a plan slot).';
+
+  @override
+  String get historicalCompatibilityHint =>
+      'Choose the original plan, cycle and day. Other dates keep their workouts; occupied days cannot be recorded twice. Closed cycles stay closed. Changes in the active cycle update its pending days.';
+
+  @override
+  String get replaceDateFitnessWarning =>
+      'Replace this date\'s strength action? Changing training to rest/skip removes its workout and PR contribution. Other dates, cardio, food and body data stay unchanged. New backfills use 12:00 as a placeholder time. Canceling the workout editor keeps the saved action.';
+
+  @override
+  String get continueLabel => 'Continue';
+
+  @override
+  String get noPlanForHistory =>
+      'Create a training plan first. Unrecorded dates already default to rest.';
+
+  @override
+  String get planDayForDate => 'Plan day for this date';
+
+  @override
+  String get chooseHistoryDay => 'Choose a training day';
+
+  @override
+  String get alreadyRecordedDay => 'Recorded on another date';
+
+  @override
   String get changelogHint => 'Offline version history · follows app language';
 
   @override

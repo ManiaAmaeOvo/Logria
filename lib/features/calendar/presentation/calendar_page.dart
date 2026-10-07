@@ -5,7 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/record_day.dart';
+import '../../../core/record_day_watcher.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../fitness/data/fitness_repository.dart';
+import '../../fitness/presentation/historical_fitness_page.dart';
 import '../../today/data/today_repository.dart';
 import '../../today/presentation/today_log_formatter.dart';
 import '../data/calendar_repository.dart';
@@ -21,7 +25,8 @@ class _CalendarPageState extends State<CalendarPage>
     with WidgetsBindingObserver {
   late final _repository = CalendarRepository(widget.database);
   late final _logs = TodayRepository(widget.database);
-  DateTime _date = DateUtils.dateOnly(DateTime.now());
+  DateTime _date = RecordDay.today();
+  late final RecordDayWatcher _dayWatcher;
   late DateTime _month = DateTime(_date.year, _date.month);
   late Future<CalendarMonthData> _monthFuture = _repository.loadMonth(_month);
   late Future<TodayLogData> _logFuture = _logs.loadDay(_date);
@@ -32,11 +37,17 @@ class _CalendarPageState extends State<CalendarPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _dayWatcher = RecordDayWatcher((previous, current) {
+      if (!mounted) return;
+      if (_date == previous && current != previous) _select(current);
+      _refresh();
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _dayWatcher.dispose();
     super.dispose();
   }
 
@@ -59,7 +70,7 @@ class _CalendarPageState extends State<CalendarPage>
 
   void _move(int offset) {
     final month = DateTime(_month.year, _month.month + offset);
-    final now = DateTime.now();
+    final now = RecordDay.today();
     var date = DateTime(
       month.year,
       month.month,
@@ -128,7 +139,7 @@ class _CalendarPageState extends State<CalendarPage>
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final now = DateUtils.dateOnly(DateTime.now());
+    final now = RecordDay.today();
     return RefreshIndicator(
       onRefresh: _refresh,
       child: ListView(
@@ -453,6 +464,23 @@ class _CalendarPageState extends State<CalendarPage>
             icon: const Icon(Icons.copy_all_outlined),
             label: Text(l.copySelectedLog),
           ),
+          TextButton.icon(
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HistoricalFitnessPage(
+                    repository: FitnessRepository(widget.database),
+                    date: _date,
+                  ),
+                ),
+              );
+              if (mounted) _refresh();
+            },
+            icon: const Icon(Icons.edit_calendar),
+            label: Text(l.editDateFitness),
+          ),
+          Text(l.recordDayHint, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 12),
           FutureBuilder<TodayLogData>(
             key: ValueKey(_date),

@@ -14,6 +14,40 @@ void main() {
     await database.close();
   });
 
+  test('schema 5 timestamp-only actions survive schema 6 without date rewrites', () async {
+    await database.close();
+    final occurred = DateTime(2026, 10, 6, 2).millisecondsSinceEpoch ~/ 1000;
+    database = AppDatabase(
+      NativeDatabase.memory(
+        setup: (sqlite) {
+          sqlite.execute(
+            'CREATE TABLE cycle_instances (id TEXT PRIMARY KEY, plan_id TEXT NOT NULL, cycle_number INTEGER NOT NULL, color_value INTEGER NOT NULL, status TEXT NOT NULL, started_at INTEGER NOT NULL, completed_at INTEGER)',
+          );
+          sqlite.execute(
+            'CREATE TABLE cycle_day_executions (id TEXT PRIMARY KEY, cycle_instance_id TEXT NOT NULL, plan_day_id TEXT, execution_type TEXT NOT NULL, original_position INTEGER, occurred_at INTEGER NOT NULL, notes TEXT)',
+          );
+          sqlite.execute(
+            "INSERT INTO cycle_instances VALUES ('cycle', 'plan', 1, 0, 'active', $occurred, NULL)",
+          );
+          sqlite.execute(
+            "INSERT INTO cycle_day_executions VALUES ('action', 'cycle', NULL, 'extraRest', NULL, $occurred, 'keep')",
+          );
+          sqlite.execute('PRAGMA user_version = 5');
+        },
+      ),
+    );
+    final cycle = await database.select(database.cycleInstances).getSingle();
+    final action = await database
+        .select(database.cycleDayExecutions)
+        .getSingle();
+    expect(cycle.startLocalDate, isNull);
+    expect(cycle.endLocalDate, isNull);
+    expect(action.localDate, isNull);
+    expect(action.occurredAt, DateTime(2026, 10, 6, 2));
+    expect(action.notes, 'keep');
+    expect(database.schemaVersion, 6);
+  });
+
   test('schema 3 settings survive the additive daily-note migration', () async {
     await database.close();
     database = AppDatabase(
@@ -25,6 +59,10 @@ void main() {
           sqlite.execute(
             "INSERT INTO app_settings VALUES ('app.language', 'zh', 1)",
           );
+          sqlite.execute(
+            'CREATE TABLE cycle_day_executions (id TEXT PRIMARY KEY)',
+          );
+          sqlite.execute('CREATE TABLE cycle_instances (id TEXT PRIMARY KEY)');
           sqlite.execute('PRAGMA user_version = 3');
           sqlite.execute('CREATE TABLE food_log_entries (id TEXT PRIMARY KEY)');
           sqlite.execute(
@@ -48,7 +86,7 @@ void main() {
       (await old.select(old.dailyNotes).getSingle()).content,
       'Still local',
     );
-    expect(old.schemaVersion, 5);
+    expect(old.schemaVersion, 6);
   });
 
   test('food text and nutrition totals persist independently', () async {
@@ -111,6 +149,12 @@ void main() {
             );
             sqlite.execute(
               "INSERT INTO daily_notes VALUES ('2026-10-04', 'Existing review', 0)",
+            );
+            sqlite.execute(
+              'CREATE TABLE cycle_day_executions (id TEXT PRIMARY KEY)',
+            );
+            sqlite.execute(
+              'CREATE TABLE cycle_instances (id TEXT PRIMARY KEY)',
             );
             sqlite.execute('PRAGMA user_version = 4');
           },

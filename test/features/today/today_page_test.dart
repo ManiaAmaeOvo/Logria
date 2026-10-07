@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logria/core/database/app_database.dart';
+import 'package:logria/core/record_day.dart';
 import 'package:logria/features/nutrition/data/nutrition_repository.dart';
 import 'package:logria/features/today/presentation/today_page.dart';
 import 'package:logria/features/today/data/today_repository.dart';
@@ -28,7 +29,7 @@ void main() {
     );
     int? opened;
     await tester.runAsync(() async {
-      await NutritionRepository(db).loadDay(DateTime.now());
+      await NutritionRepository(db).loadDay(RecordDay.today());
     });
     await tester.pumpWidget(
       MaterialApp(
@@ -57,11 +58,12 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(
-      (await TodayRepository(db).loadDay(DateTime.now())).note,
+      (await TodayRepository(db).loadDay(RecordDay.today())).note,
       'Today felt strong',
     );
     await tester.runAsync(() async {
-      await NutritionRepository(db).addFoodEntry(DateTime.now(), 'Fresh meal');
+      await NutritionRepository(db)
+          .addFoodEntry(RecordDay.today(), 'Fresh meal');
     });
     await tester.tap(find.text("Copy today's log"));
     await tester.runAsync(() async {
@@ -73,6 +75,8 @@ void main() {
     expect(copied.single, contains('Fitness'));
     expect(copied.single, contains('Body'));
     await tester.ensureVisible(find.byTooltip('Copy Nutrition'));
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Copy Nutrition'));
     await tester.runAsync(() async {
       await Future<void>.delayed(const Duration(milliseconds: 100));

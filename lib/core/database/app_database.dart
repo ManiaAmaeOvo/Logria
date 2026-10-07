@@ -76,6 +76,8 @@ class PlanDayExercises extends Table {
 }
 
 class CycleInstances extends Table {
+  TextColumn get startLocalDate => text().nullable()();
+  TextColumn get endLocalDate => text().nullable()();
   TextColumn get id => text()();
   TextColumn get planId => text().references(TrainingPlans, #id)();
   IntColumn get cycleNumber => integer()();
@@ -94,6 +96,7 @@ class CycleInstances extends Table {
 }
 
 class CycleDayExecutions extends Table {
+  TextColumn get localDate => text().nullable()();
   TextColumn get id => text()();
   TextColumn get cycleInstanceId =>
       text().references(CycleInstances, #id, onDelete: KeyAction.cascade)();
@@ -313,7 +316,7 @@ final class AppDatabase extends _$AppDatabase {
   AppDatabase.defaults() : super(driftDatabase(name: 'logria'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -343,6 +346,11 @@ final class AppDatabase extends _$AppDatabase {
           dailyNutritionRecords,
           dailyNutritionRecords.extraNutrientsJson,
         );
+      }
+      if (from < 6) {
+        await m.addColumn(cycleDayExecutions, cycleDayExecutions.localDate);
+        await m.addColumn(cycleInstances, cycleInstances.startLocalDate);
+        await m.addColumn(cycleInstances, cycleInstances.endLocalDate);
       }
     },
   );

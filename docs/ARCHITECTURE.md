@@ -68,8 +68,14 @@ Body values are recorded independently by type and local date. Partial updates
 do not remove other values. Historical views never carry old measurements into
 a day that has no measurement.
 
-Dates use local `yyyy-MM-dd` keys. Timestamp-range queries use local-midnight
-boundaries. Calendar colors indicate cycle spans and icons indicate real data;
+Dates use local `yyyy-MM-dd` labels with a 04:00 journal-day cutoff for default
+selection. Schema 6 adds nullable action/cycle date labels. Explicit selections
+are not shifted; null legacy labels use original local-midnight timestamp ranges.
+Historical replacement validates a conservative plan/action revision and duplicate
+cycle/day occupancy inside one transaction. It changes only the selected date,
+recalculates live progress and marks modified closed cycles `corrected` without
+reopening them. Implicit rest is presentation-only, not a cycle execution.
+Calendar colors indicate cycle spans and icons indicate activity/default rest;
 explicit executions win over inferred spans on cycle boundary dates.
 
 Quick food selection is a searchable dialog within the meal log, followed by

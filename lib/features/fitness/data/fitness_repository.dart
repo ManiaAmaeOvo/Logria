@@ -7,8 +7,12 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/record_day.dart';
+import '../../calendar/data/calendar_repository.dart';
 import '../domain/training_cycle.dart';
 import '../domain/training_plan_template.dart';
+
+part 'fitness_history.dart';
 
 class FitnessDashboardData {
   const FitnessDashboardData({
@@ -95,9 +99,12 @@ class WorkoutHistoryExercise {
 }
 
 class FitnessRepository {
-  FitnessRepository(this.database);
+  FitnessRepository(this.database, {DateTime Function()? clock})
+    : _now = clock ?? DateTime.now;
 
   final AppDatabase database;
+  final DateTime Function() _now;
+  DateTime get recordingDate => RecordDay.today(now: _now());
   final Uuid _uuid = const Uuid();
   static const _redoKey = 'fitness.undo.today';
 
@@ -129,8 +136,8 @@ class FitnessRepository {
     final raw = await readSetting(_redoKey);
     if (raw == null) return null;
     final snapshot = Map<String, dynamic>.from(jsonDecode(raw));
-    if (snapshot['date'] != DateFormat('yyyy-MM-dd').format(DateTime.now()) ||
-        await _hasFitnessActionOnDate(DateTime.now())) {
+    if (snapshot['date'] != RecordDay.key(recordingDate) ||
+        await _hasFitnessActionOnDate(recordingDate)) {
       return null;
     }
     final planId = snapshot['planId'] as String;
@@ -167,7 +174,7 @@ class FitnessRepository {
   Future<void> restartTrainingCycle() => database.transaction(() async {
     final dashboard = await _requiredDashboard();
     await _ensureNoFitnessActionToday();
-    final now = DateTime.now();
+    final now = _now();
     final cycles = await (database.select(
       database.cycleInstances,
     )..where((c) => c.planId.equals(dashboard.plan.id))).get();
@@ -179,6 +186,7 @@ class FitnessRepository {
       CycleInstancesCompanion(
         status: const Value('interrupted'),
         completedAt: Value(now),
+        endLocalDate: Value(RecordDay.key(recordingDate)),
       ),
     );
     // Only unfinished drafts belonging to this plan are discarded.
@@ -213,7 +221,7 @@ class FitnessRepository {
     // Do not strand another day's draft when changing the entry point.
     for (final d in dashboard.planDays) {
       if (await readSetting(
-            'fitness.draft.${DateFormat('yyyy-MM-dd').format(DateTime.now())}.${d.id}',
+            'fitness.draft.${RecordDay.key(recordingDate)}.${d.id}',
           ) !=
           null) {
         throw StateError(
@@ -243,7 +251,7 @@ class FitnessRepository {
         AppSettingsCompanion.insert(
           keyName: key,
           value: value,
-          updatedAt: DateTime.now(),
+          updatedAt: _now(),
         ),
       );
 
@@ -401,7 +409,7 @@ class FitnessRepository {
             minutes: minutes,
             distanceKm: Value(distance),
             notes: Value(notes),
-            recordedAt: DateTime.now(),
+            recordedAt: _now(),
           ),
         );
   }
@@ -430,7 +438,7 @@ class FitnessRepository {
       ..orderBy([(row) => OrderingTerm.desc(row.cycleNumber)])
       ..limit(1);
     var cycle = await cycleQuery.getSingleOrNull();
-    cycle ??= await _createCycle(plan.id, 1, DateTime.now());
+    cycle ??= await _createCycle(plan.id, 1, _now());
 
     final daysQuery = database.select(database.planDays)
       ..where((row) => row.planId.equals(plan.id))
@@ -471,24 +479,24 @@ class FitnessRepository {
       planDays: planDays,
       executions: executions,
       progress: progress,
-      hasActionToday: await _hasFitnessActionOnDate(DateTime.now()),
+      hasActionToday: await _hasFitnessActionOnDate(recordingDate),
       todayWorkout: todayWorkout,
       unrecordedDayIds: unrecordedIds,
       canRedo: await _availableRedo() != null,
       canChooseStart:
           executions.isEmpty &&
-          !await _hasFitnessActionOnDate(DateTime.now()) &&
+          !await _hasFitnessActionOnDate(recordingDate) &&
           (await (database.select(
                 database.workoutSessions,
               )..where((s) => s.cycleInstanceId.equals(cycle!.id))).get())
               .isEmpty &&
           await readSetting(
-                'fitness.draft.${DateFormat('yyyy-MM-dd').format(DateTime.now())}.${progress.nextDay?.id}',
+                'fitness.draft.${RecordDay.key(recordingDate)}.${progress.nextDay?.id}',
               ) ==
               null,
       hasDraft:
           await readSetting(
-            'fitness.draft.${DateFormat('yyyy-MM-dd').format(DateTime.now())}.${todayWorkout?.session.id ?? progress.nextDay?.id}',
+            'fitness.draft.${RecordDay.key(recordingDate)}.${todayWorkout?.session.id ?? progress.nextDay?.id}',
           ) !=
           null,
     );
@@ -499,7 +507,7 @@ class FitnessRepository {
     String? planName,
     List<String>? dayNames,
   }) async {
-    final now = DateTime.now();
+    final now = _now();
     final planId = _uuid.v4();
 
     await database.transaction(() async {
@@ -557,7 +565,7 @@ class FitnessRepository {
       database.exercises,
     )..where((row) => row.normalizedName.equals(normalized))).getSingleOrNull();
     if (existing != null) return existing.id;
-    final now = DateTime.now();
+    final now = _now();
     final id = _uuid.v4();
     await database
         .into(database.exercises)
@@ -621,8 +629,8 @@ class FitnessRepository {
                     'note': note.trim(),
                   }),
                 ),
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
+                createdAt: _now(),
+                updatedAt: _now(),
               ),
             );
         return id;
@@ -658,10 +666,7 @@ class FitnessRepository {
     await (database.update(
       database.trainingPlans,
     )..where((row) => row.id.equals(dashboard.plan.id))).write(
-      TrainingPlansCompanion(
-        name: Value(trimmed),
-        updatedAt: Value(DateTime.now()),
-      ),
+      TrainingPlansCompanion(name: Value(trimmed), updatedAt: Value(_now())),
     );
   }
 
@@ -874,7 +879,7 @@ class FitnessRepository {
   }
 
   Future<WorkoutHistoryItem?> _loadTodayWorkout() async {
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final today = RecordDay.key(recordingDate);
     final session =
         await (database.select(database.workoutSessions)
               ..where(
@@ -897,28 +902,29 @@ class FitnessRepository {
   }
 
   Future<CycleExecutionType> takeRest() async {
-    final dashboard = await _requiredDashboard();
-    final transition = dashboard.progress.takeRest(DateTime.now());
-    await database.transaction(() async {
+    return database.transaction(() async {
       await _ensureNoFitnessActionToday();
+      final dashboard = await _requiredDashboard();
+      final transition = dashboard.progress.takeRest(_now());
       await _persistTransition(dashboard, transition);
+      return transition.execution.type;
     });
-    return transition.execution.type;
   }
 
   Future<void> skipCurrentTraining() async {
-    final dashboard = await _requiredDashboard();
-    final transition = dashboard.progress.skipCurrentTraining(DateTime.now());
     await database.transaction(() async {
       await _ensureNoFitnessActionToday();
+      final dashboard = await _requiredDashboard();
+      final transition = dashboard.progress.skipCurrentTraining(_now());
       await _persistTransition(dashboard, transition);
     });
   }
 
   Future<void> completeWorkout(
     FitnessDashboardData dashboard,
-    List<WorkoutDraftExercise> exercises,
-  ) async {
+    List<WorkoutDraftExercise> exercises, {
+    DateTime? recordDate,
+  }) async {
     if (dashboard.progress.nextDay?.type != CycleDayType.training) {
       throw StateError('The current cycle day is not a training day.');
     }
@@ -926,18 +932,29 @@ class FitnessRepository {
       throw ArgumentError('A workout must contain at least one exercise.');
     }
 
-    final now = DateTime.now();
+    final now = _now();
     final sessionId = _uuid.v4();
     final currentDay = dashboard.progress.nextDay!;
+    final date = RecordDay.dateOnly(recordDate ?? recordingDate);
+    if (date.isAfter(recordingDate)) {
+      throw ArgumentError('Future workout date.');
+    }
 
     await database.transaction(() async {
-      await _ensureNoFitnessActionToday();
+      if (await _hasFitnessActionOnDate(date)) {
+        throw FitnessDayActionLockedException();
+      }
+      final fresh = await _requiredDashboard();
+      if (fresh.cycle.id != dashboard.cycle.id ||
+          fresh.progress.nextDay?.id != currentDay.id) {
+        throw StateError('The plan or cycle changed. Reopen the workout.');
+      }
       await database
           .into(database.workoutSessions)
           .insert(
             WorkoutSessionsCompanion.insert(
               id: sessionId,
-              localDate: DateFormat('yyyy-MM-dd').format(now),
+              localDate: RecordDay.key(date),
               cycleInstanceId: Value(dashboard.cycle.id),
               planDayId: Value(currentDay.id),
               planNameSnapshot: Value(dashboard.plan.name),
@@ -951,7 +968,7 @@ class FitnessRepository {
       await _insertWorkoutExercises(sessionId, exercises, now);
 
       final transition = dashboard.progress.completeCurrent(now);
-      await _persistTransition(dashboard, transition);
+      await _persistTransition(dashboard, transition, date: date);
     });
   }
 
@@ -962,7 +979,7 @@ class FitnessRepository {
     if (exercises.isEmpty) {
       throw ArgumentError('A workout must contain at least one exercise.');
     }
-    final now = DateTime.now();
+    final now = _now();
     await database.transaction(() async {
       final session = await (database.select(
         database.workoutSessions,
@@ -1062,17 +1079,14 @@ class FitnessRepository {
   }
 
   Future<bool> undoLatestFitnessActionToday() async {
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day);
-    final end = start.add(const Duration(days: 1));
+    final date = recordingDate;
 
     return database.transaction(() async {
       final execution =
           await (database.select(database.cycleDayExecutions)
                 ..where(
                   (row) =>
-                      row.occurredAt.isBiggerOrEqualValue(start) &
-                      row.occurredAt.isSmallerThanValue(end),
+                      RecordDay.matches(row.localDate, row.occurredAt, date),
                 )
                 ..orderBy([(row) => OrderingTerm.desc(row.occurredAt)])
                 ..limit(1))
@@ -1100,7 +1114,7 @@ class FitnessRepository {
                 ..limit(1))
               .getSingle();
       final snapshot = <String, dynamic>{
-        'date': DateFormat('yyyy-MM-dd').format(now),
+        'date': RecordDay.key(date),
         'planId': cycle.planId,
         'planSignature': await _planSignature(cycle.planId),
         'activePlanId': activePlan.id,
@@ -1122,7 +1136,9 @@ class FitnessRepository {
         ];
       }
       if (cycle.status == 'completed' &&
-          cycle.completedAt == execution.occurredAt) {
+          cycle.planId == activePlan.id &&
+          (cycle.completedAt == execution.occurredAt ||
+              cycle.endLocalDate == RecordDay.key(date))) {
         final nextCycle =
             await (database.select(database.cycleInstances)..where(
                   (row) =>
@@ -1154,6 +1170,7 @@ class FitnessRepository {
           const CycleInstancesCompanion(
             status: Value('active'),
             completedAt: Value(null),
+            endLocalDate: Value(null),
           ),
         );
       }
@@ -1236,20 +1253,16 @@ class FitnessRepository {
   });
 
   Future<void> _ensureNoFitnessActionToday() async {
-    if (await _hasFitnessActionOnDate(DateTime.now())) {
+    if (await _hasFitnessActionOnDate(recordingDate)) {
       throw FitnessDayActionLockedException();
     }
   }
 
   Future<bool> _hasFitnessActionOnDate(DateTime date) async {
-    final start = DateTime(date.year, date.month, date.day);
-    final end = start.add(const Duration(days: 1));
     final execution =
         await (database.select(database.cycleDayExecutions)
               ..where(
-                (row) =>
-                    row.occurredAt.isBiggerOrEqualValue(start) &
-                    row.occurredAt.isSmallerThanValue(end),
+                (row) => RecordDay.matches(row.localDate, row.occurredAt, date),
               )
               ..limit(1))
             .getSingleOrNull();
@@ -1274,8 +1287,9 @@ class FitnessRepository {
 
   Future<void> _persistTransition(
     FitnessDashboardData dashboard,
-    CycleTransition transition,
-  ) async {
+    CycleTransition transition, {
+    DateTime? date,
+  }) async {
     await clearSetting(_redoKey);
     await database
         .into(database.cycleDayExecutions)
@@ -1287,6 +1301,11 @@ class FitnessRepository {
             executionType: transition.execution.type.name,
             originalPosition: Value(transition.execution.originalPosition),
             occurredAt: transition.execution.occurredAt,
+            localDate: Value(
+              RecordDay.key(
+                date ?? RecordDay.dateOf(transition.execution.occurredAt),
+              ),
+            ),
           ),
         );
 
@@ -1297,12 +1316,18 @@ class FitnessRepository {
         CycleInstancesCompanion(
           status: const Value('completed'),
           completedAt: Value(transition.execution.occurredAt),
+          endLocalDate: Value(
+            RecordDay.key(
+              date ?? RecordDay.dateOf(transition.execution.occurredAt),
+            ),
+          ),
         ),
       );
       await _createCycle(
         dashboard.plan.id,
         dashboard.cycle.cycleNumber + 1,
         transition.execution.occurredAt,
+        date: date,
       );
     }
   }
@@ -1310,8 +1335,9 @@ class FitnessRepository {
   Future<CycleInstance> _createCycle(
     String planId,
     int cycleNumber,
-    DateTime startedAt,
-  ) async {
+    DateTime startedAt, {
+    DateTime? date,
+  }) async {
     final id = _uuid.v4();
     final colorValue = _cycleColors[(cycleNumber - 1) % _cycleColors.length];
     await database
@@ -1324,6 +1350,9 @@ class FitnessRepository {
             colorValue: colorValue,
             status: 'active',
             startedAt: startedAt,
+            startLocalDate: Value(
+              RecordDay.key(date ?? RecordDay.dateOf(startedAt)),
+            ),
           ),
         );
     return CycleInstance(
@@ -1334,6 +1363,7 @@ class FitnessRepository {
       status: 'active',
       startedAt: startedAt,
       completedAt: null,
+      startLocalDate: RecordDay.key(date ?? RecordDay.dateOf(startedAt)),
     );
   }
 

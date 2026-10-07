@@ -119,6 +119,10 @@ void main() {
           sqlite.execute(
             "INSERT INTO food_log_entries VALUES ('old', '2026-10-03', 'Existing note', NULL, 0, 0)",
           );
+          sqlite.execute(
+            'CREATE TABLE cycle_day_executions (id TEXT PRIMARY KEY)',
+          );
+          sqlite.execute('CREATE TABLE cycle_instances (id TEXT PRIMARY KEY)');
           sqlite.execute('PRAGMA user_version = 1');
           sqlite.execute(
             'CREATE TABLE daily_nutrition_records (id TEXT PRIMARY KEY)',

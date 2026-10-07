@@ -2019,6 +2019,90 @@ abstract class AppLocalizations {
   /// **'Changelog'**
   String get changelog;
 
+  /// No description provided for @editDateFitness.
+  ///
+  /// In en, this message translates to:
+  /// **'Backfill / edit a training date'**
+  String get editDateFitness;
+
+  /// No description provided for @historyTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get historyTraining;
+
+  /// No description provided for @historyRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest'**
+  String get historyRest;
+
+  /// No description provided for @historySkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get historySkip;
+
+  /// No description provided for @historyExtraRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra rest · keep pending training'**
+  String get historyExtraRest;
+
+  /// No description provided for @recordDayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Journal days run from 04:00 to 04:00. Before 04:00, today\'s log belongs to the previous date.'**
+  String get recordDayHint;
+
+  /// No description provided for @defaultRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest · assumed because no strength action was recorded (does not consume a plan slot).'**
+  String get defaultRest;
+
+  /// No description provided for @historicalCompatibilityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the original plan, cycle and day. Other dates keep their workouts; occupied days cannot be recorded twice. Closed cycles stay closed. Changes in the active cycle update its pending days.'**
+  String get historicalCompatibilityHint;
+
+  /// No description provided for @replaceDateFitnessWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace this date\'s strength action? Changing training to rest/skip removes its workout and PR contribution. Other dates, cardio, food and body data stay unchanged. New backfills use 12:00 as a placeholder time. Canceling the workout editor keeps the saved action.'**
+  String get replaceDateFitnessWarning;
+
+  /// No description provided for @continueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueLabel;
+
+  /// No description provided for @noPlanForHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a training plan first. Unrecorded dates already default to rest.'**
+  String get noPlanForHistory;
+
+  /// No description provided for @planDayForDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan day for this date'**
+  String get planDayForDate;
+
+  /// No description provided for @chooseHistoryDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a training day'**
+  String get chooseHistoryDay;
+
+  /// No description provided for @alreadyRecordedDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded on another date'**
+  String get alreadyRecordedDay;
+
   /// No description provided for @changelogHint.
   ///
   /// In en, this message translates to:

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/record_day.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/today_repository.dart';
 import 'today_log_formatter.dart';
@@ -31,23 +32,20 @@ class _TodayPageState extends State<TodayPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _future = _repository.loadDay(DateTime.now());
+    _future = _repository.loadDay(RecordDay.today());
     _scheduleMidnight();
   }
 
   void _scheduleMidnight() {
     _midnight?.cancel();
     final now = DateTime.now();
-    _midnight = Timer(
-      DateTime(now.year, now.month, now.day + 1).difference(now),
-      () {
-        if (mounted) _reload();
-      },
-    );
+    _midnight = Timer(RecordDay.nextBoundary(now).difference(now), () {
+      if (mounted) _reload();
+    });
   }
 
   Future<void> _reload() async {
-    final future = _repository.loadDay(DateTime.now());
+    final future = _repository.loadDay(RecordDay.today());
     setState(() {
       _future = future;
     });
@@ -76,7 +74,7 @@ class _TodayPageState extends State<TodayPage> with WidgetsBindingObserver {
     setState(() => _copying = true);
     try {
       // Read fresh data, including a possible date rollover, before copying.
-      final data = await _repository.loadDay(DateTime.now());
+      final data = await _repository.loadDay(RecordDay.today());
       if (!mounted) return;
       final l = AppLocalizations.of(context)!;
       final formatter = TodayLogFormatter(data, l);

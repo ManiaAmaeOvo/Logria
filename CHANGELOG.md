@@ -2,14 +2,25 @@
 
 [简体中文](CHANGELOG.zh-CN.md)
 
-## Unreleased — local Android build 8
+## 1.3.0 — 2026-10-07 (Android build 10)
+
+- Backfill/edit a selected date as training, rest or skip from Fitness or Calendar.
+  Explicit plan/cycle/day binding prevents duplicate slots; later workout snapshots
+  stay unchanged, live progress recalculates and closed rounds are never reopened.
+- Unrecorded dates display implicit rest without writing records or consuming
+  planned rest slots. Cardio remains independent.
+- Device-local journal days run from 04:00 to the next 04:00 across Today, Fitness,
+  Nutrition and Body. Explicit calendar selections and existing record dates are
+  preserved. Editors pin their selected date; pages refresh at 04:00 and on resume.
+- Additive SQLite schema 6 stores explicit cycle/action dates; legacy timestamp-only
+  actions retain their original midnight-based date.
 
 - Chinese editions of the README, complete changelog, privacy, food references,
   testing checklist and contribution guide; bilingual navigation links.
 - Offline changelog in Settings automatically follows the app's English/Chinese
   language, including system-language resolution and changes while open.
-- Source/docs are pushed to main; this local APK does not replace the published
-  1.2.0 build 7 release, its assets or tag. Merge into the next release.
+- Includes previously local-only build 8/9 changes in a new release; the
+  1.2.0 build 7 release, its assets and tag remain unchanged.
 
 ## 1.2.0 — 2026-10-05 (Android build 7)
 

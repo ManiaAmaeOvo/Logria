@@ -2056,6 +2056,28 @@ class $CycleInstancesTable extends CycleInstances
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $CycleInstancesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _startLocalDateMeta = const VerificationMeta(
+    'startLocalDate',
+  );
+  @override
+  late final GeneratedColumn<String> startLocalDate = GeneratedColumn<String>(
+    'start_local_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _endLocalDateMeta = const VerificationMeta(
+    'endLocalDate',
+  );
+  @override
+  late final GeneratedColumn<String> endLocalDate = GeneratedColumn<String>(
+    'end_local_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -2132,6 +2154,8 @@ class $CycleInstancesTable extends CycleInstances
   );
   @override
   List<GeneratedColumn> get $columns => [
+    startLocalDate,
+    endLocalDate,
     id,
     planId,
     cycleNumber,
@@ -2152,6 +2176,24 @@ class $CycleInstancesTable extends CycleInstances
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('start_local_date')) {
+      context.handle(
+        _startLocalDateMeta,
+        startLocalDate.isAcceptableOrUnknown(
+          data['start_local_date']!,
+          _startLocalDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('end_local_date')) {
+      context.handle(
+        _endLocalDateMeta,
+        endLocalDate.isAcceptableOrUnknown(
+          data['end_local_date']!,
+          _endLocalDateMeta,
+        ),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
@@ -2222,6 +2264,14 @@ class $CycleInstancesTable extends CycleInstances
   CycleInstance map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CycleInstance(
+      startLocalDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}start_local_date'],
+      ),
+      endLocalDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}end_local_date'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -2260,6 +2310,8 @@ class $CycleInstancesTable extends CycleInstances
 }
 
 class CycleInstance extends DataClass implements Insertable<CycleInstance> {
+  final String? startLocalDate;
+  final String? endLocalDate;
   final String id;
   final String planId;
   final int cycleNumber;
@@ -2268,6 +2320,8 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
   final DateTime startedAt;
   final DateTime? completedAt;
   const CycleInstance({
+    this.startLocalDate,
+    this.endLocalDate,
     required this.id,
     required this.planId,
     required this.cycleNumber,
@@ -2279,6 +2333,12 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || startLocalDate != null) {
+      map['start_local_date'] = Variable<String>(startLocalDate);
+    }
+    if (!nullToAbsent || endLocalDate != null) {
+      map['end_local_date'] = Variable<String>(endLocalDate);
+    }
     map['id'] = Variable<String>(id);
     map['plan_id'] = Variable<String>(planId);
     map['cycle_number'] = Variable<int>(cycleNumber);
@@ -2293,6 +2353,12 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
 
   CycleInstancesCompanion toCompanion(bool nullToAbsent) {
     return CycleInstancesCompanion(
+      startLocalDate: startLocalDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startLocalDate),
+      endLocalDate: endLocalDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endLocalDate),
       id: Value(id),
       planId: Value(planId),
       cycleNumber: Value(cycleNumber),
@@ -2311,6 +2377,8 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CycleInstance(
+      startLocalDate: serializer.fromJson<String?>(json['startLocalDate']),
+      endLocalDate: serializer.fromJson<String?>(json['endLocalDate']),
       id: serializer.fromJson<String>(json['id']),
       planId: serializer.fromJson<String>(json['planId']),
       cycleNumber: serializer.fromJson<int>(json['cycleNumber']),
@@ -2324,6 +2392,8 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'startLocalDate': serializer.toJson<String?>(startLocalDate),
+      'endLocalDate': serializer.toJson<String?>(endLocalDate),
       'id': serializer.toJson<String>(id),
       'planId': serializer.toJson<String>(planId),
       'cycleNumber': serializer.toJson<int>(cycleNumber),
@@ -2335,6 +2405,8 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
   }
 
   CycleInstance copyWith({
+    Value<String?> startLocalDate = const Value.absent(),
+    Value<String?> endLocalDate = const Value.absent(),
     String? id,
     String? planId,
     int? cycleNumber,
@@ -2343,6 +2415,10 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
     DateTime? startedAt,
     Value<DateTime?> completedAt = const Value.absent(),
   }) => CycleInstance(
+    startLocalDate: startLocalDate.present
+        ? startLocalDate.value
+        : this.startLocalDate,
+    endLocalDate: endLocalDate.present ? endLocalDate.value : this.endLocalDate,
     id: id ?? this.id,
     planId: planId ?? this.planId,
     cycleNumber: cycleNumber ?? this.cycleNumber,
@@ -2353,6 +2429,12 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
   );
   CycleInstance copyWithCompanion(CycleInstancesCompanion data) {
     return CycleInstance(
+      startLocalDate: data.startLocalDate.present
+          ? data.startLocalDate.value
+          : this.startLocalDate,
+      endLocalDate: data.endLocalDate.present
+          ? data.endLocalDate.value
+          : this.endLocalDate,
       id: data.id.present ? data.id.value : this.id,
       planId: data.planId.present ? data.planId.value : this.planId,
       cycleNumber: data.cycleNumber.present
@@ -2372,6 +2454,8 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
   @override
   String toString() {
     return (StringBuffer('CycleInstance(')
+          ..write('startLocalDate: $startLocalDate, ')
+          ..write('endLocalDate: $endLocalDate, ')
           ..write('id: $id, ')
           ..write('planId: $planId, ')
           ..write('cycleNumber: $cycleNumber, ')
@@ -2385,6 +2469,8 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
 
   @override
   int get hashCode => Object.hash(
+    startLocalDate,
+    endLocalDate,
     id,
     planId,
     cycleNumber,
@@ -2397,6 +2483,8 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CycleInstance &&
+          other.startLocalDate == this.startLocalDate &&
+          other.endLocalDate == this.endLocalDate &&
           other.id == this.id &&
           other.planId == this.planId &&
           other.cycleNumber == this.cycleNumber &&
@@ -2407,6 +2495,8 @@ class CycleInstance extends DataClass implements Insertable<CycleInstance> {
 }
 
 class CycleInstancesCompanion extends UpdateCompanion<CycleInstance> {
+  final Value<String?> startLocalDate;
+  final Value<String?> endLocalDate;
   final Value<String> id;
   final Value<String> planId;
   final Value<int> cycleNumber;
@@ -2416,6 +2506,8 @@ class CycleInstancesCompanion extends UpdateCompanion<CycleInstance> {
   final Value<DateTime?> completedAt;
   final Value<int> rowid;
   const CycleInstancesCompanion({
+    this.startLocalDate = const Value.absent(),
+    this.endLocalDate = const Value.absent(),
     this.id = const Value.absent(),
     this.planId = const Value.absent(),
     this.cycleNumber = const Value.absent(),
@@ -2426,6 +2518,8 @@ class CycleInstancesCompanion extends UpdateCompanion<CycleInstance> {
     this.rowid = const Value.absent(),
   });
   CycleInstancesCompanion.insert({
+    this.startLocalDate = const Value.absent(),
+    this.endLocalDate = const Value.absent(),
     required String id,
     required String planId,
     required int cycleNumber,
@@ -2441,6 +2535,8 @@ class CycleInstancesCompanion extends UpdateCompanion<CycleInstance> {
        status = Value(status),
        startedAt = Value(startedAt);
   static Insertable<CycleInstance> custom({
+    Expression<String>? startLocalDate,
+    Expression<String>? endLocalDate,
     Expression<String>? id,
     Expression<String>? planId,
     Expression<int>? cycleNumber,
@@ -2451,6 +2547,8 @@ class CycleInstancesCompanion extends UpdateCompanion<CycleInstance> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (startLocalDate != null) 'start_local_date': startLocalDate,
+      if (endLocalDate != null) 'end_local_date': endLocalDate,
       if (id != null) 'id': id,
       if (planId != null) 'plan_id': planId,
       if (cycleNumber != null) 'cycle_number': cycleNumber,
@@ -2463,6 +2561,8 @@ class CycleInstancesCompanion extends UpdateCompanion<CycleInstance> {
   }
 
   CycleInstancesCompanion copyWith({
+    Value<String?>? startLocalDate,
+    Value<String?>? endLocalDate,
     Value<String>? id,
     Value<String>? planId,
     Value<int>? cycleNumber,
@@ -2473,6 +2573,8 @@ class CycleInstancesCompanion extends UpdateCompanion<CycleInstance> {
     Value<int>? rowid,
   }) {
     return CycleInstancesCompanion(
+      startLocalDate: startLocalDate ?? this.startLocalDate,
+      endLocalDate: endLocalDate ?? this.endLocalDate,
       id: id ?? this.id,
       planId: planId ?? this.planId,
       cycleNumber: cycleNumber ?? this.cycleNumber,
@@ -2487,6 +2589,12 @@ class CycleInstancesCompanion extends UpdateCompanion<CycleInstance> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (startLocalDate.present) {
+      map['start_local_date'] = Variable<String>(startLocalDate.value);
+    }
+    if (endLocalDate.present) {
+      map['end_local_date'] = Variable<String>(endLocalDate.value);
+    }
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
@@ -2517,6 +2625,8 @@ class CycleInstancesCompanion extends UpdateCompanion<CycleInstance> {
   @override
   String toString() {
     return (StringBuffer('CycleInstancesCompanion(')
+          ..write('startLocalDate: $startLocalDate, ')
+          ..write('endLocalDate: $endLocalDate, ')
           ..write('id: $id, ')
           ..write('planId: $planId, ')
           ..write('cycleNumber: $cycleNumber, ')
@@ -2536,6 +2646,17 @@ class $CycleDayExecutionsTable extends CycleDayExecutions
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $CycleDayExecutionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _localDateMeta = const VerificationMeta(
+    'localDate',
+  );
+  @override
+  late final GeneratedColumn<String> localDate = GeneratedColumn<String>(
+    'local_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -2617,6 +2738,7 @@ class $CycleDayExecutionsTable extends CycleDayExecutions
   );
   @override
   List<GeneratedColumn> get $columns => [
+    localDate,
     id,
     cycleInstanceId,
     planDayId,
@@ -2637,6 +2759,12 @@ class $CycleDayExecutionsTable extends CycleDayExecutions
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('local_date')) {
+      context.handle(
+        _localDateMeta,
+        localDate.isAcceptableOrUnknown(data['local_date']!, _localDateMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
@@ -2702,6 +2830,10 @@ class $CycleDayExecutionsTable extends CycleDayExecutions
   CycleDayExecution map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CycleDayExecution(
+      localDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_date'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -2741,6 +2873,7 @@ class $CycleDayExecutionsTable extends CycleDayExecutions
 
 class CycleDayExecution extends DataClass
     implements Insertable<CycleDayExecution> {
+  final String? localDate;
   final String id;
   final String cycleInstanceId;
   final String? planDayId;
@@ -2749,6 +2882,7 @@ class CycleDayExecution extends DataClass
   final DateTime occurredAt;
   final String? notes;
   const CycleDayExecution({
+    this.localDate,
     required this.id,
     required this.cycleInstanceId,
     this.planDayId,
@@ -2760,6 +2894,9 @@ class CycleDayExecution extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || localDate != null) {
+      map['local_date'] = Variable<String>(localDate);
+    }
     map['id'] = Variable<String>(id);
     map['cycle_instance_id'] = Variable<String>(cycleInstanceId);
     if (!nullToAbsent || planDayId != null) {
@@ -2778,6 +2915,9 @@ class CycleDayExecution extends DataClass
 
   CycleDayExecutionsCompanion toCompanion(bool nullToAbsent) {
     return CycleDayExecutionsCompanion(
+      localDate: localDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localDate),
       id: Value(id),
       cycleInstanceId: Value(cycleInstanceId),
       planDayId: planDayId == null && nullToAbsent
@@ -2800,6 +2940,7 @@ class CycleDayExecution extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CycleDayExecution(
+      localDate: serializer.fromJson<String?>(json['localDate']),
       id: serializer.fromJson<String>(json['id']),
       cycleInstanceId: serializer.fromJson<String>(json['cycleInstanceId']),
       planDayId: serializer.fromJson<String?>(json['planDayId']),
@@ -2813,6 +2954,7 @@ class CycleDayExecution extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'localDate': serializer.toJson<String?>(localDate),
       'id': serializer.toJson<String>(id),
       'cycleInstanceId': serializer.toJson<String>(cycleInstanceId),
       'planDayId': serializer.toJson<String?>(planDayId),
@@ -2824,6 +2966,7 @@ class CycleDayExecution extends DataClass
   }
 
   CycleDayExecution copyWith({
+    Value<String?> localDate = const Value.absent(),
     String? id,
     String? cycleInstanceId,
     Value<String?> planDayId = const Value.absent(),
@@ -2832,6 +2975,7 @@ class CycleDayExecution extends DataClass
     DateTime? occurredAt,
     Value<String?> notes = const Value.absent(),
   }) => CycleDayExecution(
+    localDate: localDate.present ? localDate.value : this.localDate,
     id: id ?? this.id,
     cycleInstanceId: cycleInstanceId ?? this.cycleInstanceId,
     planDayId: planDayId.present ? planDayId.value : this.planDayId,
@@ -2844,6 +2988,7 @@ class CycleDayExecution extends DataClass
   );
   CycleDayExecution copyWithCompanion(CycleDayExecutionsCompanion data) {
     return CycleDayExecution(
+      localDate: data.localDate.present ? data.localDate.value : this.localDate,
       id: data.id.present ? data.id.value : this.id,
       cycleInstanceId: data.cycleInstanceId.present
           ? data.cycleInstanceId.value
@@ -2865,6 +3010,7 @@ class CycleDayExecution extends DataClass
   @override
   String toString() {
     return (StringBuffer('CycleDayExecution(')
+          ..write('localDate: $localDate, ')
           ..write('id: $id, ')
           ..write('cycleInstanceId: $cycleInstanceId, ')
           ..write('planDayId: $planDayId, ')
@@ -2878,6 +3024,7 @@ class CycleDayExecution extends DataClass
 
   @override
   int get hashCode => Object.hash(
+    localDate,
     id,
     cycleInstanceId,
     planDayId,
@@ -2890,6 +3037,7 @@ class CycleDayExecution extends DataClass
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CycleDayExecution &&
+          other.localDate == this.localDate &&
           other.id == this.id &&
           other.cycleInstanceId == this.cycleInstanceId &&
           other.planDayId == this.planDayId &&
@@ -2900,6 +3048,7 @@ class CycleDayExecution extends DataClass
 }
 
 class CycleDayExecutionsCompanion extends UpdateCompanion<CycleDayExecution> {
+  final Value<String?> localDate;
   final Value<String> id;
   final Value<String> cycleInstanceId;
   final Value<String?> planDayId;
@@ -2909,6 +3058,7 @@ class CycleDayExecutionsCompanion extends UpdateCompanion<CycleDayExecution> {
   final Value<String?> notes;
   final Value<int> rowid;
   const CycleDayExecutionsCompanion({
+    this.localDate = const Value.absent(),
     this.id = const Value.absent(),
     this.cycleInstanceId = const Value.absent(),
     this.planDayId = const Value.absent(),
@@ -2919,6 +3069,7 @@ class CycleDayExecutionsCompanion extends UpdateCompanion<CycleDayExecution> {
     this.rowid = const Value.absent(),
   });
   CycleDayExecutionsCompanion.insert({
+    this.localDate = const Value.absent(),
     required String id,
     required String cycleInstanceId,
     this.planDayId = const Value.absent(),
@@ -2932,6 +3083,7 @@ class CycleDayExecutionsCompanion extends UpdateCompanion<CycleDayExecution> {
        executionType = Value(executionType),
        occurredAt = Value(occurredAt);
   static Insertable<CycleDayExecution> custom({
+    Expression<String>? localDate,
     Expression<String>? id,
     Expression<String>? cycleInstanceId,
     Expression<String>? planDayId,
@@ -2942,6 +3094,7 @@ class CycleDayExecutionsCompanion extends UpdateCompanion<CycleDayExecution> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (localDate != null) 'local_date': localDate,
       if (id != null) 'id': id,
       if (cycleInstanceId != null) 'cycle_instance_id': cycleInstanceId,
       if (planDayId != null) 'plan_day_id': planDayId,
@@ -2954,6 +3107,7 @@ class CycleDayExecutionsCompanion extends UpdateCompanion<CycleDayExecution> {
   }
 
   CycleDayExecutionsCompanion copyWith({
+    Value<String?>? localDate,
     Value<String>? id,
     Value<String>? cycleInstanceId,
     Value<String?>? planDayId,
@@ -2964,6 +3118,7 @@ class CycleDayExecutionsCompanion extends UpdateCompanion<CycleDayExecution> {
     Value<int>? rowid,
   }) {
     return CycleDayExecutionsCompanion(
+      localDate: localDate ?? this.localDate,
       id: id ?? this.id,
       cycleInstanceId: cycleInstanceId ?? this.cycleInstanceId,
       planDayId: planDayId ?? this.planDayId,
@@ -2978,6 +3133,9 @@ class CycleDayExecutionsCompanion extends UpdateCompanion<CycleDayExecution> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (localDate.present) {
+      map['local_date'] = Variable<String>(localDate.value);
+    }
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
@@ -3008,6 +3166,7 @@ class CycleDayExecutionsCompanion extends UpdateCompanion<CycleDayExecution> {
   @override
   String toString() {
     return (StringBuffer('CycleDayExecutionsCompanion(')
+          ..write('localDate: $localDate, ')
           ..write('id: $id, ')
           ..write('cycleInstanceId: $cycleInstanceId, ')
           ..write('planDayId: $planDayId, ')
@@ -11405,6 +11564,8 @@ typedef $$PlanDayExercisesTableProcessedTableManager =
     >;
 typedef $$CycleInstancesTableCreateCompanionBuilder =
     CycleInstancesCompanion Function({
+      Value<String?> startLocalDate,
+      Value<String?> endLocalDate,
       required String id,
       required String planId,
       required int cycleNumber,
@@ -11416,6 +11577,8 @@ typedef $$CycleInstancesTableCreateCompanionBuilder =
     });
 typedef $$CycleInstancesTableUpdateCompanionBuilder =
     CycleInstancesCompanion Function({
+      Value<String?> startLocalDate,
+      Value<String?> endLocalDate,
       Value<String> id,
       Value<String> planId,
       Value<int> cycleNumber,
@@ -11506,6 +11669,16 @@ class $$CycleInstancesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get startLocalDate => $composableBuilder(
+    column: $table.startLocalDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get endLocalDate => $composableBuilder(
+    column: $table.endLocalDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -11619,6 +11792,16 @@ class $$CycleInstancesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get startLocalDate => $composableBuilder(
+    column: $table.startLocalDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get endLocalDate => $composableBuilder(
+    column: $table.endLocalDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -11682,6 +11865,16 @@ class $$CycleInstancesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get startLocalDate => $composableBuilder(
+    column: $table.startLocalDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get endLocalDate => $composableBuilder(
+    column: $table.endLocalDate,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -11815,6 +12008,8 @@ class $$CycleInstancesTableTableManager
               $$CycleInstancesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
+                Value<String?> startLocalDate = const Value.absent(),
+                Value<String?> endLocalDate = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> planId = const Value.absent(),
                 Value<int> cycleNumber = const Value.absent(),
@@ -11824,6 +12019,8 @@ class $$CycleInstancesTableTableManager
                 Value<DateTime?> completedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CycleInstancesCompanion(
+                startLocalDate: startLocalDate,
+                endLocalDate: endLocalDate,
                 id: id,
                 planId: planId,
                 cycleNumber: cycleNumber,
@@ -11835,6 +12032,8 @@ class $$CycleInstancesTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<String?> startLocalDate = const Value.absent(),
+                Value<String?> endLocalDate = const Value.absent(),
                 required String id,
                 required String planId,
                 required int cycleNumber,
@@ -11844,6 +12043,8 @@ class $$CycleInstancesTableTableManager
                 Value<DateTime?> completedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CycleInstancesCompanion.insert(
+                startLocalDate: startLocalDate,
+                endLocalDate: endLocalDate,
                 id: id,
                 planId: planId,
                 cycleNumber: cycleNumber,
@@ -11975,6 +12176,7 @@ typedef $$CycleInstancesTableProcessedTableManager =
     >;
 typedef $$CycleDayExecutionsTableCreateCompanionBuilder =
     CycleDayExecutionsCompanion Function({
+      Value<String?> localDate,
       required String id,
       required String cycleInstanceId,
       Value<String?> planDayId,
@@ -11986,6 +12188,7 @@ typedef $$CycleDayExecutionsTableCreateCompanionBuilder =
     });
 typedef $$CycleDayExecutionsTableUpdateCompanionBuilder =
     CycleDayExecutionsCompanion Function({
+      Value<String?> localDate,
       Value<String> id,
       Value<String> cycleInstanceId,
       Value<String?> planDayId,
@@ -12055,6 +12258,11 @@ class $$CycleDayExecutionsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get localDate => $composableBuilder(
+    column: $table.localDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -12136,6 +12344,11 @@ class $$CycleDayExecutionsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get localDate => $composableBuilder(
+    column: $table.localDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -12217,6 +12430,9 @@ class $$CycleDayExecutionsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get localDate =>
+      $composableBuilder(column: $table.localDate, builder: (column) => column);
+
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -12318,6 +12534,7 @@ class $$CycleDayExecutionsTableTableManager
               ),
           updateCompanionCallback:
               ({
+                Value<String?> localDate = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> cycleInstanceId = const Value.absent(),
                 Value<String?> planDayId = const Value.absent(),
@@ -12327,6 +12544,7 @@ class $$CycleDayExecutionsTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CycleDayExecutionsCompanion(
+                localDate: localDate,
                 id: id,
                 cycleInstanceId: cycleInstanceId,
                 planDayId: planDayId,
@@ -12338,6 +12556,7 @@ class $$CycleDayExecutionsTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<String?> localDate = const Value.absent(),
                 required String id,
                 required String cycleInstanceId,
                 Value<String?> planDayId = const Value.absent(),
@@ -12347,6 +12566,7 @@ class $$CycleDayExecutionsTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CycleDayExecutionsCompanion.insert(
+                localDate: localDate,
                 id: id,
                 cycleInstanceId: cycleInstanceId,
                 planDayId: planDayId,

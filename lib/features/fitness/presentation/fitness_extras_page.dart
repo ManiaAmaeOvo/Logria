@@ -5,6 +5,7 @@ import 'package:intl/intl.dart' hide TextDirection;
 
 import '../../../core/database/app_database.dart';
 import '../../../core/number_format.dart';
+import '../../../core/record_day.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/fitness_repository.dart';
 
@@ -346,7 +347,7 @@ class _EntryDialogState extends State<_EntryDialog> {
   late final _notes = TextEditingController(text: widget.existing?.notes ?? '');
   final _reps = TextEditingController();
   late DateTime _date = widget.existing == null
-      ? DateTime.now()
+      ? RecordDay.today()
       : DateTime.parse(widget.existing!.localDate);
   @override
   void dispose() {
@@ -381,7 +382,7 @@ class _EntryDialogState extends State<_EntryDialog> {
                       context: context,
                       initialDate: _date,
                       firstDate: DateTime(1970),
-                      lastDate: DateTime.now(),
+                      lastDate: RecordDay.today(),
                     );
                     if (date != null && mounted) setState(() => _date = date);
                   },

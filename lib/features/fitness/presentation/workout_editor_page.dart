@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../data/fitness_repository.dart';
 import '../domain/exercise_variant.dart';
 import 'exercise_variant_dialog.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/record_day.dart';
 
 class WorkoutEditorPage extends StatefulWidget {
   const WorkoutEditorPage({
@@ -18,6 +18,8 @@ class WorkoutEditorPage extends StatefulWidget {
     this.plannedExercises = const [],
     this.previousWorkout,
     this.usePreviousOnOpen = false,
+    this.recordDate,
+    this.onSave,
   });
 
   final FitnessRepository repository;
@@ -26,6 +28,8 @@ class WorkoutEditorPage extends StatefulWidget {
   final List<PlanExerciseData> plannedExercises;
   final WorkoutHistoryItem? previousWorkout;
   final bool usePreviousOnOpen;
+  final DateTime? recordDate;
+  final Future<void> Function(List<WorkoutDraftExercise>)? onSave;
 
   @override
   State<WorkoutEditorPage> createState() => _WorkoutEditorPageState();
@@ -41,8 +45,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   bool _committing = false;
   Timer? _debounce;
   Future<void> _writes = Future.value();
+  late final DateTime _recordDate = RecordDay.dateOnly(
+    widget.recordDate ?? widget.repository.recordingDate,
+  );
   late final String _draftKey =
-      'fitness.draft.${DateFormat('yyyy-MM-dd').format(DateTime.now())}.${widget.existingWorkout?.session.id ?? widget.dashboard.progress.nextDay!.id}';
+      'fitness.draft.${RecordDay.key(_recordDate)}.${widget.onSave == null ? '' : '${widget.dashboard.cycle.id}.'}${widget.existingWorkout?.session.id ?? widget.dashboard.progress.nextDay!.id}';
 
   @override
   void initState() {
@@ -283,7 +290,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final dayName =
-        widget.existingWorkout?.session.dayNameSnapshot ??
+        (widget.onSave == null
+            ? widget.existingWorkout?.session.dayNameSnapshot
+            : null) ??
         widget.dashboard.progress.nextDay!.name;
 
     return PopScope(
@@ -305,7 +314,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             icon: const Icon(Icons.arrow_back),
           ),
           title: Text(
-            widget.existingWorkout == null ? dayName : l10n.editWorkout,
+            '${widget.existingWorkout == null ? dayName : l10n.editWorkout}\n${RecordDay.key(_recordDate)}',
+            style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
         body: _loading
@@ -592,8 +602,14 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       _committing = true;
       final existingWorkout = widget.existingWorkout;
       await widget.repository.database.transaction(() async {
-        if (existingWorkout == null) {
-          await widget.repository.completeWorkout(widget.dashboard, drafts);
+        if (widget.onSave != null) {
+          await widget.onSave!(drafts);
+        } else if (existingWorkout == null) {
+          await widget.repository.completeWorkout(
+            widget.dashboard,
+            drafts,
+            recordDate: _recordDate,
+          );
         } else {
           await widget.repository.updateWorkoutSession(
             existingWorkout.session.id,

@@ -15,6 +15,7 @@ class TodayLogFormatter {
 
   String get fitness {
     final lines = <String>[];
+    if (data.workouts.isEmpty && data.actions.isEmpty) lines.add(l.defaultRest);
     for (final action in data.actions) {
       if (action.execution.executionType == 'completedTraining' &&
           data.workouts.isNotEmpty) {
