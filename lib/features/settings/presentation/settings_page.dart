@@ -7,6 +7,7 @@ import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import 'user_manual_page.dart';
 import 'changelog_page.dart';
+import '../../backup/presentation/backup_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
@@ -123,6 +124,25 @@ class _SettingsPageState extends State<SettingsPage> {
                   Text(l.appIntroduction),
                 ],
               ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.backup_outlined),
+              title: Text(l.backupData),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () async {
+                final restored = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BackupPage(database: widget.database),
+                  ),
+                );
+                if (restored == true && context.mounted) {
+                  Navigator.pop(context, true);
+                }
+              },
             ),
           ),
           const SizedBox(height: 16),

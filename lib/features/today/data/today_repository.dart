@@ -27,6 +27,7 @@ class TodayLogData {
     required this.measurements,
     this.cardio = const [],
     this.note = '',
+    this.sleep,
   });
   final DateTime date;
   final List<WorkoutHistoryItem> workouts;
@@ -36,6 +37,7 @@ class TodayLogData {
   final List<BodyMeasurement> measurements;
   final List<CardioLog> cardio;
   final String note;
+  final SleepLog? sleep;
 }
 
 class TodayRepository {
@@ -104,6 +106,10 @@ class TodayRepository {
               ..orderBy([(row) => OrderingTerm.asc(row.recordedAt)]))
             .get();
     return TodayLogData(
+      sleep:
+          await (database.select(database.sleepLogs)
+                ..where((s) => s.localDate.equals(nutrition.localDate)))
+              .getSingleOrNull(),
       date: start,
       workouts: workouts,
       actions: actions,

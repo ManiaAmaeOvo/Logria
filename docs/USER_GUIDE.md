@@ -1,4 +1,4 @@
-# Using Logria 1.3
+# Using Logria 1.4
 
 [简体中文](USER_GUIDE.zh-CN.md)
 
@@ -6,6 +6,49 @@ Logria is an offline Android fitness, nutrition and body journal. Data stays on
 this device. Start with the Today screen, then use the five bottom tabs.
 In Settings → User manual you can read this guide offline and switch between
 English and Simplified Chinese independently of the app language.
+
+## New in 1.4.0
+
+Settings → Backup and export saves a **full backup** or exports an inclusive date
+range as JSON. The Body switch excludes measurements and sleep from analysis logs.
+Only full backups can be restored: choose a file, check row counts and confirm
+replacement of ALL current data. Save your current data to another backup first.
+Invalid files fail without committing partial changes. Restoration returns to a
+fresh Today screen and reloads language. Files are unencrypted (32 MiB limit);
+keep them private and choose local storage for offline use. Use the same compatible
+schema/app generation for restoration. Analysis exports are not restorable backups.
+
+Body → Sleep uses the selected journal date, usually the waking date. Set explicit
+start and wake dates/times; overnight intervals are supported. Duration must be
+positive and at most 48 hours. Notes are optional. Use the date picker to review
+past sleep; editing/deleting does not affect body measurements. Today/copy/calendar
+and optional-body JSON export include sleep.
+
+Use **Set note (optional)** under a workout set for feelings such as “slow last
+rep”. It stays with that set, survives drafts and edits, and does not create a
+new exercise or PR series. Previous-workout templates clear old feeling notes.
+RIR is now text: enter `~2`, `2–3` or a number, without numeric restrictions.
+Old numeric RIR remains readable. Numeric fields accept `20+2.5*2`, `(100+50)/2`
+and +/−/×/÷ with parentheses. They store the computed number, not executable text.
+Counts/plan set counts must yield integers; divide-by-zero and unfinished arithmetic
+are rejected. Plain text weights retain the existing explicit zero/null choice.
+
+In Nutrition, the meal **+** dialog has **Add ingredient**. Select several preset
+foods and enter each amount in that preset's own unit (expressions are accepted).
+The whole composition is saved as one meal. Add/remove ingredients to recalculate
+P/C/F/kcal and minerals, then optionally edit totals manually. Preset label energy
+is retained instead of being replaced by a P/C/F estimate. Missing nutrients stay
+unknown. A food note is optional when ingredients exist; cancellation saves no
+partial entries. Editing an old meal restores its composition snapshots; changes
+to presets never rewrite saved meals. To change an ingredient's amount, remove it
+and add it again with the desired quantity. The quick-add single-food shortcut
+remains available. Today renders nutrient rows as a horizontally scrollable table;
+copied logs use Markdown tables with one shared set of units and missing-value hints.
+
+If older data contains orphan workout rows, backup retains their full raw snapshots
+in the inert `backup.orphanedWorkoutRows` settings archive. Restoration warns first;
+the archive is kept but is not counted as completed training/PR. Creating a backup
+never deletes source records. Unsupported integrity errors block backup creation.
 
 ## Install and start
 
@@ -248,9 +291,9 @@ the app language automatically, including system default; unlike the manual it
 has no independent language switch. The published 1.2.0 build 7 APK does not
 include this entry; upgrade to 1.3.0 to access it.
 
-Version 1.3 has no restorable backup or JSON file export/import. Keep that limit
-in mind before uninstalling or clearing app data. Clipboard logs are convenient
-for review but cannot be imported to restore the database.
+Version 1.4 adds full backup/restore and dated analysis export. Clipboard logs and
+dated exports cannot restore the database; save a full backup before uninstalling
+or clearing storage and verify its location. Backups contain sensitive plaintext.
 
 ## Testing and troubleshooting
 

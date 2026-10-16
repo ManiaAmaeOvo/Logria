@@ -60,8 +60,8 @@ void main() {
         await tester.tap(find.text(l.changelog));
         await settle();
         final title = language == 'zh'
-            ? '1.3.0 — 2026-10-07（Android build 10）'
-            : '1.3.0 — 2026-10-07 (Android build 10)';
+            ? '1.4.0 — 2026-10-16（Android build 12）'
+            : '1.4.0 — 2026-10-16 (Android build 12)';
         expect(find.text(title), findsOneWidget);
         expect(find.byType(SegmentedButton<String>), findsNothing);
         const oldTitle = '1.1.0 — 2026-10-04';
@@ -88,8 +88,8 @@ void main() {
         await settle();
         expect(find.text(other == 'zh' ? '更新日志' : 'Changelog'), findsOneWidget);
         final otherTitle = other == 'zh'
-            ? '1.3.0 — 2026-10-07（Android build 10）'
-            : '1.3.0 — 2026-10-07 (Android build 10)';
+            ? '1.4.0 — 2026-10-16（Android build 12）'
+            : '1.4.0 — 2026-10-16 (Android build 12)';
         expect(find.text(otherTitle), findsOneWidget);
         expect(tester.getTopLeft(find.text(otherTitle)).dy, lessThan(650));
         expect(find.text(title), findsNothing);
@@ -129,6 +129,6 @@ void main() {
       expect(english, contains('## $version'));
       expect(chinese, contains('## $version'));
     }
-    expect(chinese, contains('build 10'));
+    expect(chinese, contains('build 12'));
   });
 }

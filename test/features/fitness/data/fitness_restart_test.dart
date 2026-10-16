@@ -17,7 +17,7 @@ void main() {
       WorkoutDraftExercise(
         name: 'Bench',
         saveAsPreset: true,
-        sets: [WorkoutDraftSet(weight: 40, reps: 10, rir: 2)],
+        sets: [WorkoutDraftSet(weight: 40, reps: 10, rir: "2")],
       ),
     ]);
     await expectLater(

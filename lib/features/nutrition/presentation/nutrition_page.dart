@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+
+import 'dart:convert';
+
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/number_format.dart';
+import '../../../core/numeric_expression.dart';
 import '../../../core/record_day.dart';
 import '../../../core/record_day_watcher.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/nutrition_repository.dart';
 import '../data/food_preset_repository.dart';
 import '../domain/nutrient_values.dart';
+import '../domain/meal_ingredient.dart';
 import 'nutrition_labels.dart';
 import 'food_library_page.dart';
 import 'food_preset_picker.dart';
@@ -76,7 +81,12 @@ class _NutritionPageState extends State<NutritionPage> {
     final date = _selectedDate;
     final values = await showDialog<_IntakeValues>(
       context: context,
-      builder: (_) => _IntakeDialog(record: null, meal: true, entry: entry),
+      builder: (_) => _IntakeDialog(
+        record: null,
+        meal: true,
+        entry: entry,
+        database: widget.database,
+      ),
     );
     if (values == null || !mounted) return;
     if (entry == null) {
@@ -88,6 +98,7 @@ class _NutritionPageState extends State<NutritionPage> {
         fatGrams: values.fat,
         caloriesKcal: values.calories,
         caloriesEstimated: values.estimated,
+        mealItemsJson: values.mealItemsJson,
         extraNutrients: values.extras,
       );
     } else {
@@ -99,6 +110,7 @@ class _NutritionPageState extends State<NutritionPage> {
         fatGrams: values.fat,
         caloriesKcal: values.calories,
         caloriesEstimated: values.estimated,
+        mealItemsJson: values.mealItemsJson,
         extraNutrients: values.extras,
       );
     }
@@ -740,8 +752,10 @@ class _IntakeValues {
     this.text,
     this.estimated = false,
     this.extras = const {},
+    this.mealItemsJson,
   });
   final String? text;
+  final String? mealItemsJson;
   final bool estimated;
   final Map<String, double> extras;
 
@@ -752,7 +766,13 @@ class _IntakeValues {
 }
 
 class _IntakeDialog extends StatefulWidget {
-  const _IntakeDialog({required this.record, this.meal = false, this.entry});
+  const _IntakeDialog({
+    required this.record,
+    this.meal = false,
+    this.entry,
+    this.database,
+  });
+  final AppDatabase? database;
   final bool meal;
   final FoodLogEntry? entry;
 
@@ -763,6 +783,46 @@ class _IntakeDialog extends StatefulWidget {
 }
 
 class _IntakeDialogState extends State<_IntakeDialog> {
+  late final _items = MealIngredient.decode(widget.entry?.mealItemsJson);
+  Future<void> _addIngredient() async {
+    final l = AppLocalizations.of(context)!;
+    final preset = await showDialog<FoodPreset>(
+      context: context,
+      builder: (_) =>
+          FoodPresetPicker(repository: FoodPresetRepository(widget.database!)),
+    );
+    if (preset == null || !mounted) return;
+    final amount = await showDialog<double>(
+      context: context,
+      builder: (_) => FoodQuantityDialog(preset: preset),
+    );
+    if (amount == null || !mounted) return;
+    setState(() {
+      _items.add(
+        MealIngredient.fromPreset(preset, amount, foodName(preset, l)),
+      );
+      _recalculateItems();
+    });
+  }
+
+  void _recalculateItems() {
+    final totals = MealIngredient.totals(_items);
+    _protein.text = _initial(totals['protein']);
+    _carbs.text = _initial(totals['carbohydrate']);
+    _fat.text = _initial(totals['fat']);
+    _calories.text = _initial(totals['calories']);
+    _kilojoules.text = _initial(
+      totals['calories'] == null
+          ? null
+          : totals['calories']! * kilojoulesPerKcal,
+    );
+    for (final e in _extras.entries) {
+      e.value.text = _initial(totals[e.key]);
+    }
+    _automatic =
+        false; // Preserve preset/label energy, not a fresh P/C/F estimate.
+  }
+
   final _formKey = GlobalKey<FormState>();
   late bool _automatic = widget.entry?.caloriesEstimated ?? true;
   late final _text = TextEditingController(
@@ -832,6 +892,30 @@ class _IntakeDialogState extends State<_IntakeDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (widget.meal) ...[
+                if (widget.database != null) ...[
+                  Text(l10n.mealIngredientHint),
+                  for (var i = 0; i < _items.length; i++)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(_items[i].name),
+                      subtitle: Text(
+                        '${formatNumber(_items[i].quantity)} ${foodUnitLabel(_items[i].unit, l10n)}',
+                      ),
+                      trailing: IconButton(
+                        tooltip: l10n.remove,
+                        icon: const Icon(Icons.remove_circle_outline),
+                        onPressed: () => setState(() {
+                          _items.removeAt(i);
+                          _recalculateItems();
+                        }),
+                      ),
+                    ),
+                  OutlinedButton.icon(
+                    onPressed: _addIngredient,
+                    icon: const Icon(Icons.add),
+                    label: Text(l10n.addIngredient),
+                  ),
+                ],
                 TextFormField(
                   controller: _text,
                   minLines: 1,
@@ -840,7 +924,8 @@ class _IntakeDialogState extends State<_IntakeDialog> {
                     labelText: l10n.foodLog,
                     hintText: l10n.foodNoteHint,
                   ),
-                  validator: (value) => value == null || value.trim().isEmpty
+                  validator: (value) =>
+                      _items.isEmpty && (value == null || value.trim().isEmpty)
                       ? l10n.foodNoteRequired
                       : null,
                 ),
@@ -942,7 +1027,14 @@ class _IntakeDialogState extends State<_IntakeDialog> {
         carbs,
         fat,
         calories,
-        text: widget.meal ? _text.text : null,
+        text: widget.meal
+            ? (_text.text.trim().isNotEmpty
+                  ? _text.text
+                  : _items.map((e) => e.name).join(' + '))
+            : null,
+        mealItemsJson: _items.isEmpty
+            ? null
+            : jsonEncode(_items.map((e) => e.toJson()).toList()),
         estimated: widget.meal && _automatic,
         extras: {
           for (final e in _extras.entries)
@@ -1176,7 +1268,7 @@ class _MetricField extends StatelessWidget {
     child: TextFormField(
       onChanged: onChanged,
       controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      keyboardType: TextInputType.text,
       decoration: InputDecoration(labelText: label, isDense: true),
       validator: (value) => _valid(_parse(value ?? ''), value ?? '')
           ? null
@@ -1190,7 +1282,7 @@ String _initial(double? value) => value == null ? '' : _format(value);
 double? _parse(String text) {
   final value = text.trim();
   if (value.isEmpty) return null;
-  return double.tryParse(value.replaceAll(',', '.'));
+  return NumericExpression.tryValue(value);
 }
 
 bool _valid(double? parsed, String text) =>

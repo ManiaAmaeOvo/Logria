@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 import '../../../core/database/app_database.dart';
+import '../../../core/numeric_expression.dart';
 import '../../../core/record_day.dart';
 import '../../../core/record_day_watcher.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/body_repository.dart';
+import 'sleep_card.dart';
 
 class BodyPage extends StatefulWidget {
   const BodyPage({super.key, required this.database});
@@ -171,6 +173,7 @@ class _BodyPageState extends State<BodyPage> {
                 ),
               ],
             ),
+            SleepCard(database: widget.database, date: _date),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -399,14 +402,10 @@ class _BodyEditorState extends State<_BodyEditor> {
                       labelText: _name(t, l),
                       suffixText: t.defaultUnit,
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
+                    keyboardType: TextInputType.text,
                     validator: (text) {
                       if (text == null || text.trim().isEmpty) return null;
-                      final value = double.tryParse(
-                        text.trim().replaceAll(',', '.'),
-                      );
+                      final value = NumericExpression.tryValue(text);
                       return value == null ||
                               !value.isFinite ||
                               value <= 0 ||
@@ -431,9 +430,7 @@ class _BodyEditorState extends State<_BodyEditor> {
             final values = {
               for (final entry in _controllers.entries)
                 if (entry.value.text.trim().isNotEmpty)
-                  entry.key: double.parse(
-                    entry.value.text.trim().replaceAll(',', '.'),
-                  ),
+                  entry.key: NumericExpression.tryValue(entry.value.text)!,
             };
             if (values.isEmpty) {
               Navigator.pop(context);

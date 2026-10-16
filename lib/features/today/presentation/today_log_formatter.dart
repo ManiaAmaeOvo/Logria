@@ -1,11 +1,13 @@
 import 'package:intl/intl.dart';
 
 import '../../../core/number_format.dart';
+import '../../../core/workout_set_values.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../data/today_repository.dart';
 import '../../nutrition/domain/nutrient_values.dart';
 import '../../nutrition/presentation/nutrition_labels.dart';
+import '../../nutrition/domain/meal_ingredient.dart';
 
 class TodayLogFormatter {
   TodayLogFormatter(this.data, this.l, {this.historical = false});
@@ -53,7 +55,7 @@ class TodayLogFormatter {
         lines.add(exercise.exercise.exerciseNameSnapshot);
         for (final set in exercise.sets) {
           lines.add(
-            '  ${l.setLine(set.setNumber, set.weightText ?? _value(set.weightValue), set.weightText == null ? set.weightUnit : '', set.reps?.toString() ?? '—', _value(set.rir), !set.isCompleted ? l.skippedSuffix : '')}',
+            '  ${l.setLine(set.setNumber, set.weightText ?? _value(set.weightValue), set.weightText == null ? set.weightUnit : '', set.reps?.toString() ?? '—', set.rirLabel ?? '—', !set.isCompleted ? l.skippedSuffix : '')}',
           );
           if (set.notes?.isNotEmpty ?? false) lines.add('    ${set.notes}');
         }
@@ -73,65 +75,79 @@ class TodayLogFormatter {
         : lines.join('\n').trim();
   }
 
-  String get food {
-    final lines = <String>[];
-    for (final entry in data.nutrition.foodEntries.reversed) {
-      lines.add(
-        '${_time(entry.occurredAt ?? entry.createdAt)} · ${entry.textContent}',
-      );
-      lines.add(
-        _macros(
-          entry.proteinGrams,
-          entry.carbohydrateGrams,
-          entry.fatGrams,
-          entry.caloriesKcal,
-        ),
-      );
-      if (entry.caloriesKcal != null) {
-        lines.add(
-          entry.caloriesEstimated
-              ? l.caloriesEstimatedLabel
-              : l.caloriesManualLabel,
-        );
-      }
-      for (final e in decodeNutrients(entry.extraNutrientsJson).entries) {
-        lines.add(
-          '${nutrientLabel(e.key, l)}: ${_value(e.value)} ${extraNutrientUnits[e.key]}',
-        );
-      }
-      lines.add('');
-    }
-    if (lines.isEmpty) lines.add(historical ? l.noDateFood : l.noTodayFood);
+  List<String> get _foodExtras => extraNutrientUnits.keys
+      .where(
+        (key) =>
+            decodeNutrients(data.nutrition.record?.extraNutrientsJson)
+                .containsKey(key) ||
+            data.nutrition.foodEntries.any(
+              (e) => decodeNutrients(e.extraNutrientsJson).containsKey(key),
+            ),
+      )
+      .toList();
+  List<String> get foodColumns => [
+    l.foodLog,
+    'P (g)',
+    'C (g)',
+    'F (g)',
+    'kcal',
+    for (final key in _foodExtras)
+      '${nutrientLabel(key, l)} (${extraNutrientUnits[key]})',
+  ];
+  List<List<String>> get foodRows {
     final record = data.nutrition.record;
-    lines.add('');
-    lines.add(
-      '${l.dailyIntake} · ${record?.source == 'meals' || record == null ? l.mealTotalLabel : l.manualTotalLabel}',
-    );
-    lines.add(
-      _macros(
-        record?.proteinGrams,
-        record?.carbohydrateGrams,
-        record?.fatGrams,
-        record?.caloriesKcal,
-      ),
-    );
-    lines.add(l.missingNutritionHint);
-    for (final e in decodeNutrients(record?.extraNutrientsJson).entries) {
-      lines.add(
-        '${nutrientLabel(e.key, l)}: ${_value(e.value)} ${extraNutrientUnits[e.key]}',
-      );
-    }
-    if (decodeNutrients(record?.extraNutrientsJson).isNotEmpty) {
-      lines.add(l.foodMissingHint);
-    }
-    return lines.join('\n').trim();
+    return [
+      for (final entry in data.nutrition.foodEntries.reversed)
+        [
+          '${_time(entry.occurredAt ?? entry.createdAt)} ${entry.textContent}${entry.caloriesKcal == null
+              ? ''
+              : entry.caloriesEstimated
+              ? ' ≈'
+              : ''}${entry.mealItemsJson == null ? '' : '\n${MealIngredient.decode(entry.mealItemsJson).map((i) => '${i.name} ${_value(i.quantity)} ${i.unit}').join('; ')}'}',
+          _value(entry.proteinGrams),
+          _value(entry.carbohydrateGrams),
+          _value(entry.fatGrams),
+          _value(entry.caloriesKcal),
+          for (final key in _foodExtras)
+            _value(decodeNutrients(entry.extraNutrientsJson)[key]),
+        ],
+      [
+        '${l.dailyIntake} · ${record?.source == 'meals' || record == null ? l.mealTotalLabel : l.manualTotalLabel}',
+        _value(record?.proteinGrams),
+        _value(record?.carbohydrateGrams),
+        _value(record?.fatGrams),
+        _value(record?.caloriesKcal),
+        for (final key in _foodExtras)
+          _value(decodeNutrients(record?.extraNutrientsJson)[key]),
+      ],
+    ];
   }
 
+  String _cell(String text) => text
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('\\', '\\\\')
+      .replaceAll('|', '\\|')
+      .replaceAll('\n', '<br>')
+      .replaceAll('\r', '')
+      .replaceAll('`', '\\`')
+      .replaceAll('*', '\\*')
+      .replaceAll('[', '\\[')
+      .replaceAll(']', '\\]');
+  String get food => [
+    '| ${foodColumns.map(_cell).join(' | ')} |',
+    '| ${List.filled(foodColumns.length, '---').join(' | ')} |',
+    for (final row in foodRows) '| ${row.map(_cell).join(' | ')} |',
+    l.missingNutritionHint,
+    if (_foodExtras.isNotEmpty) l.foodMissingHint,
+  ].join('\n');
+
   String get body {
-    if (data.measurements.isEmpty) {
+    if (data.measurements.isEmpty && data.sleep == null) {
       return historical ? l.noDateBody : l.noTodayBody;
     }
-    return data.measurements
+    final measurements = data.measurements
         .map((m) {
           final type = data.bodyTypes[m.measurementTypeId];
           final name = switch (type?.keyName) {
@@ -148,6 +164,12 @@ class TodayLogFormatter {
           return '$name: ${_value(m.value)} ${m.unit}${m.notes?.isNotEmpty == true ? ' · ${m.notes}' : ''}';
         })
         .join('\n');
+    final sleep = data.sleep;
+    return [
+      if (measurements.isNotEmpty) measurements,
+      if (sleep != null)
+        '${l.sleep}: ${sleep.startedAt.toIso8601String()} → ${sleep.endedAt.toIso8601String()} · ${_value(sleep.endedAt.difference(sleep.startedAt).inMinutes / 60)} h${sleep.notes == null ? '' : ' · ${sleep.notes}'}',
+    ].join('\n');
   }
 
   String section(String title, String text) =>
@@ -161,7 +183,5 @@ class TodayLogFormatter {
   ].join('\n\n');
   String _time(DateTime value) =>
       DateFormat.Hm(l.localeName).format(value.toLocal());
-  String _macros(double? p, double? c, double? f, double? kcal) =>
-      'P: ${_value(p)} g · C: ${_value(c)} g · F: ${_value(f)} g · kcal: ${_value(kcal)}';
   String _value(double? value) => value == null ? '—' : formatNumber(value);
 }

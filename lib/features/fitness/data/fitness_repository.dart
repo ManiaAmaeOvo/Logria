@@ -64,12 +64,13 @@ class WorkoutDraftSet {
     required this.reps,
     required this.rir,
     this.weightText,
+    this.notes,
   });
 
   final double? weight;
-  final String? weightText;
+  final String? weightText, notes;
   final int? reps;
-  final double? rir;
+  final String? rir;
 }
 
 class PlanExerciseData {
@@ -1070,7 +1071,8 @@ class FitnessRepository {
                 weightValue: Value(set.weight),
                 weightText: Value(set.weightText),
                 reps: Value(set.reps),
-                rir: Value(set.rir),
+                rirText: Value(set.rir),
+                notes: Value(set.notes),
                 isCompleted: const Value(true),
               ),
             );

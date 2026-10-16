@@ -120,6 +120,17 @@ Schema 4 adds DailyNotes. Existing tables and their rows are unchanged.
 Schema 5 adds FoodPresets, nullable extra-nutrient JSON and food quantity/preset
 snapshot metadata. Migration tests retain old meal numbers and daily notes.
 
-`docs/export/logria-health-log.schema.json` defines a planned, self-contained JSON
-contract. No JSON file exporter/importer is wired into the current version. The current
-sharing format is plain-text clipboard output from Today and Calendar.
+Schema 7 adds SleepLogs, FoodLogEntries.mealItemsJson and WorkoutSets.rirText.
+Legacy numeric RIR remains untouched as a read fallback; all new RIR writes are
+text. Per-set notes use the existing independent notes column, not variant metadata.
+Arithmetic is parsed by a bounded recursive-descent parser, never eval, and results
+are validated by the existing field limits before numeric storage. Count results
+must be integers. Meal compositions are immutable nutrient snapshots in one row;
+manual totals can intentionally differ from those snapshots.
+
+`docs/export/logria-health-log-v2.schema.json` is the current analysis export.
+`docs/BACKUP_FORMAT.md` specifies restorable backups separately. Backup replacement
+uses a single transaction with strict schema/type checks and rollback on constraint
+failure. Android SAF runs stream I/O off the UI thread and adds no network/storage
+permission. Successful restoration rekeys the shell to discard stale module state.
+Today renders nutrient tables natively; clipboard output uses escaped Markdown.

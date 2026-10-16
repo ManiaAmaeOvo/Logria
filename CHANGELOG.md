@@ -2,6 +2,29 @@
 
 [简体中文](CHANGELOG.zh-CN.md)
 
+## 1.4.0 — 2026-10-16 (Android build 12)
+
+- Full, unencrypted JSON backup/restore through Android's system document picker;
+  schema/type checks, explicit replacement confirmation and transactional rollback.
+- Inclusive date-range JSON analysis export v2 with optional body/sleep data;
+  independent from restorable backups. No broad storage or network permissions.
+- Sleep intervals, duration and optional notes in Body, Today, Calendar and exports.
+- Optional per-set feeling notes, separate from exercise variants and PR identity.
+- Free-text RIR (e.g. `~2`, `2–3`), preserving legacy numeric records and drafts.
+- Multi-ingredient meal composition via the meal '+' flow, quantity-scaled preset
+  snapshots, freeform notes and editable totals. Cancellation leaves no partial meal.
+- Bounded +/−/×/÷/parentheses input for numeric fields, retaining numeric storage
+  and integer/range validation; invalid arithmetic cannot become a text load.
+- Compact one-row Fitness shortcuts; clarify next-pending-day historical reference
+  after today's workout; normalize text-load handling selector dimensions.
+- Compact nutrition tables in Today and escaped Markdown tables in copied logs,
+  retaining zero/unknown distinctions, optional minerals and manual-total labels.
+- Additive SQLite schema 7 adds sleep, meal composition and primary text RIR.
+
+Includes local build 11 changes with a higher build number for in-place upgrades.
+Legacy orphan workout rows are preserved in a disclosed inert backup archive,
+not discarded or counted as completed training/PRs.
+
 ## 1.3.0 — 2026-10-07 (Android build 10)
 
 - Backfill/edit a selected date as training, rest or skip from Fitness or Calendar.

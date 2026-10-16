@@ -28,7 +28,7 @@ void main() {
           reps: 12,
           rir: null,
         ),
-        WorkoutDraftSet(weight: 0, weightText: 'band', reps: 8, rir: 2),
+        WorkoutDraftSet(weight: 0, weightText: 'band', reps: 8, rir: "2"),
       ],
     ),
   ];

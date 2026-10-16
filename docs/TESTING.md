@@ -1,4 +1,8 @@
-# 1.3.0 testing guide
+# 1.4.0 testing guide
+
+Use public 1.4.0 build 12 for current shared testing; previous local build 11
+has the same features. The 119-test suite covers backup safety, migration and
+bilingual input flows. Historical 1.3.0 validation remains below for reference.
 
 [简体中文](TESTING.zh-CN.md)
 
@@ -23,7 +27,28 @@ closed rounds, current-round rollover/undo/redo, start overrides and bilingual f
 
 Use Android build 10 for shared testing. Install the official release APK over an
 existing installation rather than uninstalling or clearing data. A fresh install
-starts without private logs. There is no restorable backup/import yet.
+starts without private logs. Local 1.4.0 build 11 now supports full backup/restore.
+
+## Local 1.4.0 validation checklist
+
+119 tests, analysis and formatting checks pass for local build 11. The existing
+emulator upgrades in place; system-picker backup saving was verified without
+requesting storage/network permissions. See RELEASE.md for APK details.
+
+- Save a full backup using the system document picker, cancel restore, and verify
+  no records change. Restore a valid file only after confirming replacement.
+- Invalid JSON/schema/type, duplicate keys and broken foreign keys must leave
+  the original database unchanged. Full backup preserves drafts/undo/settings.
+- Export an inclusive range; Body off must omit measurements and sleep entirely.
+- Record overnight sleep, then edit/delete it without touching measurements.
+- Enter `20+2.5*2` kg and `16/2` reps with RIR `~2–3`, add a set feeling, leave,
+  resume and save. No variant preset may appear. Legacy numeric RIR stays readable.
+- Add two preset ingredients in the '+' meal dialog using expression amounts,
+  add a note, save one meal; cancellation creates no partial row. Check labels'
+  kcal, optional extras, manual totals and later preset changes.
+- Check narrow bilingual layouts, one-row Fitness shortcuts, next-day reference
+  wording after completion and text-weight selector height. Copied nutrition must
+  be escaped Markdown with zero/unknown preserved and numbers at most 4 decimals.
 
 ## Automated validation
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/numeric_expression.dart';
+
 import '../../../core/database/app_database.dart';
 import '../data/fitness_repository.dart';
 import '../domain/training_cycle.dart';
@@ -500,12 +502,12 @@ class _TargetsDialogState extends State<_TargetsDialog> {
         ),
         FilledButton(
           onPressed: () {
-            final setCount = int.tryParse(_sets.text);
-            final min = int.tryParse(_min.text);
-            final max = int.tryParse(_max.text);
+            final setCount = NumericExpression.tryInt(_sets.text);
+            final min = NumericExpression.tryInt(_min.text);
+            final max = NumericExpression.tryInt(_max.text);
             final load = _weight.text.trim().isEmpty
                 ? null
-                : double.tryParse(_weight.text);
+                : NumericExpression.tryValue(_weight.text);
             if (setCount == null ||
                 setCount < 1 ||
                 min == null ||
@@ -539,7 +541,7 @@ class _TargetField extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 8),
     child: TextField(
       controller: controller,
-      keyboardType: TextInputType.numberWithOptions(decimal: decimal),
+      keyboardType: TextInputType.text,
       decoration: InputDecoration(labelText: label, isDense: true),
     ),
   );

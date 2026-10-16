@@ -208,12 +208,7 @@ extension HistoricalFitnessRepository on FitnessRepository {
                   (s) =>
                       (s.weight != null &&
                           (!s.weight!.isFinite || s.weight! < 0)) ||
-                      (s.reps != null && s.reps! < 0) ||
-                      (s.rir != null &&
-                          (!s.rir!.isFinite ||
-                              s.rir! < 0 ||
-                              s.rir! > 10 ||
-                              s.rir! * 2 != (s.rir! * 2).roundToDouble())),
+                      (s.reps != null && s.reps! < 0),
                 ),
           )) {
         throw ArgumentError('Invalid workout.');

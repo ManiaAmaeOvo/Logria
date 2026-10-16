@@ -8,6 +8,8 @@ import '../domain/exercise_variant.dart';
 import 'exercise_variant_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/record_day.dart';
+import '../../../core/numeric_expression.dart';
+import '../../../core/workout_set_values.dart';
 
 class WorkoutEditorPage extends StatefulWidget {
   const WorkoutEditorPage({
@@ -105,7 +107,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
 
   void _listen(_ExerciseInput input) {
     for (final set in input.sets) {
-      for (final c in [set.weight, set.reps, set.rir]) {
+      for (final c in [set.weight, set.reps, set.rir, set.notes]) {
         c.addListener(_changed);
       }
       set.weightFocus.addListener(() {
@@ -331,6 +333,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                     ),
                     const SizedBox(height: 16),
                     Text(l10n.workoutDraftHint),
+                    Text(
+                      l10n.arithmeticHint,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                     if (widget.existingWorkout == null) ...[
                       const SizedBox(height: 8),
                       Text(
@@ -378,7 +384,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                           onVariant: () => _editVariant(_exercises[index]),
                           onAddSet: () {
                             final set = _SetInput();
-                            for (final c in [set.weight, set.reps, set.rir]) {
+                            for (final c in [
+                              set.weight,
+                              set.reps,
+                              set.rir,
+                              set.notes,
+                            ]) {
                               c.addListener(_changed);
                             }
                             setState(() => _exercises[index].sets.add(set));
@@ -548,14 +559,17 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         final sets = <WorkoutDraftSet>[];
         for (final input in exercise.sets) {
           final rawWeight = input.weight.text.trim();
-          final parsedWeight = double.tryParse(rawWeight.replaceAll(',', '.'));
+          final parsedWeight = NumericExpression.tryValue(rawWeight);
+          if (rawWeight.isNotEmpty &&
+              NumericExpression.looksNumeric(rawWeight) &&
+              parsedWeight == null) {
+            throw FormatException(l10n.invalidWeight(exercise.name));
+          }
           final weight =
               parsedWeight ??
               (rawWeight.isNotEmpty && input.textAsZero ? 0.0 : null);
-          final reps = int.tryParse(input.reps.text.trim());
-          final rir = double.tryParse(
-            input.rir.text.trim().replaceAll(',', '.'),
-          );
+          final reps = NumericExpression.tryInt(input.reps.text.trim());
+          final rir = input.rir.text.trim();
           if (parsedWeight != null &&
               (!parsedWeight.isFinite || parsedWeight < 0)) {
             throw FormatException(l10n.invalidWeight(exercise.name));
@@ -563,15 +577,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           if (input.reps.text.trim().isNotEmpty && (reps == null || reps < 0)) {
             throw FormatException(l10n.invalidReps(exercise.name));
           }
-          if (input.rir.text.trim().isNotEmpty &&
-              (rir == null ||
-                  !rir.isFinite ||
-                  rir < 0 ||
-                  rir > 10 ||
-                  (rir * 2) % 1 != 0)) {
-            throw FormatException(l10n.invalidRir(exercise.name));
+          if (rawWeight.isEmpty &&
+              reps == null &&
+              rir.isEmpty &&
+              input.notes.text.trim().isEmpty) {
+            continue;
           }
-          if (rawWeight.isEmpty && reps == null && rir == null) continue;
           sets.add(
             WorkoutDraftSet(
               weight: weight,
@@ -579,7 +590,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   ? rawWeight
                   : null,
               reps: reps,
-              rir: rir,
+              rir: rir.isEmpty ? null : rir,
+              notes: input.notes.text.trim().isEmpty
+                  ? null
+                  : input.notes.text.trim(),
             ),
           );
         }
@@ -742,7 +756,7 @@ class _ExerciseCard extends StatelessWidget {
                         Expanded(
                           child: _NumberField(
                             controller: input.sets[setIndex].rir,
-                            decimal: true,
+                            allowText: true,
                           ),
                         ),
                         SizedBox(
@@ -763,52 +777,110 @@ class _ExerciseCard extends StatelessWidget {
                             valueListenable: input.sets[setIndex].weight,
                             builder: (context, value, _) {
                               if (value.text.trim().isEmpty ||
-                                  double.tryParse(
-                                        value.text.trim().replaceAll(',', '.'),
-                                      ) !=
+                                  NumericExpression.tryValue(value.text) !=
                                       null) {
                                 return const SizedBox.shrink();
                               }
-                              return DropdownButtonFormField<bool>(
-                                key: ValueKey(input.sets[setIndex].textAsZero),
-                                isExpanded: true,
-                                itemHeight: null,
-                                isDense: false,
-                                initialValue: input.sets[setIndex].textAsZero,
-                                decoration: InputDecoration(
-                                  labelText: l10n.textWeightHandling,
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: DropdownButtonFormField<bool>(
+                                  key: ValueKey(
+                                    input.sets[setIndex].textAsZero,
+                                  ),
+                                  isExpanded: true,
+                                  isDense: true,
+                                  initialValue: input.sets[setIndex].textAsZero,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.textWeightHandling,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: false,
+                                      child: Text(
+                                        l10n.textWeightNull,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 13),
+                                      ),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: true,
+                                      child: Text(
+                                        l10n.textWeightZero,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 13),
+                                      ),
+                                    ),
+                                  ],
+                                  onChanged: (v) {
+                                    refresh(
+                                      () => input.sets[setIndex].textAsZero =
+                                          v ?? false,
+                                    );
+                                    input.edit(
+                                      setIndex,
+                                      weight: true,
+                                      modeOnly: true,
+                                    );
+                                    onWeightModeChanged();
+                                  },
                                 ),
-                                items: [
-                                  DropdownMenuItem(
-                                    value: false,
-                                    child: Text(
-                                      l10n.textWeightNull,
-                                      style: const TextStyle(fontSize: 13),
-                                    ),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: true,
-                                    child: Text(
-                                      l10n.textWeightZero,
-                                      style: const TextStyle(fontSize: 13),
-                                    ),
-                                  ),
-                                ],
-                                onChanged: (v) {
-                                  refresh(
-                                    () => input.sets[setIndex].textAsZero =
-                                        v ?? false,
-                                  );
-                                  input.edit(
-                                    setIndex,
-                                    weight: true,
-                                    modeOnly: true,
-                                  );
-                                  onWeightModeChanged();
-                                },
                               );
                             },
                           ),
+                    ),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: input.sets[setIndex].notes,
+                      builder: (context, value, _) => Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.chat_bubble_outline, size: 16),
+                          label: Text(
+                            value.text.isEmpty ? l10n.setNote : value.text,
+                          ),
+                          onPressed: () async {
+                            final controller = TextEditingController(
+                              text: value.text,
+                            );
+                            final note = await showDialog<String>(
+                              context: context,
+                              builder: (c) => AlertDialog(
+                                title: Text(l10n.setNote),
+                                content: TextField(
+                                  controller: controller,
+                                  maxLines: 3,
+                                  decoration: InputDecoration(
+                                    hintText: l10n.setNoteHint,
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(c),
+                                    child: Text(l10n.cancel),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () =>
+                                        Navigator.pop(c, controller.text),
+                                    child: Text(l10n.save),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (note != null) {
+                              input.sets[setIndex].notes.text = note;
+                            }
+                            // Dialog route may still detach its TextField during the next frame.
+                            WidgetsBinding.instance.addPostFrameCallback(
+                              (_) => controller.dispose(),
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -846,9 +918,7 @@ class _NumberField extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       onChanged: onChanged,
-      keyboardType: allowText
-          ? TextInputType.text
-          : TextInputType.numberWithOptions(decimal: decimal),
+      keyboardType: TextInputType.text,
       textAlign: TextAlign.center,
       decoration: const InputDecoration(
         isDense: true,
@@ -979,7 +1049,8 @@ class _ExerciseInput {
            _SetInput(
              weightValue: set.weightValue,
              repsValue: set.reps,
-             rirValue: set.rir,
+             rirValue: set.rirLabel,
+             notesValue: asTemplate ? null : set.notes,
              weightText: set.weightText,
              textAsZero: set.weightText != null && set.weightValue == 0,
            ),
@@ -1083,18 +1154,21 @@ class _SetInput {
   _SetInput({
     double? weightValue,
     int? repsValue,
-    double? rirValue,
+    String? rirValue,
+    String? notesValue,
     String? weightText,
     this.textAsZero = false,
   }) : weight = TextEditingController(
          text: weightText ?? weightValue?.toString() ?? '',
        ),
        reps = TextEditingController(text: repsValue?.toString() ?? ''),
-       rir = TextEditingController(text: rirValue?.toString() ?? '');
+       rir = TextEditingController(text: rirValue ?? ''),
+       notes = TextEditingController(text: notesValue ?? '');
 
   final TextEditingController weight;
   final TextEditingController reps;
   final TextEditingController rir;
+  final TextEditingController notes;
   bool textAsZero;
   final weightFocus = FocusNode();
   final repsFocus = FocusNode();
@@ -1103,6 +1177,7 @@ class _SetInput {
     : weight = TextEditingController(text: json['weight'] as String),
       reps = TextEditingController(text: json['reps'] as String),
       rir = TextEditingController(text: json['rir'] as String),
+      notes = TextEditingController(text: json['notes'] as String? ?? ''),
       textAsZero = json['zero'] as bool {
     weightEdited = json['weightEdited'] as bool? ?? weight.text.isNotEmpty;
     repsEdited = json['repsEdited'] as bool? ?? reps.text.isNotEmpty;
@@ -1111,6 +1186,7 @@ class _SetInput {
     'weight': weight.text,
     'reps': reps.text,
     'rir': rir.text,
+    'notes': notes.text,
     'zero': textAsZero,
     'weightEdited': weightEdited,
     'repsEdited': repsEdited,
@@ -1120,6 +1196,7 @@ class _SetInput {
     weight.dispose();
     reps.dispose();
     rir.dispose();
+    notes.dispose();
     weightFocus.dispose();
     repsFocus.dispose();
   }

@@ -10,6 +10,80 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get orphanArchiveHint =>
+      '检测到旧版孤立训练数据。完整原始快照保存在备份设置的 backup.orphanedWorkoutRows 中；恢复时保留此归档，不将它们算作已完成训练或 PR，正常记录不变。';
+
+  @override
+  String get backupData => '备份与数据导出';
+
+  @override
+  String get backupCreate => '保存完整备份';
+
+  @override
+  String get backupRestore => '恢复完整备份';
+
+  @override
+  String get exportLogs => '导出指定日期日志（JSON）';
+
+  @override
+  String get backupHint =>
+      '完整备份包含记录、计划、预设、设置和草稿；日期日志供分析使用，不可恢复。文件未加密，请妥善保管；选择本地文件位置即可离线操作。';
+
+  @override
+  String get restoreWarning =>
+      '用此备份替换当前所有应用数据？建议先导出备份，此操作无法撤回。恢复后将重新载入语言并返回今日页。';
+
+  @override
+  String get backupRestored => '备份已恢复';
+
+  @override
+  String get fileSaved => '文件已保存';
+
+  @override
+  String get includeBody => '包含身体测量与睡眠';
+
+  @override
+  String get sleep => '睡眠';
+
+  @override
+  String get sleepStart => '入睡时间';
+
+  @override
+  String get sleepEnd => '起床时间';
+
+  @override
+  String get sleepNotes => '睡眠备注（可选）';
+
+  @override
+  String get sleepInvalid => '起床时间须晚于入睡时间，时长不超过 48 小时。';
+
+  @override
+  String get setNote => '本组备注（可选）';
+
+  @override
+  String get setNoteHint => '记录这组的感受，不会创建动作变式。';
+
+  @override
+  String get nextTrainingReference => '下次待训练日参考 · 上一轮记录';
+
+  @override
+  String get toolbarBackfill => '补录';
+
+  @override
+  String get mealIngredients => '本餐食材';
+
+  @override
+  String get addIngredient => '加入食材';
+
+  @override
+  String get mealIngredientHint =>
+      '同一餐可加入多个预设食物，按各自单位输入用量。加入或移除食材会重算总量，之后也可手动修改总量。';
+
+  @override
+  String get arithmeticHint =>
+      '数字可输入 + − × ÷ 和括号，例如 20+2.5*2；次数／组数须算出整数。RIR 仍按原文记录。';
+
+  @override
   String get exerciseVariantNote => '备注变式 / 独立预设';
 
   @override
@@ -281,7 +355,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get firstReleaseScopeHint =>
-      '已提供可续写的训练草稿、动作 PR 曲线、有氧、营养、身体、每日汇总和日历功能。JSON 导入导出和按体重计算的营养模板将在后续版本加入。';
+      '已提供训练、饮食、身体／睡眠、每日汇总、日历、完整备份恢复和指定日期 JSON 导出。按体重计算的营养模板将在后续版本加入。';
 
   @override
   String get openSourceLicenses => '开源许可证';

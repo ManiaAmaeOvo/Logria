@@ -4271,6 +4271,17 @@ class $WorkoutSetsTable extends WorkoutSets
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $WorkoutSetsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _rirTextMeta = const VerificationMeta(
+    'rirText',
+  );
+  @override
+  late final GeneratedColumn<String> rirText = GeneratedColumn<String>(
+    'rir_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _weightTextMeta = const VerificationMeta(
     'weightText',
   );
@@ -4396,6 +4407,7 @@ class $WorkoutSetsTable extends WorkoutSets
   );
   @override
   List<GeneratedColumn> get $columns => [
+    rirText,
     weightText,
     id,
     workoutExerciseId,
@@ -4420,6 +4432,12 @@ class $WorkoutSetsTable extends WorkoutSets
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('rir_text')) {
+      context.handle(
+        _rirTextMeta,
+        rirText.isAcceptableOrUnknown(data['rir_text']!, _rirTextMeta),
+      );
+    }
     if (data.containsKey('weight_text')) {
       context.handle(
         _weightTextMeta,
@@ -4511,6 +4529,10 @@ class $WorkoutSetsTable extends WorkoutSets
   WorkoutSet map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WorkoutSet(
+      rirText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rir_text'],
+      ),
       weightText: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}weight_text'],
@@ -4565,6 +4587,7 @@ class $WorkoutSetsTable extends WorkoutSets
 }
 
 class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
+  final String? rirText;
   final String? weightText;
   final String id;
   final String workoutExerciseId;
@@ -4577,6 +4600,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   final bool isCompleted;
   final String? notes;
   const WorkoutSet({
+    this.rirText,
     this.weightText,
     required this.id,
     required this.workoutExerciseId,
@@ -4592,6 +4616,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || rirText != null) {
+      map['rir_text'] = Variable<String>(rirText);
+    }
     if (!nullToAbsent || weightText != null) {
       map['weight_text'] = Variable<String>(weightText);
     }
@@ -4618,6 +4645,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
 
   WorkoutSetsCompanion toCompanion(bool nullToAbsent) {
     return WorkoutSetsCompanion(
+      rirText: rirText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rirText),
       weightText: weightText == null && nullToAbsent
           ? const Value.absent()
           : Value(weightText),
@@ -4644,6 +4674,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return WorkoutSet(
+      rirText: serializer.fromJson<String?>(json['rirText']),
       weightText: serializer.fromJson<String?>(json['weightText']),
       id: serializer.fromJson<String>(json['id']),
       workoutExerciseId: serializer.fromJson<String>(json['workoutExerciseId']),
@@ -4661,6 +4692,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'rirText': serializer.toJson<String?>(rirText),
       'weightText': serializer.toJson<String?>(weightText),
       'id': serializer.toJson<String>(id),
       'workoutExerciseId': serializer.toJson<String>(workoutExerciseId),
@@ -4676,6 +4708,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   }
 
   WorkoutSet copyWith({
+    Value<String?> rirText = const Value.absent(),
     Value<String?> weightText = const Value.absent(),
     String? id,
     String? workoutExerciseId,
@@ -4688,6 +4721,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
     bool? isCompleted,
     Value<String?> notes = const Value.absent(),
   }) => WorkoutSet(
+    rirText: rirText.present ? rirText.value : this.rirText,
     weightText: weightText.present ? weightText.value : this.weightText,
     id: id ?? this.id,
     workoutExerciseId: workoutExerciseId ?? this.workoutExerciseId,
@@ -4702,6 +4736,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   );
   WorkoutSet copyWithCompanion(WorkoutSetsCompanion data) {
     return WorkoutSet(
+      rirText: data.rirText.present ? data.rirText.value : this.rirText,
       weightText: data.weightText.present
           ? data.weightText.value
           : this.weightText,
@@ -4729,6 +4764,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   @override
   String toString() {
     return (StringBuffer('WorkoutSet(')
+          ..write('rirText: $rirText, ')
           ..write('weightText: $weightText, ')
           ..write('id: $id, ')
           ..write('workoutExerciseId: $workoutExerciseId, ')
@@ -4746,6 +4782,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
 
   @override
   int get hashCode => Object.hash(
+    rirText,
     weightText,
     id,
     workoutExerciseId,
@@ -4762,6 +4799,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WorkoutSet &&
+          other.rirText == this.rirText &&
           other.weightText == this.weightText &&
           other.id == this.id &&
           other.workoutExerciseId == this.workoutExerciseId &&
@@ -4776,6 +4814,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
 }
 
 class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
+  final Value<String?> rirText;
   final Value<String?> weightText;
   final Value<String> id;
   final Value<String> workoutExerciseId;
@@ -4789,6 +4828,7 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
   final Value<String?> notes;
   final Value<int> rowid;
   const WorkoutSetsCompanion({
+    this.rirText = const Value.absent(),
     this.weightText = const Value.absent(),
     this.id = const Value.absent(),
     this.workoutExerciseId = const Value.absent(),
@@ -4803,6 +4843,7 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     this.rowid = const Value.absent(),
   });
   WorkoutSetsCompanion.insert({
+    this.rirText = const Value.absent(),
     this.weightText = const Value.absent(),
     required String id,
     required String workoutExerciseId,
@@ -4819,6 +4860,7 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
        workoutExerciseId = Value(workoutExerciseId),
        setNumber = Value(setNumber);
   static Insertable<WorkoutSet> custom({
+    Expression<String>? rirText,
     Expression<String>? weightText,
     Expression<String>? id,
     Expression<String>? workoutExerciseId,
@@ -4833,6 +4875,7 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (rirText != null) 'rir_text': rirText,
       if (weightText != null) 'weight_text': weightText,
       if (id != null) 'id': id,
       if (workoutExerciseId != null) 'workout_exercise_id': workoutExerciseId,
@@ -4849,6 +4892,7 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
   }
 
   WorkoutSetsCompanion copyWith({
+    Value<String?>? rirText,
     Value<String?>? weightText,
     Value<String>? id,
     Value<String>? workoutExerciseId,
@@ -4863,6 +4907,7 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     Value<int>? rowid,
   }) {
     return WorkoutSetsCompanion(
+      rirText: rirText ?? this.rirText,
       weightText: weightText ?? this.weightText,
       id: id ?? this.id,
       workoutExerciseId: workoutExerciseId ?? this.workoutExerciseId,
@@ -4881,6 +4926,9 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (rirText.present) {
+      map['rir_text'] = Variable<String>(rirText.value);
+    }
     if (weightText.present) {
       map['weight_text'] = Variable<String>(weightText.value);
     }
@@ -4923,6 +4971,7 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
   @override
   String toString() {
     return (StringBuffer('WorkoutSetsCompanion(')
+          ..write('rirText: $rirText, ')
           ..write('weightText: $weightText, ')
           ..write('id: $id, ')
           ..write('workoutExerciseId: $workoutExerciseId, ')
@@ -4946,6 +4995,17 @@ class $FoodLogEntriesTable extends FoodLogEntries
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $FoodLogEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _mealItemsJsonMeta = const VerificationMeta(
+    'mealItemsJson',
+  );
+  @override
+  late final GeneratedColumn<String> mealItemsJson = GeneratedColumn<String>(
+    'meal_items_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _extraNutrientsJsonMeta =
       const VerificationMeta('extraNutrientsJson');
   @override
@@ -5116,6 +5176,7 @@ class $FoodLogEntriesTable extends FoodLogEntries
   );
   @override
   List<GeneratedColumn> get $columns => [
+    mealItemsJson,
     extraNutrientsJson,
     presetId,
     quantity,
@@ -5144,6 +5205,15 @@ class $FoodLogEntriesTable extends FoodLogEntries
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('meal_items_json')) {
+      context.handle(
+        _mealItemsJsonMeta,
+        mealItemsJson.isAcceptableOrUnknown(
+          data['meal_items_json']!,
+          _mealItemsJsonMeta,
+        ),
+      );
+    }
     if (data.containsKey('extra_nutrients_json')) {
       context.handle(
         _extraNutrientsJsonMeta,
@@ -5271,6 +5341,10 @@ class $FoodLogEntriesTable extends FoodLogEntries
   FoodLogEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return FoodLogEntry(
+      mealItemsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}meal_items_json'],
+      ),
       extraNutrientsJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}extra_nutrients_json'],
@@ -5341,6 +5415,7 @@ class $FoodLogEntriesTable extends FoodLogEntries
 }
 
 class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
+  final String? mealItemsJson;
   final String? extraNutrientsJson;
   final String? presetId;
   final double? quantity;
@@ -5357,6 +5432,7 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   final DateTime createdAt;
   final DateTime updatedAt;
   const FoodLogEntry({
+    this.mealItemsJson,
     this.extraNutrientsJson,
     this.presetId,
     this.quantity,
@@ -5376,6 +5452,9 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || mealItemsJson != null) {
+      map['meal_items_json'] = Variable<String>(mealItemsJson);
+    }
     if (!nullToAbsent || extraNutrientsJson != null) {
       map['extra_nutrients_json'] = Variable<String>(extraNutrientsJson);
     }
@@ -5414,6 +5493,9 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
 
   FoodLogEntriesCompanion toCompanion(bool nullToAbsent) {
     return FoodLogEntriesCompanion(
+      mealItemsJson: mealItemsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mealItemsJson),
       extraNutrientsJson: extraNutrientsJson == null && nullToAbsent
           ? const Value.absent()
           : Value(extraNutrientsJson),
@@ -5456,6 +5538,7 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FoodLogEntry(
+      mealItemsJson: serializer.fromJson<String?>(json['mealItemsJson']),
       extraNutrientsJson: serializer.fromJson<String?>(
         json['extraNutrientsJson'],
       ),
@@ -5481,6 +5564,7 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'mealItemsJson': serializer.toJson<String?>(mealItemsJson),
       'extraNutrientsJson': serializer.toJson<String?>(extraNutrientsJson),
       'presetId': serializer.toJson<String?>(presetId),
       'quantity': serializer.toJson<double?>(quantity),
@@ -5500,6 +5584,7 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   }
 
   FoodLogEntry copyWith({
+    Value<String?> mealItemsJson = const Value.absent(),
     Value<String?> extraNutrientsJson = const Value.absent(),
     Value<String?> presetId = const Value.absent(),
     Value<double?> quantity = const Value.absent(),
@@ -5516,6 +5601,9 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => FoodLogEntry(
+    mealItemsJson: mealItemsJson.present
+        ? mealItemsJson.value
+        : this.mealItemsJson,
     extraNutrientsJson: extraNutrientsJson.present
         ? extraNutrientsJson.value
         : this.extraNutrientsJson,
@@ -5538,6 +5626,9 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   );
   FoodLogEntry copyWithCompanion(FoodLogEntriesCompanion data) {
     return FoodLogEntry(
+      mealItemsJson: data.mealItemsJson.present
+          ? data.mealItemsJson.value
+          : this.mealItemsJson,
       extraNutrientsJson: data.extraNutrientsJson.present
           ? data.extraNutrientsJson.value
           : this.extraNutrientsJson,
@@ -5575,6 +5666,7 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   @override
   String toString() {
     return (StringBuffer('FoodLogEntry(')
+          ..write('mealItemsJson: $mealItemsJson, ')
           ..write('extraNutrientsJson: $extraNutrientsJson, ')
           ..write('presetId: $presetId, ')
           ..write('quantity: $quantity, ')
@@ -5596,6 +5688,7 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
 
   @override
   int get hashCode => Object.hash(
+    mealItemsJson,
     extraNutrientsJson,
     presetId,
     quantity,
@@ -5616,6 +5709,7 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is FoodLogEntry &&
+          other.mealItemsJson == this.mealItemsJson &&
           other.extraNutrientsJson == this.extraNutrientsJson &&
           other.presetId == this.presetId &&
           other.quantity == this.quantity &&
@@ -5634,6 +5728,7 @@ class FoodLogEntry extends DataClass implements Insertable<FoodLogEntry> {
 }
 
 class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
+  final Value<String?> mealItemsJson;
   final Value<String?> extraNutrientsJson;
   final Value<String?> presetId;
   final Value<double?> quantity;
@@ -5651,6 +5746,7 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
   const FoodLogEntriesCompanion({
+    this.mealItemsJson = const Value.absent(),
     this.extraNutrientsJson = const Value.absent(),
     this.presetId = const Value.absent(),
     this.quantity = const Value.absent(),
@@ -5669,6 +5765,7 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
     this.rowid = const Value.absent(),
   });
   FoodLogEntriesCompanion.insert({
+    this.mealItemsJson = const Value.absent(),
     this.extraNutrientsJson = const Value.absent(),
     this.presetId = const Value.absent(),
     this.quantity = const Value.absent(),
@@ -5691,6 +5788,7 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<FoodLogEntry> custom({
+    Expression<String>? mealItemsJson,
     Expression<String>? extraNutrientsJson,
     Expression<String>? presetId,
     Expression<double>? quantity,
@@ -5709,6 +5807,7 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (mealItemsJson != null) 'meal_items_json': mealItemsJson,
       if (extraNutrientsJson != null)
         'extra_nutrients_json': extraNutrientsJson,
       if (presetId != null) 'preset_id': presetId,
@@ -5730,6 +5829,7 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   }
 
   FoodLogEntriesCompanion copyWith({
+    Value<String?>? mealItemsJson,
     Value<String?>? extraNutrientsJson,
     Value<String?>? presetId,
     Value<double?>? quantity,
@@ -5748,6 +5848,7 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
     Value<int>? rowid,
   }) {
     return FoodLogEntriesCompanion(
+      mealItemsJson: mealItemsJson ?? this.mealItemsJson,
       extraNutrientsJson: extraNutrientsJson ?? this.extraNutrientsJson,
       presetId: presetId ?? this.presetId,
       quantity: quantity ?? this.quantity,
@@ -5770,6 +5871,9 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (mealItemsJson.present) {
+      map['meal_items_json'] = Variable<String>(mealItemsJson.value);
+    }
     if (extraNutrientsJson.present) {
       map['extra_nutrients_json'] = Variable<String>(extraNutrientsJson.value);
     }
@@ -5824,6 +5928,7 @@ class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogEntry> {
   @override
   String toString() {
     return (StringBuffer('FoodLogEntriesCompanion(')
+          ..write('mealItemsJson: $mealItemsJson, ')
           ..write('extraNutrientsJson: $extraNutrientsJson, ')
           ..write('presetId: $presetId, ')
           ..write('quantity: $quantity, ')
@@ -9417,6 +9522,373 @@ class FoodPresetsCompanion extends UpdateCompanion<FoodPreset> {
   }
 }
 
+class $SleepLogsTable extends SleepLogs
+    with TableInfo<$SleepLogsTable, SleepLog> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SleepLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _localDateMeta = const VerificationMeta(
+    'localDate',
+  );
+  @override
+  late final GeneratedColumn<String> localDate = GeneratedColumn<String>(
+    'local_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    localDate,
+    startedAt,
+    endedAt,
+    notes,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sleep_logs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SleepLog> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('local_date')) {
+      context.handle(
+        _localDateMeta,
+        localDate.isAcceptableOrUnknown(data['local_date']!, _localDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localDateMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endedAtMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {localDate};
+  @override
+  SleepLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SleepLog(
+      localDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_date'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SleepLogsTable createAlias(String alias) {
+    return $SleepLogsTable(attachedDatabase, alias);
+  }
+}
+
+class SleepLog extends DataClass implements Insertable<SleepLog> {
+  final String localDate;
+  final DateTime startedAt;
+  final DateTime endedAt;
+  final String? notes;
+  final DateTime updatedAt;
+  const SleepLog({
+    required this.localDate,
+    required this.startedAt,
+    required this.endedAt,
+    this.notes,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['local_date'] = Variable<String>(localDate);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    map['ended_at'] = Variable<DateTime>(endedAt);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  SleepLogsCompanion toCompanion(bool nullToAbsent) {
+    return SleepLogsCompanion(
+      localDate: Value(localDate),
+      startedAt: Value(startedAt),
+      endedAt: Value(endedAt),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory SleepLog.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SleepLog(
+      localDate: serializer.fromJson<String>(json['localDate']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime>(json['endedAt']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'localDate': serializer.toJson<String>(localDate),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'endedAt': serializer.toJson<DateTime>(endedAt),
+      'notes': serializer.toJson<String?>(notes),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  SleepLog copyWith({
+    String? localDate,
+    DateTime? startedAt,
+    DateTime? endedAt,
+    Value<String?> notes = const Value.absent(),
+    DateTime? updatedAt,
+  }) => SleepLog(
+    localDate: localDate ?? this.localDate,
+    startedAt: startedAt ?? this.startedAt,
+    endedAt: endedAt ?? this.endedAt,
+    notes: notes.present ? notes.value : this.notes,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  SleepLog copyWithCompanion(SleepLogsCompanion data) {
+    return SleepLog(
+      localDate: data.localDate.present ? data.localDate.value : this.localDate,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SleepLog(')
+          ..write('localDate: $localDate, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(localDate, startedAt, endedAt, notes, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SleepLog &&
+          other.localDate == this.localDate &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.notes == this.notes &&
+          other.updatedAt == this.updatedAt);
+}
+
+class SleepLogsCompanion extends UpdateCompanion<SleepLog> {
+  final Value<String> localDate;
+  final Value<DateTime> startedAt;
+  final Value<DateTime> endedAt;
+  final Value<String?> notes;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const SleepLogsCompanion({
+    this.localDate = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SleepLogsCompanion.insert({
+    required String localDate,
+    required DateTime startedAt,
+    required DateTime endedAt,
+    this.notes = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : localDate = Value(localDate),
+       startedAt = Value(startedAt),
+       endedAt = Value(endedAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<SleepLog> custom({
+    Expression<String>? localDate,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+    Expression<String>? notes,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (localDate != null) 'local_date': localDate,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (notes != null) 'notes': notes,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SleepLogsCompanion copyWith({
+    Value<String>? localDate,
+    Value<DateTime>? startedAt,
+    Value<DateTime>? endedAt,
+    Value<String?>? notes,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return SleepLogsCompanion(
+      localDate: localDate ?? this.localDate,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      notes: notes ?? this.notes,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (localDate.present) {
+      map['local_date'] = Variable<String>(localDate.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SleepLogsCompanion(')
+          ..write('localDate: $localDate, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -9451,6 +9923,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $DailyNotesTable dailyNotes = $DailyNotesTable(this);
   late final $FoodPresetsTable foodPresets = $FoodPresetsTable(this);
+  late final $SleepLogsTable sleepLogs = $SleepLogsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -9474,6 +9947,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     personalRecords,
     dailyNotes,
     foodPresets,
+    sleepLogs,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -13808,6 +14282,7 @@ typedef $$WorkoutExercisesTableProcessedTableManager =
     >;
 typedef $$WorkoutSetsTableCreateCompanionBuilder =
     WorkoutSetsCompanion Function({
+      Value<String?> rirText,
       Value<String?> weightText,
       required String id,
       required String workoutExerciseId,
@@ -13823,6 +14298,7 @@ typedef $$WorkoutSetsTableCreateCompanionBuilder =
     });
 typedef $$WorkoutSetsTableUpdateCompanionBuilder =
     WorkoutSetsCompanion Function({
+      Value<String?> rirText,
       Value<String?> weightText,
       Value<String> id,
       Value<String> workoutExerciseId,
@@ -13869,6 +14345,11 @@ class $$WorkoutSetsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get rirText => $composableBuilder(
+    column: $table.rirText,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get weightText => $composableBuilder(
     column: $table.weightText,
     builder: (column) => ColumnFilters(column),
@@ -13952,6 +14433,11 @@ class $$WorkoutSetsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get rirText => $composableBuilder(
+    column: $table.rirText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get weightText => $composableBuilder(
     column: $table.weightText,
     builder: (column) => ColumnOrderings(column),
@@ -14035,6 +14521,9 @@ class $$WorkoutSetsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get rirText =>
+      $composableBuilder(column: $table.rirText, builder: (column) => column);
+
   GeneratedColumn<String> get weightText => $composableBuilder(
     column: $table.weightText,
     builder: (column) => column,
@@ -14125,6 +14614,7 @@ class $$WorkoutSetsTableTableManager
               $$WorkoutSetsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
+                Value<String?> rirText = const Value.absent(),
                 Value<String?> weightText = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> workoutExerciseId = const Value.absent(),
@@ -14138,6 +14628,7 @@ class $$WorkoutSetsTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WorkoutSetsCompanion(
+                rirText: rirText,
                 weightText: weightText,
                 id: id,
                 workoutExerciseId: workoutExerciseId,
@@ -14153,6 +14644,7 @@ class $$WorkoutSetsTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<String?> rirText = const Value.absent(),
                 Value<String?> weightText = const Value.absent(),
                 required String id,
                 required String workoutExerciseId,
@@ -14166,6 +14658,7 @@ class $$WorkoutSetsTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WorkoutSetsCompanion.insert(
+                rirText: rirText,
                 weightText: weightText,
                 id: id,
                 workoutExerciseId: workoutExerciseId,
@@ -14246,6 +14739,7 @@ typedef $$WorkoutSetsTableProcessedTableManager =
     >;
 typedef $$FoodLogEntriesTableCreateCompanionBuilder =
     FoodLogEntriesCompanion Function({
+      Value<String?> mealItemsJson,
       Value<String?> extraNutrientsJson,
       Value<String?> presetId,
       Value<double?> quantity,
@@ -14265,6 +14759,7 @@ typedef $$FoodLogEntriesTableCreateCompanionBuilder =
     });
 typedef $$FoodLogEntriesTableUpdateCompanionBuilder =
     FoodLogEntriesCompanion Function({
+      Value<String?> mealItemsJson,
       Value<String?> extraNutrientsJson,
       Value<String?> presetId,
       Value<double?> quantity,
@@ -14292,6 +14787,11 @@ class $$FoodLogEntriesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get mealItemsJson => $composableBuilder(
+    column: $table.mealItemsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get extraNutrientsJson => $composableBuilder(
     column: $table.extraNutrientsJson,
     builder: (column) => ColumnFilters(column),
@@ -14377,6 +14877,11 @@ class $$FoodLogEntriesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get mealItemsJson => $composableBuilder(
+    column: $table.mealItemsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get extraNutrientsJson => $composableBuilder(
     column: $table.extraNutrientsJson,
     builder: (column) => ColumnOrderings(column),
@@ -14462,6 +14967,11 @@ class $$FoodLogEntriesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get mealItemsJson => $composableBuilder(
+    column: $table.mealItemsJson,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get extraNutrientsJson => $composableBuilder(
     column: $table.extraNutrientsJson,
     builder: (column) => column,
@@ -14557,6 +15067,7 @@ class $$FoodLogEntriesTableTableManager
               $$FoodLogEntriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
+                Value<String?> mealItemsJson = const Value.absent(),
                 Value<String?> extraNutrientsJson = const Value.absent(),
                 Value<String?> presetId = const Value.absent(),
                 Value<double?> quantity = const Value.absent(),
@@ -14574,6 +15085,7 @@ class $$FoodLogEntriesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FoodLogEntriesCompanion(
+                mealItemsJson: mealItemsJson,
                 extraNutrientsJson: extraNutrientsJson,
                 presetId: presetId,
                 quantity: quantity,
@@ -14593,6 +15105,7 @@ class $$FoodLogEntriesTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<String?> mealItemsJson = const Value.absent(),
                 Value<String?> extraNutrientsJson = const Value.absent(),
                 Value<String?> presetId = const Value.absent(),
                 Value<double?> quantity = const Value.absent(),
@@ -14610,6 +15123,7 @@ class $$FoodLogEntriesTableTableManager
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
               }) => FoodLogEntriesCompanion.insert(
+                mealItemsJson: mealItemsJson,
                 extraNutrientsJson: extraNutrientsJson,
                 presetId: presetId,
                 quantity: quantity,
@@ -16844,6 +17358,207 @@ typedef $$FoodPresetsTableProcessedTableManager =
       FoodPreset,
       PrefetchHooks Function()
     >;
+typedef $$SleepLogsTableCreateCompanionBuilder = SleepLogsCompanion Function({
+  required String localDate,
+  required DateTime startedAt,
+  required DateTime endedAt,
+  Value<String?> notes,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$SleepLogsTableUpdateCompanionBuilder = SleepLogsCompanion Function({
+  Value<String> localDate,
+  Value<DateTime> startedAt,
+  Value<DateTime> endedAt,
+  Value<String?> notes,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
+
+class $$SleepLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $SleepLogsTable> {
+  $$SleepLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get localDate => $composableBuilder(
+    column: $table.localDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SleepLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SleepLogsTable> {
+  $$SleepLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get localDate => $composableBuilder(
+    column: $table.localDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SleepLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SleepLogsTable> {
+  $$SleepLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get localDate =>
+      $composableBuilder(column: $table.localDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$SleepLogsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SleepLogsTable,
+          SleepLog,
+          $$SleepLogsTableFilterComposer,
+          $$SleepLogsTableOrderingComposer,
+          $$SleepLogsTableAnnotationComposer,
+          $$SleepLogsTableCreateCompanionBuilder,
+          $$SleepLogsTableUpdateCompanionBuilder,
+          (SleepLog, BaseReferences<_$AppDatabase, $SleepLogsTable, SleepLog>),
+          SleepLog,
+          PrefetchHooks Function()
+        > {
+  $$SleepLogsTableTableManager(_$AppDatabase db, $SleepLogsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SleepLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SleepLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SleepLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> localDate = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime> endedAt = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SleepLogsCompanion(
+                localDate: localDate,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                notes: notes,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String localDate,
+                required DateTime startedAt,
+                required DateTime endedAt,
+                Value<String?> notes = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SleepLogsCompanion.insert(
+                localDate: localDate,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                notes: notes,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SleepLogsTable, SleepLog>(table),
+                  BaseReferences<_$AppDatabase, $SleepLogsTable, SleepLog>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SleepLogsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SleepLogsTable,
+      SleepLog,
+      $$SleepLogsTableFilterComposer,
+      $$SleepLogsTableOrderingComposer,
+      $$SleepLogsTableAnnotationComposer,
+      $$SleepLogsTableCreateCompanionBuilder,
+      $$SleepLogsTableUpdateCompanionBuilder,
+      (SleepLog, BaseReferences<_$AppDatabase, $SleepLogsTable, SleepLog>),
+      SleepLog,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -16884,4 +17599,6 @@ class $AppDatabaseManager {
       $$DailyNotesTableTableManager(_db, _db.dailyNotes);
   $$FoodPresetsTableTableManager get foodPresets =>
       $$FoodPresetsTableTableManager(_db, _db.foodPresets);
+  $$SleepLogsTableTableManager get sleepLogs =>
+      $$SleepLogsTableTableManager(_db, _db.sleepLogs);
 }

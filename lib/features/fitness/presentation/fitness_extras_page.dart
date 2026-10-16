@@ -5,6 +5,7 @@ import 'package:intl/intl.dart' hide TextDirection;
 
 import '../../../core/database/app_database.dart';
 import '../../../core/number_format.dart';
+import '../../../core/numeric_expression.dart';
 import '../../../core/record_day.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/fitness_repository.dart';
@@ -357,8 +358,7 @@ class _EntryDialogState extends State<_EntryDialog> {
     super.dispose();
   }
 
-  double? _number(String text) =>
-      double.tryParse(text.trim().replaceAll(',', '.'));
+  double? _number(String text) => NumericExpression.tryValue(text);
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -411,9 +411,7 @@ class _EntryDialogState extends State<_EntryDialog> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _value,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                  keyboardType: TextInputType.text,
                   decoration: InputDecoration(
                     labelText: widget.cardio ? l.cardioMinutes : 'kg',
                   ),
@@ -431,9 +429,7 @@ class _EntryDialogState extends State<_EntryDialog> {
                 if (widget.cardio) ...[
                   TextFormField(
                     controller: _distance,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
+                    keyboardType: TextInputType.text,
                     decoration: InputDecoration(labelText: l.cardioDistance),
                     validator: (v) {
                       if (v!.trim().isEmpty) return null;
@@ -452,11 +448,11 @@ class _EntryDialogState extends State<_EntryDialog> {
                 ] else
                   TextFormField(
                     controller: _reps,
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.text,
                     decoration: InputDecoration(labelText: l.repsLabel),
                     validator: (v) {
                       if (v!.trim().isEmpty) return null;
-                      final n = int.tryParse(v);
+                      final n = NumericExpression.tryInt(v);
                       return n == null || n < 0 ? l.invalidFitnessValue : null;
                     },
                   ),
@@ -481,7 +477,7 @@ class _EntryDialogState extends State<_EntryDialog> {
                   _number(_value.text)!,
                   _number(_distance.text),
                   _notes.text.trim(),
-                  int.tryParse(_reps.text),
+                  NumericExpression.tryInt(_reps.text),
                 ),
               );
             }

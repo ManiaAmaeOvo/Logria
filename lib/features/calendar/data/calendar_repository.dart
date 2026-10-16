@@ -168,6 +168,16 @@ class CalendarRepository {
     for (final b in measurements) {
       day(b.localDate).body = true;
     }
+    final sleeps =
+        await (database.select(database.sleepLogs)..where(
+              (s) =>
+                  s.localDate.isBiggerOrEqualValue(key(start)) &
+                  s.localDate.isSmallerThanValue(key(end)),
+            ))
+            .get();
+    for (final sleep in sleeps) {
+      day(sleep.localDate).body = true;
+    }
     final notes =
         await (database.select(database.dailyNotes)..where(
               (r) =>

@@ -164,8 +164,10 @@ void main() {
       await TodayRepository(db).loadDay(date),
       lookupAppLocalizations(const Locale('en')),
     ).all;
-    expect(text, contains('Sodium: 0 mg'));
-    expect(text, contains('Dietary fiber: 4 g'));
+    expect(text, contains('Sodium (mg)'));
+    expect(text, contains('| 0 |'));
+    expect(text, contains('Dietary fiber (g)'));
+    expect(text, contains('| 4 |'));
     expect((await nutrition.loadDay(DateTime(2026, 10, 4))).record, isNull);
     await nutrition.saveTargets(const NutritionTargets());
     expect((await nutrition.loadDay(date)).targets.extraTargets, isEmpty);

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/workout_set_values.dart';
+
 import 'package:intl/intl.dart';
 
 import '../../../core/number_format.dart';
@@ -121,13 +124,16 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Text(
                           l10n.setLine(
-                            set.setNumber,
-                            set.weightText ?? _number(set.weightValue),
-                            set.weightText == null ? set.weightUnit : '',
-                            set.reps ?? '—',
-                            _number(set.rir),
-                            set.isCompleted ? '' : l10n.skippedSuffix,
-                          ),
+                                set.setNumber,
+                                set.weightText ?? _number(set.weightValue),
+                                set.weightText == null ? set.weightUnit : '',
+                                set.reps ?? '—',
+                                set.rirLabel ?? '—',
+                                set.isCompleted ? '' : l10n.skippedSuffix,
+                              ) +
+                              (set.notes?.isNotEmpty == true
+                                  ? '\n${set.notes}'
+                                  : ''),
                         ),
                       ),
                   ],

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/number_format.dart';
+import '../../../core/numeric_expression.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/food_preset_repository.dart';
 import '../domain/nutrient_values.dart';
@@ -11,8 +12,7 @@ import 'nutrition_labels.dart';
 String foodName(FoodPreset p, AppLocalizations l) =>
     l.localeName.startsWith('zh') ? p.nameZh ?? p.name : p.name;
 String foodNumber(double v) => formatNumber(v);
-double? foodParse(String text) =>
-    double.tryParse(text.trim().replaceAll(',', '.'));
+double? foodParse(String text) => NumericExpression.tryValue(text);
 String initialFoodValue(double? value) =>
     value == null ? '' : foodNumber(value);
 bool validFoodNumber(String text, {bool positive = false}) {
@@ -382,9 +382,7 @@ class _FoodPresetEditorPageState extends State<FoodPresetEditorPage> {
             TextField(
               key: const ValueKey('food-reference-quantity'),
               controller: _reference,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType: TextInputType.text,
               decoration: InputDecoration(labelText: l.referenceQuantity),
             ),
             const SizedBox(height: 12),
@@ -408,9 +406,7 @@ class _FoodPresetEditorPageState extends State<FoodPresetEditorPage> {
               TextField(
                 key: ValueKey('preset-$k'),
                 controller: _fields[k],
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: TextInputType.text,
                 decoration: InputDecoration(labelText: nutrientLabel(k, l)),
                 onChanged: (_) => _macroChanged(),
               ),
@@ -429,9 +425,7 @@ class _FoodPresetEditorPageState extends State<FoodPresetEditorPage> {
             TextField(
               key: const ValueKey('preset-calories'),
               controller: _fields['calories'],
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType: TextInputType.text,
               decoration: InputDecoration(labelText: l.caloriesKcal),
               onChanged: (_) => _energyChanged(false),
             ),
@@ -439,9 +433,7 @@ class _FoodPresetEditorPageState extends State<FoodPresetEditorPage> {
             TextField(
               key: const ValueKey('preset-kilojoules'),
               controller: _kj,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType: TextInputType.text,
               decoration: InputDecoration(labelText: l.energyKilojoules),
               onChanged: (_) => _energyChanged(true),
             ),
@@ -452,9 +444,7 @@ class _FoodPresetEditorPageState extends State<FoodPresetEditorPage> {
               TextField(
                 key: ValueKey('preset-$k'),
                 controller: _fields[k],
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: TextInputType.text,
                 decoration: InputDecoration(
                   labelText:
                       '${nutrientLabel(k, l)} (${extraNutrientUnits[k]})',
@@ -526,7 +516,7 @@ class _FoodQuantityDialogState extends State<FoodQuantityDialog> {
           TextField(
             key: const ValueKey('food-quantity'),
             controller: _amount,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: TextInputType.text,
             decoration: InputDecoration(
               labelText: '${l.quantity} (${foodUnitLabel(p.unit, l)})',
             ),

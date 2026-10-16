@@ -146,6 +146,7 @@ class WorkoutExercises extends Table {
 }
 
 class WorkoutSets extends Table {
+  TextColumn get rirText => text().nullable()();
   TextColumn get weightText => text().nullable()();
   TextColumn get id => text()();
   TextColumn get workoutExerciseId =>
@@ -169,6 +170,7 @@ class WorkoutSets extends Table {
 }
 
 class FoodLogEntries extends Table {
+  TextColumn get mealItemsJson => text().nullable()();
   TextColumn get extraNutrientsJson => text().nullable()();
   TextColumn get presetId => text().nullable()();
   RealColumn get quantity => real().nullable()();
@@ -288,6 +290,16 @@ class PersonalRecords extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class SleepLogs extends Table {
+  TextColumn get localDate => text()();
+  DateTimeColumn get startedAt => dateTime()();
+  DateTimeColumn get endedAt => dateTime()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get updatedAt => dateTime()();
+  @override
+  Set<Column<Object>> get primaryKey => {localDate};
+}
+
 @DriftDatabase(
   tables: [
     Exercises,
@@ -308,6 +320,7 @@ class PersonalRecords extends Table {
     PersonalRecords,
     DailyNotes,
     FoodPresets,
+    SleepLogs,
   ],
 )
 final class AppDatabase extends _$AppDatabase {
@@ -316,7 +329,7 @@ final class AppDatabase extends _$AppDatabase {
   AppDatabase.defaults() : super(driftDatabase(name: 'logria'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -351,6 +364,12 @@ final class AppDatabase extends _$AppDatabase {
         await m.addColumn(cycleDayExecutions, cycleDayExecutions.localDate);
         await m.addColumn(cycleInstances, cycleInstances.startLocalDate);
         await m.addColumn(cycleInstances, cycleInstances.endLocalDate);
+      }
+      if (from < 7) {
+        await m.addColumn(workoutSets, workoutSets.rirText);
+        await m.addColumn(foodLogEntries, foodLogEntries.mealItemsJson);
+        await m.createTable(sleepLogs);
+        // Preserve legacy numeric RIR as-is. Readers fall back to that column.
       }
     },
   );

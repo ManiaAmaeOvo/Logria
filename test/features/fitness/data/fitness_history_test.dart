@@ -10,7 +10,7 @@ const workout = [
   WorkoutDraftExercise(
     name: 'Bench',
     saveAsPreset: false,
-    sets: [WorkoutDraftSet(weight: 40, reps: 8, rir: 2)],
+    sets: [WorkoutDraftSet(weight: 40, reps: 8, rir: "2")],
   ),
 ];
 
@@ -132,7 +132,7 @@ void main() {
             WorkoutDraftExercise(
               name: 'Bad',
               saveAsPreset: false,
-              sets: [WorkoutDraftSet(weight: -1, reps: 8, rir: 2)],
+              sets: [WorkoutDraftSet(weight: -1, reps: 8, rir: "2")],
             ),
           ],
         ),

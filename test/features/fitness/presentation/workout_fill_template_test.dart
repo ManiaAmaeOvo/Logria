@@ -42,8 +42,13 @@ void main() {
               name: 'Bench',
               saveAsPreset: true,
               sets: [
-                WorkoutDraftSet(weight: 40, reps: 10, rir: 2),
-                WorkoutDraftSet(weight: 0, weightText: 'band', reps: 8, rir: 1),
+                WorkoutDraftSet(weight: 40, reps: 10, rir: "2"),
+                WorkoutDraftSet(
+                  weight: 0,
+                  weightText: 'band',
+                  reps: 8,
+                  rir: "1",
+                ),
                 WorkoutDraftSet(
                   weight: null,
                   weightText: 'bodyweight',
@@ -110,7 +115,7 @@ void main() {
           expect(value(0), '40.0');
           expect(value(3), 'band');
           expect(value(6), 'bodyweight');
-          expect(value(2), '2.0');
+          expect(value(2), '2');
           expect(value(4), '8');
         }
         // Edit a lower set first: each field is protected independently.
@@ -128,7 +133,7 @@ void main() {
         await tester.enterText(find.byType(TextField).at(1), '12');
         expect(value(3), '40');
         expect(value(7), '11');
-        expect(value(5), template ? '1.0' : '');
+        expect(value(5), template ? '1' : '');
         await tester.tap(find.byIcon(Icons.arrow_back));
         await settle(tester);
         await tester.tap(find.text('Open'));

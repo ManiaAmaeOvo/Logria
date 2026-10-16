@@ -58,8 +58,8 @@ void main() {
         name: 'Bench press',
         saveAsPreset: false,
         sets: [
-          WorkoutDraftSet(weight: 40, reps: 8, rir: 2),
-          WorkoutDraftSet(weight: 42.5, reps: 6, rir: 1),
+          WorkoutDraftSet(weight: 40, reps: 8, rir: "2"),
+          WorkoutDraftSet(weight: 42.5, reps: 6, rir: "1"),
         ],
       ),
     ]);
@@ -99,7 +99,8 @@ void main() {
     expect(en.all, contains('40 kg × 8 reps · RIR 2'));
     expect(en.all, contains('42.5 kg × 6 reps · RIR 1'));
     expect(en.all, contains('Manual daily total'));
-    expect(en.all, contains('P: 150 g'));
+    expect(en.all, contains('P (g)'));
+    expect(en.all, contains('| 150 |'));
     expect(en.all, contains('Weight: 79.5 kg'));
     expect(en.all, isNot(contains('Yesterday meal')));
     final zh = TodayLogFormatter(
@@ -124,7 +125,7 @@ void main() {
         lookupAppLocalizations(const Locale('en')),
       );
       expect(text.fitness, contains('rest'));
-      expect(text.food, contains('P: — g'));
+      expect(text.food, contains('| — |'));
       expect(text.body, contains('No body measurements'));
       final empty = await TodayRepository(db)
           .loadDay(today.subtract(const Duration(days: 1)));

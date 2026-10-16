@@ -204,7 +204,65 @@ class _TodayPageState extends State<TodayPage> with WidgetsBindingObserver {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        SelectableText(text),
+                        if (module == 2) ...[
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: DataTable(
+                              columnSpacing: 10,
+                              horizontalMargin: 8,
+                              headingRowHeight: 40,
+                              dataRowMinHeight: 48,
+                              dataRowMaxHeight: 64,
+                              dataTextStyle: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall,
+                              columns: [
+                                for (final heading in formatter.foodColumns)
+                                  DataColumn(
+                                    label: Text(
+                                      [
+                                            'P (g)',
+                                            'C (g)',
+                                            'F (g)',
+                                          ].contains(heading)
+                                          ? heading[0]
+                                          : heading,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall,
+                                    ),
+                                  ),
+                              ],
+                              rows: [
+                                for (final row in formatter.foodRows)
+                                  DataRow(
+                                    cells: [
+                                      for (var i = 0; i < row.length; i++)
+                                        DataCell(
+                                          i == 0
+                                              ? SizedBox(
+                                                  width: 120,
+                                                  child: Text(
+                                                    row[i],
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                )
+                                              : Text(row[i]),
+                                        ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const Text('P/C/F: g · kcal'),
+                          Text(
+                            l.missingNutritionHint,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ] else
+                          SelectableText(text),
                       ],
                     ),
                   ),

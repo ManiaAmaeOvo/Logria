@@ -28,7 +28,7 @@ void main() {
           name: 'Bench press',
           saveAsPreset: true,
           sets: [
-            WorkoutDraftSet(weight: 40, reps: 8, rir: 2),
+            WorkoutDraftSet(weight: 40, reps: 8, rir: "2"),
             WorkoutDraftSet(weight: 45, reps: 4, rir: null),
             WorkoutDraftSet(
               weight: null,
@@ -58,7 +58,7 @@ void main() {
               weight: null,
               weightText: 'heavy band',
               reps: null,
-              rir: 2,
+              rir: "2",
             ),
           ],
         ),

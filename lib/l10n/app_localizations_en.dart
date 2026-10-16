@@ -10,6 +10,83 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get orphanArchiveHint =>
+      'Legacy orphan workout rows were found. Their full raw snapshots are kept in backup.orphanedWorkoutRows inside backup settings; restoration retains this archive but does not turn it into completed workouts or PRs. Existing valid records are unchanged.';
+
+  @override
+  String get backupData => 'Backup and export';
+
+  @override
+  String get backupCreate => 'Save full backup';
+
+  @override
+  String get backupRestore => 'Restore full backup';
+
+  @override
+  String get exportLogs => 'Export dated logs (JSON)';
+
+  @override
+  String get backupHint =>
+      'Backups contain all records, plans, presets, settings and drafts. JSON exports are for analysis, not restoration. Files are unencrypted: keep them private. Choose a local location to stay offline.';
+
+  @override
+  String get restoreWarning =>
+      'Replace ALL current app data with this backup? Export a backup first. This cannot be undone. Logria will reload its language and return to Today.';
+
+  @override
+  String get backupRestored => 'Backup restored';
+
+  @override
+  String get fileSaved => 'File saved';
+
+  @override
+  String get includeBody => 'Include body measurements and sleep';
+
+  @override
+  String get sleep => 'Sleep';
+
+  @override
+  String get sleepStart => 'Sleep start';
+
+  @override
+  String get sleepEnd => 'Wake time';
+
+  @override
+  String get sleepNotes => 'Sleep notes (optional)';
+
+  @override
+  String get sleepInvalid =>
+      'Wake time must follow sleep start (maximum 48 hours).';
+
+  @override
+  String get setNote => 'Set note (optional)';
+
+  @override
+  String get setNoteHint =>
+      'How did this set feel? Does not create an exercise variant.';
+
+  @override
+  String get nextTrainingReference =>
+      'Reference for next pending training · previous round';
+
+  @override
+  String get toolbarBackfill => 'Backfill';
+
+  @override
+  String get mealIngredients => 'Meal ingredients';
+
+  @override
+  String get addIngredient => 'Add ingredient';
+
+  @override
+  String get mealIngredientHint =>
+      'Add several preset foods to one meal. Amounts use each food\'s own unit. Adding/removing ingredients recalculates totals; you may then edit totals manually.';
+
+  @override
+  String get arithmeticHint =>
+      'Numbers accept + − × ÷ and parentheses, e.g. 20+2.5*2. Count fields require integers. RIR stays plain text.';
+
+  @override
   String get exerciseVariantNote => 'Variant note / separate preset';
 
   @override
@@ -295,7 +372,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get firstReleaseScopeHint =>
-      'Fitness with resumable drafts, exercise PR curves, cardio, nutrition, body, daily logs and calendar are available. JSON import/export and weight-based nutrition templates are planned for later versions.';
+      'Training, meals, body/sleep, daily logs, calendar, full backup/restore and dated JSON export are available. Weight-based nutrition templates are planned for later versions.';
 
   @override
   String get openSourceLicenses => 'Open-source licenses';

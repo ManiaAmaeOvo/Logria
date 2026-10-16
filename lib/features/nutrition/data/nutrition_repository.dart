@@ -129,6 +129,7 @@ class NutritionRepository {
     String? presetId,
     double? quantity,
     String? quantityUnit,
+    String? mealItemsJson,
   }) async {
     final content = text.trim();
     if (content.isEmpty) throw ArgumentError('Food note cannot be empty.');
@@ -145,6 +146,7 @@ class NutritionRepository {
         .into(database.foodLogEntries)
         .insert(
           FoodLogEntriesCompanion.insert(
+            mealItemsJson: Value(mealItemsJson),
             extraNutrientsJson: Value(jsonEncode(extraNutrients)),
             presetId: Value(presetId),
             quantity: Value(quantity),
@@ -174,6 +176,7 @@ class NutritionRepository {
     double? caloriesKcal,
     bool caloriesEstimated = true,
     Map<String, double> extraNutrients = const {},
+    String? mealItemsJson,
   }) async {
     final content = text.trim();
     if (content.isEmpty) throw ArgumentError('Food note cannot be empty.');
@@ -188,6 +191,7 @@ class NutritionRepository {
       database.foodLogEntries,
     )..where((row) => row.id.equals(id))).write(
       FoodLogEntriesCompanion(
+        mealItemsJson: Value(mealItemsJson),
         extraNutrientsJson: Value(jsonEncode(extraNutrients)),
         proteinGrams: Value(proteinGrams),
         carbohydrateGrams: Value(carbohydrateGrams),

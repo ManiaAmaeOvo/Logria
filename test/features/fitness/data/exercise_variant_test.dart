@@ -58,7 +58,7 @@ void main() {
           baseName: 'Lat pulldown',
           variantNote: 'Overhand wide',
           saveAsPreset: true,
-          sets: const [WorkoutDraftSet(weight: 40, reps: 8, rir: 2)],
+          sets: const [WorkoutDraftSet(weight: 40, reps: 8, rir: "2")],
         ),
       ]);
       final history = (await repo.listWorkoutHistory()).single.exercises.single;

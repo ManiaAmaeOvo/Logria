@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/workout_set_values.dart';
+
 import '../../../core/record_day.dart';
 import '../../../core/record_day_watcher.dart';
 import 'historical_fitness_page.dart';
@@ -110,25 +112,38 @@ class _FitnessPageState extends State<FitnessPage> {
 
   Widget _extraButtons() {
     final l = AppLocalizations.of(context)!;
+    final compact = OutlinedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Wrap(
-        spacing: 12,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          OutlinedButton.icon(
-            onPressed: () => _extras(false),
-            icon: const Icon(Icons.show_chart),
-            label: Text(l.prTitle),
-          ),
-          OutlinedButton.icon(
-            onPressed: () => _extras(true),
-            icon: const Icon(Icons.directions_run),
-            label: Text(l.cardioTitle),
-          ),
-          OutlinedButton.icon(
-            onPressed: _editHistoricalDate,
-            icon: const Icon(Icons.edit_calendar),
-            label: Text(l.editDateFitness),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                OutlinedButton.icon(
+                  style: compact,
+                  onPressed: () => _extras(false),
+                  icon: const Icon(Icons.show_chart, size: 18),
+                  label: Text(l.prTitle),
+                ),
+                OutlinedButton.icon(
+                  style: compact,
+                  onPressed: () => _extras(true),
+                  icon: const Icon(Icons.directions_run, size: 18),
+                  label: Text(l.cardioTitle),
+                ),
+                OutlinedButton.icon(
+                  style: compact,
+                  onPressed: _editHistoricalDate,
+                  icon: const Icon(Icons.edit_calendar, size: 18),
+                  label: Text(l.toolbarBackfill),
+                ),
+              ],
+            ),
           ),
           Text(l.recordDayHint, style: Theme.of(context).textTheme.bodySmall),
         ],
@@ -891,7 +906,10 @@ class _FitnessDashboard extends StatelessWidget {
                       ListTile(
                         leading: const Icon(Icons.history),
                         title: Text(
-                          AppLocalizations.of(context)!.previousRoundSameDay,
+                          actionLocked
+                              ? '${nextDay.name} · ${AppLocalizations.of(context)!.nextTrainingReference}'
+                              : AppLocalizations.of(context)!
+                                    .previousRoundSameDay,
                         ),
                         subtitle: Text(_previousSummary(previous)),
                         trailing: const Icon(Icons.chevron_right),
@@ -1044,13 +1062,15 @@ class _TodayWorkoutCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 2),
                   child: Text(
                     l10n.setLine(
-                      set.setNumber,
-                      set.weightText ?? _formatWorkoutValue(set.weightValue),
-                      set.weightText == null ? set.weightUnit : '',
-                      set.reps ?? '—',
-                      _formatWorkoutValue(set.rir),
-                      set.isCompleted ? '' : l10n.skippedSuffix,
-                    ),
+                          set.setNumber,
+                          set.weightText ??
+                              _formatWorkoutValue(set.weightValue),
+                          set.weightText == null ? set.weightUnit : '',
+                          set.reps ?? '—',
+                          set.rirLabel ?? '—',
+                          set.isCompleted ? '' : l10n.skippedSuffix,
+                        ) +
+                        (set.notes?.isNotEmpty == true ? '\n${set.notes}' : ''),
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),

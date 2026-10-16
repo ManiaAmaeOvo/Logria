@@ -98,6 +98,144 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @orphanArchiveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Legacy orphan workout rows were found. Their full raw snapshots are kept in backup.orphanedWorkoutRows inside backup settings; restoration retains this archive but does not turn it into completed workouts or PRs. Existing valid records are unchanged.'**
+  String get orphanArchiveHint;
+
+  /// No description provided for @backupData.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup and export'**
+  String get backupData;
+
+  /// No description provided for @backupCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Save full backup'**
+  String get backupCreate;
+
+  /// No description provided for @backupRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore full backup'**
+  String get backupRestore;
+
+  /// No description provided for @exportLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Export dated logs (JSON)'**
+  String get exportLogs;
+
+  /// No description provided for @backupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Backups contain all records, plans, presets, settings and drafts. JSON exports are for analysis, not restoration. Files are unencrypted: keep them private. Choose a local location to stay offline.'**
+  String get backupHint;
+
+  /// No description provided for @restoreWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace ALL current app data with this backup? Export a backup first. This cannot be undone. Logria will reload its language and return to Today.'**
+  String get restoreWarning;
+
+  /// No description provided for @backupRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup restored'**
+  String get backupRestored;
+
+  /// No description provided for @fileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'File saved'**
+  String get fileSaved;
+
+  /// No description provided for @includeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Include body measurements and sleep'**
+  String get includeBody;
+
+  /// No description provided for @sleep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep'**
+  String get sleep;
+
+  /// No description provided for @sleepStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep start'**
+  String get sleepStart;
+
+  /// No description provided for @sleepEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Wake time'**
+  String get sleepEnd;
+
+  /// No description provided for @sleepNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep notes (optional)'**
+  String get sleepNotes;
+
+  /// No description provided for @sleepInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Wake time must follow sleep start (maximum 48 hours).'**
+  String get sleepInvalid;
+
+  /// No description provided for @setNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Set note (optional)'**
+  String get setNote;
+
+  /// No description provided for @setNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How did this set feel? Does not create an exercise variant.'**
+  String get setNoteHint;
+
+  /// No description provided for @nextTrainingReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference for next pending training · previous round'**
+  String get nextTrainingReference;
+
+  /// No description provided for @toolbarBackfill.
+  ///
+  /// In en, this message translates to:
+  /// **'Backfill'**
+  String get toolbarBackfill;
+
+  /// No description provided for @mealIngredients.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal ingredients'**
+  String get mealIngredients;
+
+  /// No description provided for @addIngredient.
+  ///
+  /// In en, this message translates to:
+  /// **'Add ingredient'**
+  String get addIngredient;
+
+  /// No description provided for @mealIngredientHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add several preset foods to one meal. Amounts use each food\'s own unit. Adding/removing ingredients recalculates totals; you may then edit totals manually.'**
+  String get mealIngredientHint;
+
+  /// No description provided for @arithmeticHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers accept + − × ÷ and parentheses, e.g. 20+2.5*2. Count fields require integers. RIR stays plain text.'**
+  String get arithmeticHint;
+
   /// No description provided for @exerciseVariantNote.
   ///
   /// In en, this message translates to:
@@ -623,7 +761,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstReleaseScopeHint.
   ///
   /// In en, this message translates to:
-  /// **'Fitness with resumable drafts, exercise PR curves, cardio, nutrition, body, daily logs and calendar are available. JSON import/export and weight-based nutrition templates are planned for later versions.'**
+  /// **'Training, meals, body/sleep, daily logs, calendar, full backup/restore and dated JSON export are available. Weight-based nutrition templates are planned for later versions.'**
   String get firstReleaseScopeHint;
 
   /// No description provided for @openSourceLicenses.

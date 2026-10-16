@@ -13,13 +13,17 @@ Logria is an independent project and does not share a repository or data with Su
 [Changelog](CHANGELOG.md) · [English manual](docs/USER_GUIDE.md) ·
 [中文使用说明](docs/USER_GUIDE.zh-CN.md) · [MIT License](LICENSE)
 
-## Version 1.3.0 (Android build 10)
+## Version 1.4.0 (Android build 12)
 
-This release adds historical fitness correction, implicit rest and a 04:00
+Version **1.4.0 build 12** includes backup/restore, dated JSON exports,
+sleep, per-set notes, text RIR, multi-ingredient meals, arithmetic inputs and
+compact nutrition tables. Earlier releases and their assets/tags are preserved.
+
+Features retained from earlier releases include historical fitness correction, implicit rest and a 04:00
 journal-day cutoff, and includes previously local-only Chinese reader docs and
 the app-language-aware offline changelog. The v1.2.0 release/assets/tag are unchanged.
 
-This release adds daily review notes, non-destructive cycle restart, first-set
+Also included are daily review notes, non-destructive cycle restart, first-set
 filling and previous-record workout templates, independent exercise variants,
 offline food/meal presets, linked kJ/kcal editing and opt-in mineral/fiber targets.
 Quick-add foods directly in the meal log. Calculated nutrition values display at
@@ -91,10 +95,10 @@ Android 7.0/API 24 or later is required. Android 16/arm64 has been checked local
 The published APK runs in release mode but uses the existing development
 signing certificate to allow updates from earlier test APKs from this machine.
 It is not a production Google Play release. See [release details](docs/RELEASE.md).
-To upgrade from earlier releases or local builds, install **1.3.0 build 10** over
+To upgrade from earlier releases or local builds, install **1.4.0 build 12** over
 the existing app without uninstalling or clearing storage. The signing identity
 is unchanged; additive migrations through schema 6 preserve existing records. Keep your data on
-the device: restorable backup/export/import is not available yet.
+the device. Version 1.4.0 adds full backup/restore and dated JSON analysis export.
 
 ## Local data and privacy
 
@@ -103,8 +107,9 @@ SQLite on your device; the release app does not request Internet permission.
 GitHub links open the external browser only when tapped. Copying puts selected
 logs on the system clipboard, where you decide how to share them.
 
-There is **no restorable backup/import/export UI yet**. Uninstalling or clearing
-storage can remove records. Plain-text copying is not a database backup.
+Version 1.4.0 has **Settings → Backup and export**. Full JSON backups can restore
+all data after replacement confirmation; dated exports and clipboard text cannot.
+Files are unencrypted: save privately before uninstalling or clearing storage.
 Read [Privacy](docs/PRIVACY.md) before relying on the app for long-term storage.
 
 ## Build and develop
@@ -136,14 +141,14 @@ an Android debug build. CI APKs are not signed with the published release identi
 
 Not implemented in the current version:
 
-- JSON file import/export and restorable backups.
+- Merging/importing dated analysis exports (full-backup restoration is supported).
 - Estimated 1RM, PR notifications and broader training statistics.
 - Weight-based nutrition templates, weekly/monthly template updates and carb cycling.
 - Custom body metric types and cloud/platform integrations.
 
-A planned JSON contract is available at
-[the export schema](docs/export/logria-health-log.schema.json); this is a schema,
-not a working exporter. Current log sharing uses the clipboard.
+The working export/backup formats are documented in
+[Backup formats](docs/BACKUP_FORMAT.md), with the
+[v2 export schema](docs/export/logria-health-log-v2.schema.json).
 
 ## Contributing and credits
 

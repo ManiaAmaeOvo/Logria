@@ -57,7 +57,7 @@ void main() {
       WorkoutDraftExercise(
         name: '平板卧推',
         saveAsPreset: true,
-        sets: [WorkoutDraftSet(weight: 80, reps: 8, rir: 2)],
+        sets: [WorkoutDraftSet(weight: 80, reps: 8, rir: "2")],
       ),
     ]);
 
@@ -71,7 +71,7 @@ void main() {
     expect(exercises.single.name, '平板卧推');
     expect(sets.single.weightValue, 80);
     expect(sets.single.reps, 8);
-    expect(sets.single.rir, 2);
+    expect(sets.single.rirText, '2');
   });
 
   test('one-off exercise is retained only as a workout snapshot', () async {
@@ -82,7 +82,7 @@ void main() {
       WorkoutDraftExercise(
         name: '临时动作',
         saveAsPreset: false,
-        sets: [WorkoutDraftSet(weight: 10, reps: 12, rir: 3)],
+        sets: [WorkoutDraftSet(weight: 10, reps: 12, rir: "3")],
       ),
     ]);
 

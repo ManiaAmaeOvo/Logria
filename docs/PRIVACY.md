@@ -21,9 +21,14 @@ Undo keeps one local snapshot of the removed action so it can be restored on the
 same date. An unavailable snapshot may remain in SQLite until replaced or cleared
 by a new strength-cycle action. Nothing is transmitted for undo or redo.
 
-The app requests that Android automatic backup be disabled. No backup or restore
-UI is provided in the current version. Uninstalling the app or clearing its storage can
-remove its records. Clipboard copying is text sharing, not a restorable backup.
+The app requests that Android automatic backup be disabled. Version 1.4 adds
+explicit full backup/restore and dated export via the system document picker.
+These files are unencrypted, contain sensitive data and leave the app sandbox only
+when you choose a destination. Choose local storage to stay offline; installed
+document providers may offer cloud storage under their own privacy policies.
+Sleep and per-set notes are also local and included in backups/selected exports.
+Uninstalling/clearing storage can remove records; save a full backup first.
+Clipboard copying and dated exports are not restorable database backups.
 
 Copy buttons place selected logs on Android's system clipboard. You decide
 whether to paste them into another app or send them to an LLM. Other apps and

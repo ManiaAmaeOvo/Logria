@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://logria.app/schemas/health-log-v2.json",
+  "title": "Logria dated analysis export v2 (not a restorable backup)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "schema_version", "export_id", "exported_at", "time_zone", "utc_offset_minutes", "journal_cutoff_hour", "date_range", "included_data", "days"],
+  "properties": {
+    "format": {"const": "logria.health_log"},
+    "schema_version": {"const": 2},
+    "export_id": {"type": "string", "format": "uuid"},
+    "exported_at": {"type": "string", "format": "date-time"},
+    "time_zone": {"type": "string"},
+    "utc_offset_minutes": {"type": "integer"},
+    "journal_cutoff_hour": {"const": 4},
+    "date_range": {
+      "type": "object", "additionalProperties": false, "required": ["from", "to"],
+      "properties": {"from": {"$ref": "#/$defs/date"}, "to": {"$ref": "#/$defs/date"}}
+    },
+    "included_data": {
+      "type": "object", "additionalProperties": false,
+      "required": ["fitness", "food", "nutrition", "daily_review", "body"],
+      "properties": {"fitness": {"const": true}, "food": {"const": true}, "nutrition": {"const": true}, "daily_review": {"const": true}, "body": {"type": "boolean"}}
+    },
+    "days": {"type": "array", "maxItems": 3662, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["date", "fitness", "food", "nutrition", "daily_review"],
+      "properties": {
+        "date": {"$ref": "#/$defs/date"},
+        "daily_review": {"type": "string"},
+        "fitness": {
+          "type": "object", "additionalProperties": false,
+          "required": ["implicit_rest", "actions", "sessions", "cardio", "manual_pr"],
+          "properties": {
+            "implicit_rest": {"type": "boolean"},
+            "actions": {"type": "array", "items": {"type": "object"}},
+            "sessions": {"type": "array", "items": {
+              "type": "object", "required": ["id", "localDate", "exercises"],
+              "properties": {"id": {"type": "string"}, "localDate": {"$ref": "#/$defs/date"}, "exercises": {"type": "array", "items": {
+                "type": "object", "required": ["sets"], "properties": {"sets": {"type": "array", "items": {
+                  "type": "object", "required": ["rir", "notes"], "properties": {"rir": {"type": ["string", "null"]}, "notes": {"type": ["string", "null"]}}
+                }}}
+              }}}
+            }},
+            "cardio": {"type": "array", "items": {"type": "object"}},
+            "manual_pr": {"type": "array", "items": {"type": "object"}}
+          }
+        },
+        "food": {"type": "array", "items": {"type": "object", "required": ["id", "localDate", "textContent", "ingredients"], "properties": {
+          "ingredients": {"type": "array", "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["preset_id", "name", "unit", "quantity", "nutrients"],
+            "properties": {"preset_id": {"type": "string"}, "name": {"type": "string"}, "unit": {"type": "string"}, "quantity": {"type": "number", "exclusiveMinimum": 0}, "nutrients": {"type": "object", "additionalProperties": {"type": "number", "minimum": 0}}}
+          }}
+        }}},
+        "nutrition": {"type": ["object", "null"]},
+        "body": {"type": "object", "additionalProperties": false, "required": ["measurements", "sleep"], "properties": {"measurements": {"type": "array", "items": {"type": "object"}}, "sleep": {"type": ["object", "null"]}}}
+      }
+    }}
+  },
+  "$defs": {"date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}}
+}

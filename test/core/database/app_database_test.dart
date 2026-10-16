@@ -33,6 +33,8 @@ void main() {
             "INSERT INTO cycle_day_executions VALUES ('action', 'cycle', NULL, 'extraRest', NULL, $occurred, 'keep')",
           );
           sqlite.execute('PRAGMA user_version = 5');
+          sqlite.execute('CREATE TABLE workout_sets (id TEXT PRIMARY KEY)');
+          sqlite.execute('CREATE TABLE food_log_entries (id TEXT PRIMARY KEY)');
         },
       ),
     );
@@ -45,7 +47,7 @@ void main() {
     expect(action.localDate, isNull);
     expect(action.occurredAt, DateTime(2026, 10, 6, 2));
     expect(action.notes, 'keep');
-    expect(database.schemaVersion, 6);
+    expect(database.schemaVersion, 7);
   });
 
   test('schema 3 settings survive the additive daily-note migration', () async {
@@ -64,6 +66,7 @@ void main() {
           );
           sqlite.execute('CREATE TABLE cycle_instances (id TEXT PRIMARY KEY)');
           sqlite.execute('PRAGMA user_version = 3');
+          sqlite.execute('CREATE TABLE workout_sets (id TEXT PRIMARY KEY)');
           sqlite.execute('CREATE TABLE food_log_entries (id TEXT PRIMARY KEY)');
           sqlite.execute(
             'CREATE TABLE daily_nutrition_records (id TEXT PRIMARY KEY)',
@@ -86,7 +89,7 @@ void main() {
       (await old.select(old.dailyNotes).getSingle()).content,
       'Still local',
     );
-    expect(old.schemaVersion, 6);
+    expect(old.schemaVersion, 7);
   });
 
   test('food text and nutrition totals persist independently', () async {
@@ -157,6 +160,7 @@ void main() {
               'CREATE TABLE cycle_instances (id TEXT PRIMARY KEY)',
             );
             sqlite.execute('PRAGMA user_version = 4');
+            sqlite.execute('CREATE TABLE workout_sets (id TEXT PRIMARY KEY)');
           },
         ),
       );

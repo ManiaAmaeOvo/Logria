@@ -25,6 +25,36 @@ class LogriaShell extends StatefulWidget {
 
 class _LogriaShellState extends State<LogriaShell> {
   int _selectedIndex = 0;
+  int _dataRevision = 0;
+  Future<void> _settings() async {
+    final restored = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => SettingsPage(
+          database: widget.database,
+          locale: widget.locale,
+          onLocaleChanged: widget.onLocaleChanged,
+        ),
+      ),
+    );
+    if (restored != true || !mounted) return;
+    final settings = await widget.database
+        .select(widget.database.appSettings)
+        .get();
+    final code = settings
+        .where((s) => s.keyName == 'app.locale')
+        .firstOrNull
+        ?.value;
+    if (!mounted) return;
+    widget.onLocaleChanged(code == 'en' || code == 'zh' ? Locale(code!) : null);
+    setState(() {
+      _selectedIndex = 0;
+      _dataRevision++;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.backupRestored)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -46,29 +76,24 @@ class _LogriaShellState extends State<LogriaShell> {
           IconButton(
             tooltip: l.settings,
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Navigator.of(context).push<void>(
-              MaterialPageRoute(
-                builder: (_) => SettingsPage(
-                  database: widget.database,
-                  locale: widget.locale,
-                  onLocaleChanged: widget.onLocaleChanged,
-                ),
-              ),
-            ),
+            onPressed: _settings,
           ),
         ],
       ),
-      body: SafeArea(
-        child: switch (_selectedIndex) {
-          1 => FitnessPage(database: widget.database),
-          2 => NutritionPage(database: widget.database),
-          3 => BodyPage(database: widget.database),
-          4 => CalendarPage(database: widget.database),
-          _ => TodayPage(
-            database: widget.database,
-            onOpenModule: (index) => setState(() => _selectedIndex = index),
-          ),
-        },
+      body: KeyedSubtree(
+        key: ValueKey(_dataRevision),
+        child: SafeArea(
+          child: switch (_selectedIndex) {
+            1 => FitnessPage(database: widget.database),
+            2 => NutritionPage(database: widget.database),
+            3 => BodyPage(database: widget.database),
+            4 => CalendarPage(database: widget.database),
+            _ => TodayPage(
+              database: widget.database,
+              onOpenModule: (index) => setState(() => _selectedIndex = index),
+            ),
+          },
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
