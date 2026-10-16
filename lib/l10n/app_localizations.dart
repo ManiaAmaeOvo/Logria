@@ -920,6 +920,18 @@ abstract class AppLocalizations {
   /// **'Meal totals'**
   String get mealTotalLabel;
 
+  /// No description provided for @mealRecordedSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded meal total'**
+  String get mealRecordedSubtotal;
+
+  /// No description provided for @mealIngredientTableHint.
+  ///
+  /// In en, this message translates to:
+  /// **'↳ Ingredient detail, not extra intake. Meal totals retain manual edits; daily totals do not add ingredient rows again.'**
+  String get mealIngredientTableHint;
+
   /// No description provided for @manualTotalLabel.
   ///
   /// In en, this message translates to:
@@ -1631,8 +1643,68 @@ abstract class AppLocalizations {
   /// No description provided for @current.
   ///
   /// In en, this message translates to:
-  /// **'Up next'**
+  /// **'Current training day'**
   String get current;
+
+  /// No description provided for @nextPlannedDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Next planned day'**
+  String get nextPlannedDay;
+
+  /// No description provided for @nextPlannedDayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s action is recorded. This day is pending for your next training or rest decision, not another action for today.'**
+  String get nextPlannedDayHint;
+
+  /// No description provided for @foodEquivalenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rough food equivalents'**
+  String get foodEquivalenceTitle;
+
+  /// No description provided for @foodEquivalenceCarbs.
+  ///
+  /// In en, this message translates to:
+  /// **'carbohydrate'**
+  String get foodEquivalenceCarbs;
+
+  /// No description provided for @foodEquivalenceProteinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'protein'**
+  String get foodEquivalenceProteinLabel;
+
+  /// No description provided for @foodEquivalenceGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'To reach the target: {amount} g {nutrient} remaining'**
+  String foodEquivalenceGoal(Object amount, Object nutrient);
+
+  /// No description provided for @foodEquivalenceLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Within this limit: {amount} g {nutrient} remaining'**
+  String foodEquivalenceLimit(Object amount, Object nutrient);
+
+  /// No description provided for @foodEquivalenceRice.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ {grams} g cooked white rice'**
+  String foodEquivalenceRice(Object grams);
+
+  /// No description provided for @foodEquivalenceProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ {eggs} whole boiled eggs OR {grams} g raw skinless chicken breast'**
+  String foodEquivalenceProtein(Object eggs, Object grams);
+
+  /// No description provided for @foodEquivalenceBasis.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference only, not a meal recommendation. USDA generic values; one egg = 50 g edible portion. Each nutrient is estimated separately; other nutrient/calorie limits and unlogged food are not included. Nothing is saved.'**
+  String get foodEquivalenceBasis;
 
   /// No description provided for @startWorkout.
   ///

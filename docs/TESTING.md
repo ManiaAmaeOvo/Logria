@@ -1,6 +1,18 @@
-# 1.4.0 testing guide
+# 1.4.1 testing guide
 
-Use public 1.4.0 build 12 for current shared testing; previous local build 11
+Use 1.4.1 build 14 for current shared testing. Added bilingual ingredient-table
+tests cover separate P/C/F/kcal/mineral cells, unknown versus zero, preserved
+manual subtotals/daily totals, escaped Markdown, clipboard output, read-only
+rendering and narrow screens with 1.6× text. Full suite: 135 tests.
+
+Previous local build 13: all 131 automated tests passed, with clean static analysis and
+formatting. Added bilingual regression tests cover completed/rest/skipped day
+labels and hidden inactive controls; equal-width shortcuts and 8 px gaps;
+goal/limit food-equivalent wording, USDA conversions, unknown intake and
+met/exceeded targets. Narrow-screen 1.6× text regression also passes.
+Those changes are included in 1.4.1; the old public build 12 remains unchanged.
+
+Historical 1.4.0 build 12 validation: previous local build 11
 has the same features. The 119-test suite covers backup safety, migration and
 bilingual input flows. Historical 1.3.0 validation remains below for reference.
 
@@ -25,7 +37,7 @@ closed rounds, current-round rollover/undo/redo, start overrides and bilingual f
 - Blank past dates show rest without creating executions or consuming rest slots.
 - Upgrade an old database: old 02:00 entries must retain their old date.
 
-Use Android build 10 for shared testing. Install the official release APK over an
+Install the official release APK over an
 existing installation rather than uninstalling or clearing data. A fresh install
 starts without private logs. Local 1.4.0 build 11 now supports full backup/restore.
 

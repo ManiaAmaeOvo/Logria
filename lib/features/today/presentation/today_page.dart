@@ -240,13 +240,16 @@ class _TodayPageState extends State<TodayPage> with WidgetsBindingObserver {
                                       for (var i = 0; i < row.length; i++)
                                         DataCell(
                                           i == 0
-                                              ? SizedBox(
-                                                  width: 120,
-                                                  child: Text(
-                                                    row[i],
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                              ? Tooltip(
+                                                  message: row[i],
+                                                  child: SizedBox(
+                                                    width: 120,
+                                                    child: Text(
+                                                      row[i],
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
                                                   ),
                                                 )
                                               : Text(row[i]),
@@ -257,6 +260,11 @@ class _TodayPageState extends State<TodayPage> with WidgetsBindingObserver {
                             ),
                           ),
                           const Text('P/C/F: g · kcal'),
+                          if (formatter.hasMealIngredients)
+                            Text(
+                              l.mealIngredientTableHint,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
                           Text(
                             l.missingNutritionHint,
                             style: Theme.of(context).textTheme.bodySmall,

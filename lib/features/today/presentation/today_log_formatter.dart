@@ -81,7 +81,10 @@ class TodayLogFormatter {
             decodeNutrients(data.nutrition.record?.extraNutrientsJson)
                 .containsKey(key) ||
             data.nutrition.foodEntries.any(
-              (e) => decodeNutrients(e.extraNutrientsJson).containsKey(key),
+              (e) =>
+                  decodeNutrients(e.extraNutrientsJson).containsKey(key) ||
+                  MealIngredient.decode(e.mealItemsJson)
+                      .any((item) => item.nutrients.containsKey(key)),
             ),
       )
       .toList();
@@ -96,32 +99,52 @@ class TodayLogFormatter {
   ];
   List<List<String>> get foodRows {
     final record = data.nutrition.record;
-    return [
-      for (final entry in data.nutrition.foodEntries.reversed)
-        [
-          '${_time(entry.occurredAt ?? entry.createdAt)} ${entry.textContent}${entry.caloriesKcal == null
-              ? ''
-              : entry.caloriesEstimated
-              ? ' ≈'
-              : ''}${entry.mealItemsJson == null ? '' : '\n${MealIngredient.decode(entry.mealItemsJson).map((i) => '${i.name} ${_value(i.quantity)} ${i.unit}').join('; ')}'}',
-          _value(entry.proteinGrams),
-          _value(entry.carbohydrateGrams),
-          _value(entry.fatGrams),
-          _value(entry.caloriesKcal),
-          for (final key in _foodExtras)
-            _value(decodeNutrients(entry.extraNutrientsJson)[key]),
-        ],
-      [
-        '${l.dailyIntake} · ${record?.source == 'meals' || record == null ? l.mealTotalLabel : l.manualTotalLabel}',
-        _value(record?.proteinGrams),
-        _value(record?.carbohydrateGrams),
-        _value(record?.fatGrams),
-        _value(record?.caloriesKcal),
-        for (final key in _foodExtras)
-          _value(decodeNutrients(record?.extraNutrientsJson)[key]),
-      ],
-    ];
+    final extras = _foodExtras;
+    final rows = <List<String>>[];
+    for (final entry in data.nutrition.foodEntries.reversed) {
+      final items = MealIngredient.decode(entry.mealItemsJson);
+      rows.add([
+        '${_time(entry.occurredAt ?? entry.createdAt)} ${entry.textContent}${items.isEmpty ? '' : ' · ${l.mealRecordedSubtotal}'}${entry.caloriesKcal == null
+            ? ''
+            : entry.caloriesEstimated
+            ? ' ≈'
+            : ''}',
+        _value(entry.proteinGrams),
+        _value(entry.carbohydrateGrams),
+        _value(entry.fatGrams),
+        _value(entry.caloriesKcal),
+        for (final key in extras)
+          _value(decodeNutrients(entry.extraNutrientsJson)[key]),
+      ]);
+      for (final item in items) {
+        rows.add([
+          '↳ ${item.name} · ${_value(item.quantity)} ${foodUnitLabel(item.unit, l)}',
+          for (final key in [
+            'protein',
+            'carbohydrate',
+            'fat',
+            'calories',
+            ...extras,
+          ])
+            _value(item.nutrients[key]),
+        ]);
+      }
+    }
+    rows.add([
+      '${l.dailyIntake} · ${record?.source == 'meals' || record == null ? l.mealTotalLabel : l.manualTotalLabel}',
+      _value(record?.proteinGrams),
+      _value(record?.carbohydrateGrams),
+      _value(record?.fatGrams),
+      _value(record?.caloriesKcal),
+      for (final key in extras)
+        _value(decodeNutrients(record?.extraNutrientsJson)[key]),
+    ]);
+    return rows;
   }
+
+  bool get hasMealIngredients => data.nutrition.foodEntries.any(
+    (entry) => MealIngredient.decode(entry.mealItemsJson).isNotEmpty,
+  );
 
   String _cell(String text) => text
       .replaceAll('&', '&amp;')
@@ -139,6 +162,7 @@ class TodayLogFormatter {
     '| ${foodColumns.map(_cell).join(' | ')} |',
     '| ${List.filled(foodColumns.length, '---').join(' | ')} |',
     for (final row in foodRows) '| ${row.map(_cell).join(' | ')} |',
+    if (hasMealIngredients) l.mealIngredientTableHint,
     l.missingNutritionHint,
     if (_foodExtras.isNotEmpty) l.foodMissingHint,
   ].join('\n');

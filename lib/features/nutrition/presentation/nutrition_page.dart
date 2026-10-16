@@ -18,6 +18,7 @@ import '../domain/meal_ingredient.dart';
 import 'nutrition_labels.dart';
 import 'food_library_page.dart';
 import 'food_preset_picker.dart';
+import 'food_equivalence_hint.dart';
 
 class NutritionPage extends StatefulWidget {
   const NutritionPage({super.key, required this.database});
@@ -487,6 +488,7 @@ class _NutritionPageState extends State<NutritionPage> {
                 ),
               ),
             ),
+            FoodEquivalenceHint(day: day),
             const SizedBox(height: 12),
             Card(
               child: Padding(

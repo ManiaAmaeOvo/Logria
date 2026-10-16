@@ -1,5 +1,19 @@
 # Release process
 
+## 1.4.1 build 14
+
+Includes local build 13 Fitness/food-equivalent fixes and per-ingredient nutrition
+table rows. VersionName 1.4.1 / versionCode 14, unchanged database schema 7,
+backup format 1 and signing identity. Release notes: `docs/releases/1.4.1.md`.
+Publish a new `v1.4.1` tag with `logria-v1.4.1-android.apk` and `SHA256SUMS`;
+retain all prior releases/assets/tags. The full suite contains 135 tests.
+
+Verification: all 135 tests pass; static analysis, formatting and APK build pass.
+Version and permission checks confirm 1.4.1 / 14, no Internet or broad storage
+permission. Certificate SHA-256 remains
+`d8419bb31e02ad9916fb3ccd57ab4bb59a1fcc6b91e8e4b3e1b47900ea611aa0`.
+APK SHA-256: `389e1461b6304fa3271eeb6ef3b6380f7eb768feb758306641c60ed7b5f61139`.
+
 ## 1.4.0 build 12
 
 Public release of build 11 features with an incremented Android versionCode.
@@ -80,7 +94,7 @@ The universal APK is `build/app/outputs/flutter-apk/app-release.apk`. It include
 the supported Android ABIs. A debug APK remains available through
 `flutter build apk --debug` for local development.
 
-For versions 1.0.0 through 1.4.0, release mode uses the existing local development
+For versions 1.0.0 through 1.4.1, release mode uses the existing local development
 signing certificate. This preserves update compatibility with earlier test APKs
 from this machine. It is not a production Google Play signing setup. CI-produced
 APKs use that runner's development certificate and are not interchangeable
@@ -92,12 +106,12 @@ keystore or signing credentials to Git.
 
 ## Publish
 
-After checks pass, commit the release, tag `v1.4.0`, push the branch and tag, then
+After checks pass, commit the release, tag `v1.4.1`, push the branch and tag, then
 create a GitHub release with the APK, its SHA-256 checksum and release notes.
 Release attachments should contain binaries/checksums only, never user databases.
 
-The 1.4.0 assets are `logria-v1.4.0-android.apk` and `SHA256SUMS`. Publish
-`docs/releases/1.4.0.md` as the bilingual release notes, and set it as the
+The 1.4.1 assets are `logria-v1.4.1-android.apk` and `SHA256SUMS`. Publish
+`docs/releases/1.4.1.md` as the bilingual release notes, and set it as the
 latest stable release. Confirm the uploaded APK digest matches the local checksum.
 
 ## Upgrade from 1.0.0

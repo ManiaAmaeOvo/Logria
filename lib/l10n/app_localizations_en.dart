@@ -468,6 +468,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealTotalLabel => 'Meal totals';
 
   @override
+  String get mealRecordedSubtotal => 'Recorded meal total';
+
+  @override
+  String get mealIngredientTableHint =>
+      '↳ Ingredient detail, not extra intake. Meal totals retain manual edits; daily totals do not add ingredient rows again.';
+
+  @override
   String get manualTotalLabel => 'Manual daily total';
 
   @override
@@ -863,7 +870,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workoutHistory => 'Workout history';
 
   @override
-  String get current => 'Up next';
+  String get current => 'Current training day';
+
+  @override
+  String get nextPlannedDay => 'Next planned day';
+
+  @override
+  String get nextPlannedDayHint =>
+      'Today\'s action is recorded. This day is pending for your next training or rest decision, not another action for today.';
+
+  @override
+  String get foodEquivalenceTitle => 'Rough food equivalents';
+
+  @override
+  String get foodEquivalenceCarbs => 'carbohydrate';
+
+  @override
+  String get foodEquivalenceProteinLabel => 'protein';
+
+  @override
+  String foodEquivalenceGoal(Object amount, Object nutrient) {
+    return 'To reach the target: $amount g $nutrient remaining';
+  }
+
+  @override
+  String foodEquivalenceLimit(Object amount, Object nutrient) {
+    return 'Within this limit: $amount g $nutrient remaining';
+  }
+
+  @override
+  String foodEquivalenceRice(Object grams) {
+    return '≈ $grams g cooked white rice';
+  }
+
+  @override
+  String foodEquivalenceProtein(Object eggs, Object grams) {
+    return '≈ $eggs whole boiled eggs OR $grams g raw skinless chicken breast';
+  }
+
+  @override
+  String get foodEquivalenceBasis =>
+      'Reference only, not a meal recommendation. USDA generic values; one egg = 50 g edible portion. Each nutrient is estimated separately; other nutrient/calorie limits and unlogged food are not included. Nothing is saved.';
 
   @override
   String get startWorkout => 'Start workout';

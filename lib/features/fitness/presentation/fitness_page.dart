@@ -120,31 +120,40 @@ class _FitnessPageState extends State<FitnessPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          IntrinsicHeight(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                OutlinedButton.icon(
-                  style: compact,
-                  onPressed: () => _extras(false),
-                  icon: const Icon(Icons.show_chart, size: 18),
-                  label: Text(l.prTitle),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: compact,
+                    onPressed: () => _extras(false),
+                    icon: const Icon(Icons.show_chart, size: 18),
+                    label: Text(l.prTitle, textAlign: TextAlign.center),
+                  ),
                 ),
-                OutlinedButton.icon(
-                  style: compact,
-                  onPressed: () => _extras(true),
-                  icon: const Icon(Icons.directions_run, size: 18),
-                  label: Text(l.cardioTitle),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: compact,
+                    onPressed: () => _extras(true),
+                    icon: const Icon(Icons.directions_run, size: 18),
+                    label: Text(l.cardioTitle, textAlign: TextAlign.center),
+                  ),
                 ),
-                OutlinedButton.icon(
-                  style: compact,
-                  onPressed: _editHistoricalDate,
-                  icon: const Icon(Icons.edit_calendar, size: 18),
-                  label: Text(l.toolbarBackfill),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: compact,
+                    onPressed: _editHistoricalDate,
+                    icon: const Icon(Icons.edit_calendar, size: 18),
+                    label: Text(l.toolbarBackfill, textAlign: TextAlign.center),
+                  ),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 8),
           Text(l.recordDayHint, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
@@ -825,7 +834,9 @@ class _FitnessDashboard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  AppLocalizations.of(context)!.current,
+                  actionLocked
+                      ? AppLocalizations.of(context)!.nextPlannedDay
+                      : AppLocalizations.of(context)!.current,
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
                 const SizedBox(height: 4),
@@ -833,8 +844,11 @@ class _FitnessDashboard extends StatelessWidget {
                   nextDay.name,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                const SizedBox(height: 18),
-                if (nextDay.type == CycleDayType.training) ...[
+                if (actionLocked) ...[
+                  const SizedBox(height: 8),
+                  Text(AppLocalizations.of(context)!.nextPlannedDayHint),
+                ] else if (nextDay.type == CycleDayType.training) ...[
+                  const SizedBox(height: 18),
                   FilledButton.icon(
                     onPressed: actionLocked ? null : onStartWorkout,
                     icon: const Icon(Icons.play_arrow),
@@ -850,12 +864,14 @@ class _FitnessDashboard extends StatelessWidget {
                     onPressed: actionLocked ? null : onSkip,
                     child: Text(AppLocalizations.of(context)!.skipTrainingDay),
                   ),
-                ] else
+                ] else ...[
+                  const SizedBox(height: 18),
                   FilledButton.icon(
                     onPressed: actionLocked ? null : onRest,
                     icon: const Icon(Icons.hotel_outlined),
                     label: Text(AppLocalizations.of(context)!.completeRestDay),
                   ),
+                ],
               ],
             ),
           ),

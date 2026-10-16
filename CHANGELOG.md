@@ -2,6 +2,23 @@
 
 [简体中文](CHANGELOG.zh-CN.md)
 
+## 1.4.1 — 2026-10-16 (Android build 14)
+
+- Multi-ingredient meals now show one table row per ingredient with its own P/C/F,
+  energy and optional minerals, in Today and copied Markdown. Recorded meal subtotals
+  and manual daily totals remain unchanged; ingredient details are never counted twice.
+- Ingredient-only mineral columns remain visible even when the meal total was edited.
+  Long row labels can be read with a tooltip.
+
+- After today's action, show the next planned day explicitly and hide disabled
+  start/rest/skip controls. Keep today's completed workout visible and editable.
+- Equal-width Fitness shortcuts with consistent gaps, including narrow/large-text layouts.
+- Display-only carbohydrate/protein food equivalents adapt to targets or limits,
+  using cooked rice, whole boiled eggs (50 g edible portion) or raw skinless chicken.
+  Unknown intake is not zero; estimates are not logged or a combined meal recommendation.
+
+Includes the previously local build 13 fixes. Prior releases and assets remain unchanged.
+
 ## 1.4.0 — 2026-10-16 (Android build 12)
 
 - Full, unencrypted JSON backup/restore through Android's system document picker;

@@ -9,6 +9,23 @@ English and Simplified Chinese independently of the app language.
 
 ## New in 1.4.0
 
+In 1.4.1 (including local build 13 fixes), once today's action is recorded, Fitness labels the pending item
+"Next planned day" and hides inactive action buttons. It is not an extra workout
+for today or a fixed promise for tomorrow; today's workout remains editable.
+Nutrition shows rough food equivalents when recorded carbohydrate/protein intake
+is below a configured target or limit. Cooked white rice, whole boiled eggs
+(50 g edible portion per egg) and raw skinless chicken use the existing USDA
+reference presets. Estimates are display-only, not saved, and do not combine
+other nutrient/calorie limits. Missing intake stays unknown; met/exceeded targets
+do not suggest more food. Change today's intake or targets to recalculate.
+
+In Today's nutrition table and copied Markdown, each ingredient of a composed meal
+has its own row with quantity, P/C/F, kcal and optional minerals. Rows marked ↳ are
+details, not additional intake. The recorded meal subtotal can differ from ingredient
+snapshots after manual edits, and the daily total remains your chosen meal/manual
+total without double-counting. Missing values remain —; zero stays 0. Long-press
+truncated row labels for the full text.
+
 Settings → Backup and export saves a **full backup** or exports an inclusive date
 range as JSON. The Body switch excludes measurements and sleep from analysis logs.
 Only full backups can be restored: choose a file, check row counts and confirm

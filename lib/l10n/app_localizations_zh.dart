@@ -448,6 +448,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mealTotalLabel => '逐餐汇总';
 
   @override
+  String get mealRecordedSubtotal => '餐合计（保存值）';
+
+  @override
+  String get mealIngredientTableHint =>
+      '↳ 为食材明细，并非额外摄入。餐合计保留手动调整，日总量不会重复累加食材行。';
+
+  @override
   String get manualTotalLabel => '手动总量';
 
   @override
@@ -822,6 +829,45 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get current => '当前训练';
+
+  @override
+  String get nextPlannedDay => '下次计划日';
+
+  @override
+  String get nextPlannedDayHint => '今日操作已记录。此项等待下次训练或休息时继续，并非今日还需完成的内容。';
+
+  @override
+  String get foodEquivalenceTitle => '食物粗略换算';
+
+  @override
+  String get foodEquivalenceCarbs => '碳水';
+
+  @override
+  String get foodEquivalenceProteinLabel => '蛋白质';
+
+  @override
+  String foodEquivalenceGoal(Object amount, Object nutrient) {
+    return '距目标还需 $amount g $nutrient';
+  }
+
+  @override
+  String foodEquivalenceLimit(Object amount, Object nutrient) {
+    return '按此上限还可摄入 $amount g $nutrient';
+  }
+
+  @override
+  String foodEquivalenceRice(Object grams) {
+    return '≈ $grams g 熟白米饭';
+  }
+
+  @override
+  String foodEquivalenceProtein(Object eggs, Object grams) {
+    return '≈ $eggs 个水煮全蛋，或 $grams g 生去皮鸡胸肉';
+  }
+
+  @override
+  String get foodEquivalenceBasis =>
+      '仅作换算参考，并非配餐建议。采用 USDA 通用值；每个鸡蛋按可食部分 50 g 估算。各营养素独立换算，未综合其他营养／热量上限及未记录食物，不保存为记录。';
 
   @override
   String get startWorkout => '开始记录训练';

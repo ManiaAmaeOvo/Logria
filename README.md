@@ -13,9 +13,14 @@ Logria is an independent project and does not share a repository or data with Su
 [Changelog](CHANGELOG.md) · [English manual](docs/USER_GUIDE.md) ·
 [中文使用说明](docs/USER_GUIDE.zh-CN.md) · [MIT License](LICENSE)
 
-## Version 1.4.0 (Android build 12)
+## Version 1.4.1 (Android build 14)
 
-Version **1.4.0 build 12** includes backup/restore, dated JSON exports,
+Version **1.4.1 build 14** splits composed meals into individual ingredient rows
+in Today and copied Markdown, preserving recorded totals without double-counting.
+It also includes the local build 13 Fitness status/layout fixes and display-only
+carbohydrate/protein food equivalents. Schema 7 and backup compatibility are unchanged.
+
+Version 1.4.0 introduced backup/restore, dated JSON exports,
 sleep, per-set notes, text RIR, multi-ingredient meals, arithmetic inputs and
 compact nutrition tables. Earlier releases and their assets/tags are preserved.
 
@@ -95,7 +100,7 @@ Android 7.0/API 24 or later is required. Android 16/arm64 has been checked local
 The published APK runs in release mode but uses the existing development
 signing certificate to allow updates from earlier test APKs from this machine.
 It is not a production Google Play release. See [release details](docs/RELEASE.md).
-To upgrade from earlier releases or local builds, install **1.4.0 build 12** over
+To upgrade from earlier releases or local builds, install **1.4.1 build 14** over
 the existing app without uninstalling or clearing storage. The signing identity
 is unchanged; additive migrations through schema 6 preserve existing records. Keep your data on
 the device. Version 1.4.0 adds full backup/restore and dated JSON analysis export.
