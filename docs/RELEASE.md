@@ -1,5 +1,33 @@
 # Release process
 
+## 1.4.2 build 16
+
+Public release of the verified local build 15 features, with increased versionCode
+16 / versionName 1.4.2. SQLite schema 7, backup format 1 and signing identity are
+unchanged. Rerun all 152 tests, analysis, formatting and APK build for publication.
+Release notes: `docs/releases/1.4.2.md`. Publish a new `v1.4.2` tag with
+`logria-v1.4.2-android.apk` and `SHA256SUMS`; keep all older releases/tags/assets.
+
+Public build verification: all 152 tests, analysis, formatting and release APK
+build pass. Manifest versionName 1.4.2 / versionCode 16; no Internet or broad
+storage permissions. Certificate SHA-256 remains
+`d8419bb31e02ad9916fb3ccd57ab4bb59a1fcc6b91e8e4b3e1b47900ea611aa0`.
+APK SHA-256: `a8bdfd794313fd0f7a49491cbbb217796c1abfaf2bcf2dee077f364f15bcbcab`.
+
+## Previous local 1.4.2 build 15 validation
+
+2026-10-31 local update: today's round highlighting, drag ordering in workout and
+plan editors, shared native nutrition rendering, first-day template opt-in and
+per-exercise history fill. All 152 tests, analysis and formatting pass. SQLite
+schema 7 and backup format 1 unchanged. These features are included in public
+build 16. Previous local APK: `build/releases/logria-v1.4.2-build15-android.apk`.
+
+Final APK SHA-256:
+`4b129d7526cddfdcb33bb329aedadf7b65742be85d77d99b44e9133ad7160e22`.
+Signing identity remains
+`d8419bb31e02ad9916fb3ccd57ab4bb59a1fcc6b91e8e4b3e1b47900ea611aa0`.
+The existing emulator upgraded in place without wiping user data.
+
 ## 1.4.1 build 14
 
 Includes local build 13 Fitness/food-equivalent fixes and per-ingredient nutrition
@@ -94,7 +122,7 @@ The universal APK is `build/app/outputs/flutter-apk/app-release.apk`. It include
 the supported Android ABIs. A debug APK remains available through
 `flutter build apk --debug` for local development.
 
-For versions 1.0.0 through 1.4.1, release mode uses the existing local development
+For versions 1.0.0 through 1.4.2, release mode uses the existing local development
 signing certificate. This preserves update compatibility with earlier test APKs
 from this machine. It is not a production Google Play signing setup. CI-produced
 APKs use that runner's development certificate and are not interchangeable
@@ -106,12 +134,12 @@ keystore or signing credentials to Git.
 
 ## Publish
 
-After checks pass, commit the release, tag `v1.4.1`, push the branch and tag, then
+After checks pass, commit the release, tag `v1.4.2`, push the branch and tag, then
 create a GitHub release with the APK, its SHA-256 checksum and release notes.
 Release attachments should contain binaries/checksums only, never user databases.
 
-The 1.4.1 assets are `logria-v1.4.1-android.apk` and `SHA256SUMS`. Publish
-`docs/releases/1.4.1.md` as the bilingual release notes, and set it as the
+The 1.4.2 assets are `logria-v1.4.2-android.apk` and `SHA256SUMS`. Publish
+`docs/releases/1.4.2.md` as the bilingual release notes, and set it as the
 latest stable release. Confirm the uploaded APK digest matches the local checksum.
 
 ## Upgrade from 1.0.0

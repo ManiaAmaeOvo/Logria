@@ -1646,6 +1646,48 @@ abstract class AppLocalizations {
   /// **'Current training day'**
   String get current;
 
+  /// No description provided for @reorderExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder exercises'**
+  String get reorderExercises;
+
+  /// No description provided for @useLastExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Use last exercise record'**
+  String get useLastExercise;
+
+  /// No description provided for @noLastExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'No earlier record for this exact exercise/variant.'**
+  String get noLastExercise;
+
+  /// No description provided for @replaceLastExerciseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace only this exercise\'s sets, weights and reps with its latest earlier record? RIR and feeling notes will be left blank. Other exercises stay unchanged.'**
+  String get replaceLastExerciseHint;
+
+  /// No description provided for @saveDayTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as this day\'s template'**
+  String get saveDayTemplate;
+
+  /// No description provided for @saveDayTemplateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This training day has no exercise template. Save today\'s exercise order, set counts, rep ranges and numeric reference weight for future rounds? RIR, set feelings and text weights remain in history, not in the plan. Existing templates will never be overwritten.'**
+  String get saveDayTemplateHint;
+
+  /// No description provided for @workoutOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Save log only'**
+  String get workoutOnly;
+
   /// No description provided for @nextPlannedDay.
   ///
   /// In en, this message translates to:

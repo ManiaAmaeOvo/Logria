@@ -7,6 +7,36 @@ this device. Start with the Today screen, then use the five bottom tabs.
 In Settings → User manual you can read this guide offline and switch between
 English and Simplified Chinese independently of the app language.
 
+## New in 1.4.2
+
+Round progress now outlines today's recorded item. If the round just ended, its
+progress stays visible for that journal day rather than highlighting the new round.
+The pending-day card still describes what comes next, not another workout for today.
+
+Drag the handle beside an exercise to change order in the workout editor; order
+and values survive exiting/resuming the draft and saving/editing history. This
+does not silently change the plan. In the plan editor, use a day's reorder button
+to open its sorting panel, drag handles there and tap Save to persist the template
+order for future sessions. Dismissing that panel does not change the template.
+
+Each exercise has **Use last exercise record**. It looks across plans/rounds for
+the most recent completed occurrence of the exact name/variant strictly before
+the selected journal date; future and same-date entries are excluded. No history
+means the button is disabled. It copies set count, weight (including text zero/null)
+and reps only, not RIR or feeling notes. Nonempty input requires confirmation.
+First-set one-shot filling works again after copying; lower-set manual edits stay
+protected. This does not alter the source history or the day template.
+
+When finishing a new current workout on an empty template day, choose **Save as
+this day's template**, **Save log only**, or cancel to continue editing. The template
+stores exercise order, set counts, rep ranges and the first numeric reference
+weight, not text weights, RIR or feelings. It never overwrites a populated template;
+the training record and opt-in template save commit together or both roll back.
+Historical corrections and edits do not trigger this first-template prompt.
+
+Calendar and Today both render native nutrition tables with individual ingredient
+rows. Copy actions still generate Markdown tables for pasting into other tools.
+
 ## New in 1.4.0
 
 In 1.4.1 (including local build 13 fixes), once today's action is recorded, Fitness labels the pending item

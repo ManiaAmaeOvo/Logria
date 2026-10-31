@@ -831,6 +831,29 @@ class AppLocalizationsZh extends AppLocalizations {
   String get current => '当前训练';
 
   @override
+  String get reorderExercises => '拖动调整动作顺序';
+
+  @override
+  String get useLastExercise => '按照上次内容';
+
+  @override
+  String get noLastExercise => '此动作／备注变式暂无更早记录。';
+
+  @override
+  String get replaceLastExerciseHint =>
+      '仅将本动作的组数、重量和次数替换为此前最近一次记录？RIR 和感受备注留空，其他动作不受影响。';
+
+  @override
+  String get saveDayTemplate => '保存为本日模板';
+
+  @override
+  String get saveDayTemplateHint =>
+      '此训练日尚无动作模板。是否将今日动作顺序、组数、次数范围及数值参考重量保存，供后续轮次使用？RIR、每组感受和文本重量仅保留在历史中，不写入计划；已有模板不会被覆盖。';
+
+  @override
+  String get workoutOnly => '仅保存训练记录';
+
+  @override
   String get nextPlannedDay => '下次计划日';
 
   @override

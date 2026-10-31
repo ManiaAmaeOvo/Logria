@@ -10,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../core/record_day.dart';
 import '../../../core/numeric_expression.dart';
 import '../../../core/workout_set_values.dart';
+import '../../../core/number_format.dart';
 
 class WorkoutEditorPage extends StatefulWidget {
   const WorkoutEditorPage({
@@ -40,7 +41,9 @@ class WorkoutEditorPage extends StatefulWidget {
 class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     with WidgetsBindingObserver {
   final List<_ExerciseInput> _exercises = [];
+  final Map<String, WorkoutHistoryExercise?> _lastRecords = {};
   bool _saving = false;
+  bool _awaitingTemplateChoice = false;
   bool _loading = true;
   bool _canPop = false;
   bool _finished = false;
@@ -87,6 +90,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       for (final e in _exercises) {
         _listen(e);
       }
+      await Future.wait(_exercises.map(_loadLastRecord));
+      if (!mounted) return;
       setState(() => _loading = false);
       if (widget.usePreviousOnOpen && widget.previousWorkout != null) {
         await _usePrevious(confirm: raw != null);
@@ -125,6 +130,84 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     }
   }
 
+  Future<void> _loadLastRecord(_ExerciseInput input) async {
+    final name = input.name;
+    final last = await widget.repository.latestExerciseRecord(
+      name,
+      _recordDate,
+    );
+    if (mounted) _lastRecords[name] = last;
+  }
+
+  Future<void> _useLastRecord(_ExerciseInput input) async {
+    final last = _lastRecords[input.name];
+    if (last == null || _saving) return;
+    final l = AppLocalizations.of(context)!;
+    if (input.sets.any(
+      (s) => [s.weight, s.reps, s.rir, s.notes].any((c) => c.text.isNotEmpty),
+    )) {
+      final yes = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          scrollable: true,
+          title: Text(l.useLastExercise),
+          content: Text(l.replaceLastExerciseHint),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: Text(l.useLastExercise),
+            ),
+          ],
+        ),
+      );
+      if (yes != true || !mounted) return;
+    }
+    FocusManager.instance.primaryFocus?.unfocus();
+    final old = List<_SetInput>.of(input.sets);
+    setState(() {
+      input.sets
+        ..clear()
+        ..addAll(
+          last.sets.map(
+            (s) => _SetInput(
+              weightValue: s.weightValue,
+              weightText: s.weightText,
+              repsValue: s.reps,
+              textAsZero: s.weightText != null && s.weightValue == 0,
+            ),
+          ),
+        );
+      input.weightFilled = input.repsFilled = input.weightModeFilled = false;
+      input._weightEditing = input._repsEditing = false;
+      _listen(input);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final s in old) {
+        s.dispose();
+      }
+    });
+    try {
+      await _persistDraft();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.saveFailed(error))));
+      }
+    }
+  }
+
+  void _reorder(int oldIndex, int newIndex) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _exercises.insert(newIndex, _exercises.removeAt(oldIndex));
+    });
+    _changed();
+  }
+
   Future<void> _usePrevious({bool confirm = true}) async {
     if (_saving || _loading || widget.previousWorkout == null) return;
     final l = AppLocalizations.of(context)!;
@@ -161,6 +244,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         ..clear()
         ..addAll(replacements);
     });
+    await Future.wait(replacements.map(_loadLastRecord));
+    if (mounted) setState(() {});
     // Let old TextFields detach before disposing their controllers/focus nodes.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       for (final e in old) {
@@ -324,135 +409,143 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             ? const Center(child: CircularProgressIndicator())
             : AbsorbPointer(
                 absorbing: _saving,
-                child: ListView(
+                child: ReorderableListView(
+                  buildDefaultDragHandles: false,
+                  onReorderItem: _reorder,
                   padding: const EdgeInsets.all(16),
-                  children: [
-                    Text(
-                      '${widget.dashboard.plan.name} · ${l10n.cycleNumber(widget.dashboard.cycle.cycleNumber)}',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(l10n.workoutDraftHint),
-                    Text(
-                      l10n.arithmeticHint,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    if (widget.existingWorkout == null) ...[
-                      const SizedBox(height: 8),
+                  header: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                       Text(
-                        l10n.firstSetFillHint,
+                        '${widget.dashboard.plan.name} · ${l10n.cycleNumber(widget.dashboard.cycle.cycleNumber)}',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(l10n.workoutDraftHint),
+                      Text(
+                        l10n.arithmeticHint,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
-                    ],
-                    if (widget.existingWorkout == null &&
-                        widget.previousWorkout != null)
-                      OutlinedButton.icon(
-                        onPressed: () => _usePrevious(),
-                        icon: const Icon(Icons.copy_outlined),
-                        label: Text(l10n.usePreviousTemplate),
-                      ),
-                    const SizedBox(height: 12),
-                    if (_exercises.isEmpty)
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            children: [
-                              const Icon(Icons.fitness_center, size: 38),
-                              const SizedBox(height: 12),
-                              Text(l10n.addFirstExercise),
-                              const SizedBox(height: 12),
-                              FilledButton.icon(
-                                onPressed: _addExercise,
-                                icon: const Icon(Icons.add),
-                                label: Text(l10n.addExercise),
-                              ),
-                            ],
+                      if (widget.existingWorkout == null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.firstSetFillHint,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                      if (widget.existingWorkout == null &&
+                          widget.previousWorkout != null)
+                        OutlinedButton.icon(
+                          onPressed: () => _usePrevious(),
+                          icon: const Icon(Icons.copy_outlined),
+                          label: Text(l10n.usePreviousTemplate),
+                        ),
+                      const SizedBox(height: 12),
+                      if (_exercises.isEmpty)
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.fitness_center, size: 38),
+                                const SizedBox(height: 12),
+                                Text(l10n.addFirstExercise),
+                                const SizedBox(height: 12),
+                                FilledButton.icon(
+                                  onPressed: _addExercise,
+                                  icon: const Icon(Icons.add),
+                                  label: Text(l10n.addExercise),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      )
-                    else
-                      for (
-                        var index = 0;
-                        index < _exercises.length;
-                        index++
-                      ) ...[
-                        _ExerciseCard(
-                          key: ObjectKey(_exercises[index]),
-                          index: index,
-                          input: _exercises[index],
-                          onVariant: () => _editVariant(_exercises[index]),
-                          onAddSet: () {
-                            final set = _SetInput();
-                            for (final c in [
-                              set.weight,
-                              set.reps,
-                              set.rir,
-                              set.notes,
-                            ]) {
-                              c.addListener(_changed);
-                            }
-                            setState(() => _exercises[index].sets.add(set));
-                            _changed();
-                          },
-                          onRemoveSet: (setIndex) {
-                            setState(() {
-                              if (setIndex == 0) {
-                                _exercises[index].weightFilled = true;
-                                _exercises[index].repsFilled = true;
-                              }
-                              final removed = _exercises[index].sets.removeAt(
-                                setIndex,
-                              );
-                              removed.dispose();
-                            });
-                            _changed();
-                          },
-                          onRemoveExercise: () {
-                            setState(() {
-                              final removed = _exercises.removeAt(index);
-                              removed.dispose();
-                            });
-                            _changed();
-                          },
-                          onWeightModeChanged: () {
-                            setState(() {});
-                            _changed();
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                    if (_exercises.isNotEmpty) ...[
-                      OutlinedButton.icon(
-                        onPressed: _addExercise,
-                        icon: const Icon(Icons.add),
-                        label: Text(l10n.addExercise),
-                      ),
-                      const SizedBox(height: 12),
-                      FilledButton.icon(
-                        onPressed: _saving ? null : _saveWorkout,
-                        icon: _saving
-                            ? const SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.check),
-                        label: Text(
-                          widget.existingWorkout == null
-                              ? l10n.finishSaveWorkout
-                              : l10n.saveWorkoutChanges,
-                        ),
-                      ),
                     ],
-                    const SizedBox(height: 24),
+                  ),
+                  footer: _footer(l10n),
+                  children: [
+                    for (var index = 0; index < _exercises.length; index++)
+                      _ExerciseCard(
+                        key: ObjectKey(_exercises[index]),
+                        index: index,
+                        input: _exercises[index],
+                        onUseLast: _lastRecords[_exercises[index].name] == null
+                            ? null
+                            : () => _useLastRecord(_exercises[index]),
+                        onVariant: () => _editVariant(_exercises[index]),
+                        onAddSet: () {
+                          final set = _SetInput();
+                          for (final c in [
+                            set.weight,
+                            set.reps,
+                            set.rir,
+                            set.notes,
+                          ]) {
+                            c.addListener(_changed);
+                          }
+                          setState(() => _exercises[index].sets.add(set));
+                          _changed();
+                        },
+                        onRemoveSet: (setIndex) {
+                          setState(() {
+                            if (setIndex == 0) {
+                              _exercises[index].weightFilled = true;
+                              _exercises[index].repsFilled = true;
+                            }
+                            final removed = _exercises[index].sets.removeAt(
+                              setIndex,
+                            );
+                            removed.dispose();
+                          });
+                          _changed();
+                        },
+                        onRemoveExercise: () {
+                          setState(() {
+                            final removed = _exercises.removeAt(index);
+                            removed.dispose();
+                          });
+                          _changed();
+                        },
+                        onWeightModeChanged: () {
+                          setState(() {});
+                          _changed();
+                        },
+                      ),
                   ],
                 ),
               ),
       ),
     );
   }
+
+  Widget _footer(AppLocalizations l) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      if (_exercises.isNotEmpty) ...[
+        OutlinedButton.icon(
+          onPressed: _addExercise,
+          icon: const Icon(Icons.add),
+          label: Text(l.addExercise),
+        ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          onPressed: _saving ? null : _saveWorkout,
+          icon: _saving && !_awaitingTemplateChoice
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.check),
+          label: Text(
+            widget.existingWorkout == null
+                ? l.finishSaveWorkout
+                : l.saveWorkoutChanges,
+          ),
+        ),
+      ],
+      const SizedBox(height: 24),
+    ],
+  );
 
   Future<void> _addExercise() async {
     final l10n = AppLocalizations.of(context)!;
@@ -505,6 +598,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     if (selection == null || !mounted) return;
 
     final input = _ExerciseInput(selection);
+    await _loadLastRecord(input);
+    if (!mounted) {
+      input.dispose();
+      return;
+    }
     _listen(input);
     setState(() => _exercises.add(input));
     _changed();
@@ -535,6 +633,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             : variantExerciseName(input.baseName, note);
         input.saveAsPreset = true;
       });
+      await _loadLastRecord(input);
+      if (mounted) setState(() {});
       _changed();
     } catch (error) {
       if (mounted) {
@@ -613,9 +713,44 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
 
       setState(() => _saving = true);
       await _persistDraft();
+      var saveTemplate = false;
+      final templateDayId = widget.dashboard.progress.nextDay!.id;
+      if (widget.existingWorkout == null &&
+          widget.onSave == null &&
+          !await widget.repository.hasDayTemplate(templateDayId)) {
+        if (!mounted) return;
+        setState(() => _awaitingTemplateChoice = true);
+        final choice = await showDialog<bool>(
+          context: context,
+          builder: (c) => AlertDialog(
+            scrollable: true,
+            title: Text(l10n.saveDayTemplate),
+            content: Text(l10n.saveDayTemplateHint),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(c),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(c, false),
+                child: Text(l10n.workoutOnly),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(c, true),
+                child: Text(l10n.saveDayTemplate),
+              ),
+            ],
+          ),
+        );
+        if (choice == null || !mounted) return;
+        saveTemplate = choice;
+      }
       _committing = true;
       final existingWorkout = widget.existingWorkout;
       await widget.repository.database.transaction(() async {
+        if (saveTemplate) {
+          await widget.repository.saveDayTemplateIfEmpty(templateDayId, drafts);
+        }
         if (widget.onSave != null) {
           await widget.onSave!(drafts);
         } else if (existingWorkout == null) {
@@ -653,7 +788,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           .showSnackBar(SnackBar(content: Text(l10n.saveFailed(error))));
     } finally {
       _committing = false;
-      if (mounted) setState(() => _saving = false);
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _awaitingTemplateChoice = false;
+        });
+      }
     }
   }
 }
@@ -668,6 +808,7 @@ class _ExerciseCard extends StatelessWidget {
     required this.onRemoveExercise,
     required this.onWeightModeChanged,
     required this.onVariant,
+    required this.onUseLast,
   });
 
   final int index;
@@ -677,6 +818,7 @@ class _ExerciseCard extends StatelessWidget {
   final VoidCallback onRemoveExercise;
   final VoidCallback onWeightModeChanged;
   final VoidCallback onVariant;
+  final VoidCallback? onUseLast;
 
   @override
   Widget build(BuildContext context) {
@@ -689,6 +831,16 @@ class _ExerciseCard extends StatelessWidget {
           children: [
             Row(
               children: [
+                ReorderableDragStartListener(
+                  index: index,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Tooltip(
+                      message: l10n.reorderExercises,
+                      child: const Icon(Icons.drag_handle),
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: Text(
                     input.name,
@@ -713,6 +865,19 @@ class _ExerciseCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: onUseLast,
+                icon: const Icon(Icons.history),
+                label: Text(l10n.useLastExercise),
+              ),
+            ),
+            if (onUseLast == null)
+              Text(
+                l10n.noLastExercise,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             Row(
               children: [
                 SizedBox(width: 32, child: Text(l10n.setLabel)),
@@ -1159,7 +1324,9 @@ class _SetInput {
     String? weightText,
     this.textAsZero = false,
   }) : weight = TextEditingController(
-         text: weightText ?? weightValue?.toString() ?? '',
+         text:
+             weightText ??
+             (weightValue == null ? '' : formatNumber(weightValue)),
        ),
        reps = TextEditingController(text: repsValue?.toString() ?? ''),
        rir = TextEditingController(text: rirValue ?? ''),

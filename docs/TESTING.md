@@ -1,6 +1,17 @@
-# 1.4.1 testing guide
+# 1.4.2 testing guide
 
-Use 1.4.1 build 14 for current shared testing. Added bilingual ingredient-table
+Use public 1.4.2 build 16 for shared testing. It includes the verified local build
+15; the complete 152-test suite and release checks are rerun for the public APK.
+
+Local 1.4.2 build 15 (2026-10-31): 152 tests pass with clean analysis/formatting.
+Added coverage: today's outlined chip for training/rest/skip; just-closed-round
+rollover/undo/redo; actual handle drag, draft persistence/resume and controller
+ownership; transactional plan ordering; empty-template save/log-only/cancel in
+English/Chinese on 360 px screens at 1.6× text; template write rollback/no overwrite;
+date/variant-safe exercise history, raw text loads and one-shot fill after copying;
+native calendar nutrition rendering. That local build is superseded by public build 16.
+
+Historical 1.4.1 build 14 testing: added bilingual ingredient-table
 tests cover separate P/C/F/kcal/mineral cells, unknown versus zero, preserved
 manual subtotals/daily totals, escaped Markdown, clipboard output, read-only
 rendering and narrow screens with 1.6× text. Full suite: 135 tests.

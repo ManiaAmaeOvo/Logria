@@ -720,6 +720,13 @@ class _FitnessDashboard extends StatelessWidget {
     final consumedIds = dashboard.progress.consumedDayIds;
     final cycleColor = Color(dashboard.cycle.colorValue);
     final actionLocked = dashboard.hasActionToday;
+    final display = dashboard.todayProgress;
+    final displayConsumed = display?.consumed ?? consumedIds;
+    final displayUnrecorded = display?.unrecorded ?? dashboard.unrecordedDayIds;
+    final displayColor = display == null
+        ? cycleColor
+        : Color(display.cycle.colorValue);
+    final highlightId = actionLocked ? display?.highlightedDayId : nextDay.id;
 
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -958,8 +965,13 @@ class _FitnessDashboard extends StatelessWidget {
           AppLocalizations.of(context)!.cycleProgress,
           style: Theme.of(context).textTheme.titleLarge,
         ),
+        if (display != null && display.cycle.id != dashboard.cycle.id)
+          Text(
+            AppLocalizations.of(context)!
+                .cycleNumber(display.cycle.cycleNumber),
+          ),
         const SizedBox(height: 12),
-        if (dashboard.unrecordedDayIds.isNotEmpty)
+        if (displayUnrecorded.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(AppLocalizations.of(context)!.beforeStartingDay),
@@ -971,9 +983,9 @@ class _FitnessDashboard extends StatelessWidget {
             for (final day in dashboard.planDays)
               Chip(
                 avatar: Icon(
-                  dashboard.unrecordedDayIds.contains(day.id)
+                  displayUnrecorded.contains(day.id)
                       ? Icons.remove_circle_outline
-                      : consumedIds.contains(day.id)
+                      : displayConsumed.contains(day.id)
                       ? Icons.check_circle
                       : day.id == nextDay.id
                       ? Icons.radio_button_checked
@@ -981,11 +993,11 @@ class _FitnessDashboard extends StatelessWidget {
                       ? Icons.hotel_outlined
                       : Icons.circle_outlined,
                   size: 18,
-                  color: consumedIds.contains(day.id) ? cycleColor : null,
+                  color: displayConsumed.contains(day.id) ? displayColor : null,
                 ),
                 label: Text(day.name),
-                side: day.id == nextDay.id
-                    ? BorderSide(color: cycleColor, width: 2)
+                side: day.id == highlightId
+                    ? BorderSide(color: displayColor, width: 2)
                     : null,
               ),
           ],

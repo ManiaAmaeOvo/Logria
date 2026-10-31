@@ -2,6 +2,24 @@
 
 [简体中文](CHANGELOG.zh-CN.md)
 
+## 1.4.2 — 2026-10-31 (Android build 16)
+
+- Round progress outlines today's recorded slot instead of tomorrow's pending slot.
+  At rollover, show the just-finished round until the next journal day; undo/redo updates it.
+- Drag exercise handles to reorder workout drafts/edits and day-plan templates.
+  Drafts preserve order and input values; plan order is saved transactionally.
+- Calendar nutrition uses the same native per-ingredient table as Today, not raw
+  Markdown source. Clipboard logs remain escaped Markdown.
+- Finishing a new workout on a day with no exercise template offers an explicit
+  save-as-day-template choice or log-only save. Existing templates are never overwritten.
+- Per-exercise "Use last exercise record" copies the most recent earlier journal-day
+  set count, weights and reps for the exact exercise/variant, across plans/rounds.
+  Confirm replacement of nonempty inputs; preserve text-load zero/null behavior,
+  clear old RIR/feelings and re-enable first-set one-shot filling.
+
+Includes the tested local build 15 with an increased Android build number.
+Database schema 7 and backup format 1 are unchanged; older releases are retained.
+
 ## 1.4.1 — 2026-10-16 (Android build 14)
 
 - Multi-ingredient meals now show one table row per ingredient with its own P/C/F,

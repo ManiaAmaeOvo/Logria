@@ -9,6 +9,54 @@ import 'package:logria/features/nutrition/data/nutrition_repository.dart';
 import 'package:logria/l10n/app_localizations.dart';
 
 void main() {
+  for (final language in ['en', 'zh']) {
+    testWidgets(
+      'calendar renders a real nutrition table, not Markdown source ($language)',
+      (tester) async {
+        final db = AppDatabase(NativeDatabase.memory());
+        addTearDown(db.close);
+        await NutritionRepository(db).addFoodEntry(
+          DateTime.now(),
+          'Lunch',
+          proteinGrams: 30,
+          carbohydrateGrams: 50,
+          fatGrams: 10,
+          caloriesKcal: 410,
+        );
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: Locale(language),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: Scaffold(body: CalendarPage(database: db)),
+          ),
+        );
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.byType(DataTable),
+          250,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(find.byType(DataTable), findsOneWidget);
+        expect(
+          find.byWidgetPredicate(
+            (w) =>
+                w is SelectableText && (w.data?.contains('| --- |') ?? false),
+          ),
+          findsNothing,
+        );
+        expect(
+          tester.widget<DataTable>(find.byType(DataTable)).rows,
+          hasLength(2),
+        );
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
   testWidgets(
     'changing month and selecting a date copies that date, not today',
     (tester) async {

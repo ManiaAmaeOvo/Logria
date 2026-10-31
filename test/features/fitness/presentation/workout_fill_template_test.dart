@@ -112,7 +112,7 @@ void main() {
             .controller!
             .text;
         if (template) {
-          expect(value(0), '40.0');
+          expect(value(0), '40');
           expect(value(3), 'band');
           expect(value(6), 'bodyweight');
           expect(value(2), '2');

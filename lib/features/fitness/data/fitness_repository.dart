@@ -27,6 +27,7 @@ class FitnessDashboardData {
     this.canRedo = false,
     this.canChooseStart = false,
     this.unrecordedDayIds = const {},
+    this.todayProgress,
   });
 
   final TrainingPlan plan;
@@ -39,6 +40,20 @@ class FitnessDashboardData {
   final bool hasDraft;
   final bool canRedo, canChooseStart;
   final Set<String> unrecordedDayIds;
+  final FitnessProgressDisplay? todayProgress;
+}
+
+/// Today's action can belong to the just-closed round, not the new active one.
+class FitnessProgressDisplay {
+  const FitnessProgressDisplay(
+    this.cycle,
+    this.consumed,
+    this.unrecorded,
+    this.highlightedDayId,
+  );
+  final CycleInstance cycle;
+  final Set<String> consumed, unrecorded;
+  final String? highlightedDayId;
 }
 
 class FitnessDayActionLockedException implements Exception {}
@@ -473,6 +488,31 @@ class FitnessRepository {
       consumedDayIds: consumedIds,
     );
     final todayWorkout = await _loadTodayWorkout();
+    FitnessProgressDisplay? todayProgress;
+    for (final action in (await actionsOnDate(recordingDate)).reversed) {
+      final actionCycle = await (database.select(
+        database.cycleInstances,
+      )..where((c) => c.id.equals(action.cycleInstanceId))).getSingleOrNull();
+      if (actionCycle == null || actionCycle.planId != plan.id) continue;
+      final actionExecutions = actionCycle.id == cycle.id
+          ? executions
+          : await (database.select(
+              database.cycleDayExecutions,
+            )..where((e) => e.cycleInstanceId.equals(actionCycle.id))).get();
+      final startIds = (jsonDecode(
+        await readSetting('fitness.cycle.start.${actionCycle.id}') ?? '[]',
+      ) as List).cast<String>().where(knownIds.contains).toSet();
+      todayProgress = FitnessProgressDisplay(
+        actionCycle,
+        {
+          ...actionExecutions.map((e) => e.planDayId).whereType<String>(),
+          ...startIds,
+        },
+        startIds,
+        action.planDayId,
+      );
+      break;
+    }
 
     return FitnessDashboardData(
       plan: plan,
@@ -482,6 +522,7 @@ class FitnessRepository {
       progress: progress,
       hasActionToday: await _hasFitnessActionOnDate(recordingDate),
       todayWorkout: todayWorkout,
+      todayProgress: todayProgress,
       unrecordedDayIds: unrecordedIds,
       canRedo: await _availableRedo() != null,
       canChooseStart:
@@ -785,6 +826,138 @@ class FitnessRepository {
     await (database.delete(
       database.planDayExercises,
     )..where((row) => row.id.equals(id))).go();
+  }
+
+  Future<bool> hasDayTemplate(String dayId) async =>
+      await (database.select(database.planDayExercises)
+            ..where((e) => e.planDayId.equals(dayId))
+            ..limit(1))
+          .getSingleOrNull() !=
+      null;
+
+  /// Never overwrites a template created while a workout editor was open.
+  Future<void> saveDayTemplateIfEmpty(
+    String dayId,
+    List<WorkoutDraftExercise> drafts,
+  ) => database.transaction(() async {
+    final day = await (database.select(
+      database.planDays,
+    )..where((d) => d.id.equals(dayId))).getSingle();
+    if (day.dayType != CycleDayType.training.name ||
+        await hasDayTemplate(dayId)) {
+      throw StateError(
+        'The training-day template changed. Reopen the workout.',
+      );
+    }
+    if (drafts.isEmpty ||
+        drafts.any((d) => d.name.trim().isEmpty || d.sets.isEmpty)) {
+      throw ArgumentError('A template requires exercises with sets.');
+    }
+    for (var position = 0; position < drafts.length; position++) {
+      final draft = drafts[position];
+      final id = draft.variantNote == null
+          ? await createExercisePreset(draft.name)
+          : await createExerciseVariant(
+              draft.baseName ?? draft.name,
+              draft.variantNote!,
+            );
+      final reps = draft.sets.map((s) => s.reps).whereType<int>().toList()
+        ..sort();
+      await database
+          .into(database.planDayExercises)
+          .insert(
+            PlanDayExercisesCompanion.insert(
+              id: _uuid.v4(),
+              planDayId: dayId,
+              exerciseId: id,
+              position: position,
+              targetSets: Value(draft.sets.length),
+              targetRepsMin: Value(reps.firstOrNull),
+              targetRepsMax: Value(reps.lastOrNull),
+              targetWeight: Value(
+                draft.sets.first.weightText == null
+                    ? draft.sets.first.weight
+                    : null,
+              ),
+            ),
+          );
+    }
+  });
+
+  Future<void> reorderPlanExercises(String dayId, List<String> ids) =>
+      database.transaction(() async {
+        final rows = await (database.select(
+          database.planDayExercises,
+        )..where((e) => e.planDayId.equals(dayId))).get();
+        if (ids.length != rows.length ||
+            ids.toSet().length != ids.length ||
+            !ids.toSet().containsAll(rows.map((e) => e.id))) {
+          throw StateError('The day template changed. Reopen the plan.');
+        }
+        // Temporary positions avoid the unique (day, position) constraint.
+        var temporary =
+            rows.fold<int>(
+              0,
+              (max, row) => row.position > max ? row.position : max,
+            ) +
+            1;
+        for (final id in ids) {
+          await (database.update(database.planDayExercises)
+                ..where((e) => e.id.equals(id)))
+              .write(PlanDayExercisesCompanion(position: Value(temporary++)));
+        }
+        for (var i = 0; i < ids.length; i++) {
+          await (database.update(database.planDayExercises)
+                ..where((e) => e.id.equals(ids[i])))
+              .write(PlanDayExercisesCompanion(position: Value(i)));
+        }
+      });
+
+  /// Uses journal dates, not edit timestamps, and keeps variants independent.
+  Future<WorkoutHistoryExercise?> latestExerciseRecord(
+    String name,
+    DateTime beforeDate,
+  ) async {
+    final normalized = _normalizeExerciseName(name);
+    final query =
+        database.select(database.workoutExercises).join([
+            innerJoin(
+              database.workoutSessions,
+              database.workoutSessions.id.equalsExp(
+                database.workoutExercises.workoutSessionId,
+              ),
+            ),
+          ])
+          ..where(
+            database.workoutSessions.status.equals('completed') &
+                database.workoutSessions.localDate.isSmallerThanValue(
+                  RecordDay.key(beforeDate),
+                ),
+          )
+          ..orderBy([
+            OrderingTerm.desc(database.workoutSessions.localDate),
+            OrderingTerm.desc(database.workoutSessions.startedAt),
+            OrderingTerm.asc(database.workoutExercises.position),
+          ]);
+    for (final row in await query.get()) {
+      final exercise = row.readTable(database.workoutExercises);
+      if (_normalizeExerciseName(exercise.exerciseNameSnapshot) != normalized) {
+        continue;
+      }
+      final sets =
+          await (database.select(database.workoutSets)
+                ..where(
+                  (s) =>
+                      s.workoutExerciseId.equals(exercise.id) &
+                      s.isCompleted.equals(true),
+                )
+                ..orderBy([(s) => OrderingTerm.asc(s.setNumber)]))
+              .get();
+      if (sets.isNotEmpty) {
+        return WorkoutHistoryExercise(exercise: exercise, sets: sets);
+      }
+    }
+    return null;
   }
 
   Future<List<WorkoutHistoryItem>> listWorkoutHistory({int limit = 100}) async {

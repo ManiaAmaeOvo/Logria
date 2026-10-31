@@ -873,6 +873,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get current => 'Current training day';
 
   @override
+  String get reorderExercises => 'Drag to reorder exercises';
+
+  @override
+  String get useLastExercise => 'Use last exercise record';
+
+  @override
+  String get noLastExercise =>
+      'No earlier record for this exact exercise/variant.';
+
+  @override
+  String get replaceLastExerciseHint =>
+      'Replace only this exercise\'s sets, weights and reps with its latest earlier record? RIR and feeling notes will be left blank. Other exercises stay unchanged.';
+
+  @override
+  String get saveDayTemplate => 'Save as this day\'s template';
+
+  @override
+  String get saveDayTemplateHint =>
+      'This training day has no exercise template. Save today\'s exercise order, set counts, rep ranges and numeric reference weight for future rounds? RIR, set feelings and text weights remain in history, not in the plan. Existing templates will never be overwritten.';
+
+  @override
+  String get workoutOnly => 'Save log only';
+
+  @override
   String get nextPlannedDay => 'Next planned day';
 
   @override

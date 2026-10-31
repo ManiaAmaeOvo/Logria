@@ -12,6 +12,7 @@ import '../../fitness/data/fitness_repository.dart';
 import '../../fitness/presentation/historical_fitness_page.dart';
 import '../../today/data/today_repository.dart';
 import '../../today/presentation/today_log_formatter.dart';
+import '../../today/presentation/nutrition_log_table.dart';
 import '../data/calendar_repository.dart';
 
 class CalendarPage extends StatefulWidget {
@@ -547,7 +548,10 @@ class _CalendarPageState extends State<CalendarPage>
                                   ),
                                 ],
                               ),
-                              SelectableText(text),
+                              if (index == 2)
+                                NutritionLogTable(formatter: f)
+                              else
+                                SelectableText(text),
                             ],
                           ),
                         ),

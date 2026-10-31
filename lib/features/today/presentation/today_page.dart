@@ -9,6 +9,7 @@ import '../../../core/record_day.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/today_repository.dart';
 import 'today_log_formatter.dart';
+import 'nutrition_log_table.dart';
 
 class TodayPage extends StatefulWidget {
   const TodayPage({
@@ -204,72 +205,9 @@ class _TodayPageState extends State<TodayPage> with WidgetsBindingObserver {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        if (module == 2) ...[
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: DataTable(
-                              columnSpacing: 10,
-                              horizontalMargin: 8,
-                              headingRowHeight: 40,
-                              dataRowMinHeight: 48,
-                              dataRowMaxHeight: 64,
-                              dataTextStyle: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall,
-                              columns: [
-                                for (final heading in formatter.foodColumns)
-                                  DataColumn(
-                                    label: Text(
-                                      [
-                                            'P (g)',
-                                            'C (g)',
-                                            'F (g)',
-                                          ].contains(heading)
-                                          ? heading[0]
-                                          : heading,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall,
-                                    ),
-                                  ),
-                              ],
-                              rows: [
-                                for (final row in formatter.foodRows)
-                                  DataRow(
-                                    cells: [
-                                      for (var i = 0; i < row.length; i++)
-                                        DataCell(
-                                          i == 0
-                                              ? Tooltip(
-                                                  message: row[i],
-                                                  child: SizedBox(
-                                                    width: 120,
-                                                    child: Text(
-                                                      row[i],
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                )
-                                              : Text(row[i]),
-                                        ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          ),
-                          const Text('P/C/F: g · kcal'),
-                          if (formatter.hasMealIngredients)
-                            Text(
-                              l.mealIngredientTableHint,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          Text(
-                            l.missingNutritionHint,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ] else
+                        if (module == 2)
+                          NutritionLogTable(formatter: formatter)
+                        else
                           SelectableText(text),
                       ],
                     ),

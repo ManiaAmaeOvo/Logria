@@ -94,6 +94,24 @@ void main() {
           expect(find.text(l.takeRest), findsNothing);
           expect(find.text(l.skipTrainingDay), findsNothing);
           expect(find.text(l.nextPlannedDayHint), findsOneWidget);
+          await tester.scrollUntilVisible(
+            find.text(l.cycleProgress),
+            200,
+            scrollable: find.byType(Scrollable).last,
+          );
+          await tester.drag(
+            find.byType(Scrollable).last,
+            const Offset(0, -350),
+          );
+          await settle(tester);
+          final chips = tester.widgetList<Chip>(find.byType(Chip)).toList();
+          final highlighted = chips.where((c) => c.side?.width == 2).single;
+          expect(
+            (highlighted.label as Text).data,
+            action == 'rest'
+                ? dashboard.planDays.last.name
+                : dashboard.planDays.first.name,
+          );
           expect(tester.takeException(), isNull);
         },
       );

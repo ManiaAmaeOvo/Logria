@@ -147,36 +147,12 @@ class _PlanEditorPageState extends State<PlanEditorPage> {
                     AppLocalizations.of(context)!.noExercisesAssigned,
                   ),
                 ),
-              for (final item in exercises)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(item.exercise.name),
-                  subtitle: Text(_targetLabel(item.planExercise)),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (action) {
-                      if (action == 'edit') _editTargets(item.planExercise);
-                      if (action == 'variant') _editVariant(item);
-                      if (action == 'remove') {
-                        _removeExercise(item.planExercise);
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'variant',
-                        child: Text(
-                          AppLocalizations.of(context)!.exerciseVariantNote,
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Text(AppLocalizations.of(context)!.editTargets),
-                      ),
-                      PopupMenuItem(
-                        value: 'remove',
-                        child: Text(AppLocalizations.of(context)!.remove),
-                      ),
-                    ],
-                  ),
+              for (final item in exercises) _planExerciseTile(item),
+              if (exercises.length > 1)
+                OutlinedButton.icon(
+                  onPressed: () => _sortDayExercises(day.id, exercises),
+                  icon: const Icon(Icons.drag_handle),
+                  label: Text(AppLocalizations.of(context)!.reorderExercises),
                 ),
               OutlinedButton.icon(
                 onPressed: () => _addExercise(day.id),
@@ -193,6 +169,123 @@ class _PlanEditorPageState extends State<PlanEditorPage> {
       ),
     );
   }
+
+  Future<void> _sortDayExercises(
+    String dayId,
+    List<PlanExerciseData> exercises,
+  ) async {
+    final l = AppLocalizations.of(context)!;
+    final ordered = List<PlanExerciseData>.of(exercises);
+    final ids = await showModalBottomSheet<List<String>>(
+      context: context,
+      enableDrag: false,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (c) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.sizeOf(c).height * .75,
+          child: StatefulBuilder(
+            builder: (c, refresh) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(l.reorderExercises)),
+                      TextButton(
+                        onPressed: () => Navigator.pop(
+                          c,
+                          ordered.map((e) => e.planExercise.id).toList(),
+                        ),
+                        child: Text(l.save),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ReorderableListView(
+                    buildDefaultDragHandles: false,
+                    onReorderItem: (from, to) {
+                      refresh(() => ordered.insert(to, ordered.removeAt(from)));
+                    },
+                    children: [
+                      for (var i = 0; i < ordered.length; i++)
+                        Card(
+                          key: ValueKey(ordered[i].planExercise.id),
+                          child: Row(
+                            children: [
+                              ReorderableDragStartListener(
+                                index: i,
+                                child: const ColoredBox(
+                                  color: Colors.transparent,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Icon(Icons.drag_handle),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Text(ordered[i].exercise.name),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (ids == null || !mounted) return;
+    try {
+      await widget.repository.reorderPlanExercises(dayId, ids);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.saveFailed(error)),
+          ),
+        );
+      }
+    }
+    if (mounted) _reload();
+  }
+
+  Widget _planExerciseTile(PlanExerciseData item) => ListTile(
+    key: ValueKey(item.planExercise.id),
+    contentPadding: EdgeInsets.zero,
+    title: Text(item.exercise.name),
+    subtitle: Text(_targetLabel(item.planExercise)),
+    trailing: PopupMenuButton<String>(
+      onSelected: (action) {
+        if (action == 'edit') _editTargets(item.planExercise);
+        if (action == 'variant') _editVariant(item);
+        if (action == 'remove') {
+          _removeExercise(item.planExercise);
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'variant',
+          child: Text(AppLocalizations.of(context)!.exerciseVariantNote),
+        ),
+        PopupMenuItem(
+          value: 'edit',
+          child: Text(AppLocalizations.of(context)!.editTargets),
+        ),
+        PopupMenuItem(
+          value: 'remove',
+          child: Text(AppLocalizations.of(context)!.remove),
+        ),
+      ],
+    ),
+  );
 
   String _targetLabel(PlanDayExercise exercise) {
     final sets = exercise.targetSets?.toString() ?? '—';
