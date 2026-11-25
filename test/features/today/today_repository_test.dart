@@ -23,6 +23,52 @@ void main() {
   tearDown(() => db.close());
 
   test(
+    'fitness summary sorts cardio around strength start even when added later',
+    () async {
+      final date = DateTime(2026, 11, 25);
+      final start = DateTime(2026, 11, 25, 18);
+      final end = start.add(const Duration(minutes: 45));
+      final fitness = FitnessRepository(db, clock: () => end);
+      await fitness.activateTemplate(builtInTrainingPlanTemplates.first);
+      await fitness.completeWorkout((await fitness.loadDashboard())!, const [
+        WorkoutDraftExercise(
+          name: 'Bench press',
+          saveAsPreset: true,
+          sets: [WorkoutDraftSet(weight: 50, reps: 8, rir: null)],
+        ),
+      ], startedAt: start);
+      await fitness.saveCardio(
+        date: date,
+        activity: 'Cool-down',
+        minutes: 5,
+        occurredAt: end,
+      );
+      await fitness.saveCardio(
+        date: date,
+        activity: 'Warm-up',
+        minutes: 10,
+        occurredAt: start.subtract(const Duration(minutes: 15)),
+      );
+      final warmup = (await fitness.cardioHistory()).firstWhere(
+        (c) => c.activity == 'Warm-up',
+      );
+      await fitness.saveCardio(
+        id: warmup.id,
+        date: date,
+        activity: 'Warm-up',
+        minutes: 12,
+      );
+      final log = TodayLogFormatter(
+        await TodayRepository(db).loadDay(date),
+        lookupAppLocalizations(const Locale('en')),
+      ).fitness;
+      expect(log.indexOf('Warm-up'), lessThan(log.indexOf('Bench press')));
+      expect(log.indexOf('Bench press'), lessThan(log.indexOf('Cool-down')));
+      expect(log, contains('Training time 45:00'));
+    },
+  );
+
+  test(
     'daily reviews are independent, date-bound, copied and clearable',
     () async {
       final repo = TodayRepository(db);

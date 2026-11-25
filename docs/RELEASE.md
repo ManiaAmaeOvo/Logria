@@ -1,5 +1,16 @@
 # Release process
 
+## 1.4.3 build 18
+
+Public build of the local build 17 features. The Android versionCode is 18.
+Release notes: `docs/releases/1.4.3.md`. Assets: `logria-v1.4.3-android.apk`
+and `SHA256SUMS`.
+
+All 153 tests, static analysis, formatting and APK build passed. The APK
+installed over build 17 and launched on the Android emulator using the existing
+signing certificate. APK SHA-256:
+`added6a23696dc2779b1517f009bcf340fe13ff8883c3c98e543867692e4a56d`.
+
 ## 1.4.2 build 16
 
 Public release of the verified local build 15 features, with increased versionCode
@@ -122,7 +133,7 @@ The universal APK is `build/app/outputs/flutter-apk/app-release.apk`. It include
 the supported Android ABIs. A debug APK remains available through
 `flutter build apk --debug` for local development.
 
-For versions 1.0.0 through 1.4.2, release mode uses the existing local development
+For versions 1.0.0 through 1.4.3, release mode uses the existing local development
 signing certificate. This preserves update compatibility with earlier test APKs
 from this machine. It is not a production Google Play signing setup. CI-produced
 APKs use that runner's development certificate and are not interchangeable
@@ -134,12 +145,12 @@ keystore or signing credentials to Git.
 
 ## Publish
 
-After checks pass, commit the release, tag `v1.4.2`, push the branch and tag, then
+After checks pass, commit the release, tag `v1.4.3`, push the branch and tag, then
 create a GitHub release with the APK, its SHA-256 checksum and release notes.
 Release attachments should contain binaries/checksums only, never user databases.
 
-The 1.4.2 assets are `logria-v1.4.2-android.apk` and `SHA256SUMS`. Publish
-`docs/releases/1.4.2.md` as the bilingual release notes, and set it as the
+The 1.4.3 assets are `logria-v1.4.3-android.apk` and `SHA256SUMS`. Publish
+`docs/releases/1.4.3.md` as the bilingual release notes, and set it as the
 latest stable release. Confirm the uploaded APK digest matches the local checksum.
 
 ## Upgrade from 1.0.0

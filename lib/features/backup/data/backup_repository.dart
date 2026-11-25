@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../fitness/domain/workout_editor_draft.dart';
 import '../../nutrition/domain/meal_ingredient.dart';
 import '../../nutrition/domain/nutrient_values.dart';
 
@@ -170,10 +171,7 @@ class BackupRepository {
       // Validate nested snapshots/settings before committing a replacement.
       for (final row in await database.select(database.appSettings).get()) {
         if (row.keyName.startsWith('fitness.draft.')) {
-          final draft = jsonDecode(row.value);
-          if (draft is! List) {
-            throw const FormatException('Invalid workout draft');
-          }
+          final draft = WorkoutEditorDraft.decode(row.value).exercises;
           for (final exercise in draft) {
             if (exercise is! Map ||
                 exercise['name'] is! String ||

@@ -2,6 +2,16 @@
 
 [简体中文](CHANGELOG.zh-CN.md)
 
+## 1.4.3 — 2026-11-25 (Android build 18)
+
+- Holding an exercise drag handle collapses the set controls to a name-only list.
+- Save Draft keeps the editor open and preserves the current inputs and order.
+- New workouts time the interval from the first set edit to Finish. The clock
+  continues through draft saves and resumes. Completed duration appears in the
+  workout details and daily logs.
+- Fitness logs list cardio and strength in activity-time order. A cardio entry's
+  time can be set when adding or editing it.
+
 ## 1.4.2 — 2026-10-31 (Android build 16)
 
 - Round progress outlines today's recorded slot instead of tomorrow's pending slot.

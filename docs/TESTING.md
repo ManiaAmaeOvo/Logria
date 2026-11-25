@@ -1,7 +1,8 @@
-# 1.4.2 testing guide
+# 1.4.3 testing guide
 
-Use public 1.4.2 build 16 for shared testing. It includes the verified local build
-15; the complete 152-test suite and release checks are rerun for the public APK.
+Use public 1.4.3 build 18 for shared testing. The 153-test suite covers collapsed
+drag rows, explicit draft saving, timing across resume and undo/redo, timed draft
+backups, and ordering cardio before or after strength by activity time.
 
 Local 1.4.2 build 15 (2026-10-31): 152 tests pass with clean analysis/formatting.
 Added coverage: today's outlined chip for training/rest/skip; just-closed-round

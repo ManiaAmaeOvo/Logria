@@ -15,6 +15,7 @@ import '../../../l10n/app_localizations.dart';
 import 'plan_editor_page.dart';
 import 'workout_editor_page.dart';
 import 'workout_history_page.dart';
+import 'workout_duration.dart';
 import 'fitness_extras_page.dart';
 
 String _templateName(TrainingPlanTemplate template, AppLocalizations l10n) =>
@@ -1032,10 +1033,12 @@ class _TodayWorkoutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final session = workout.session;
+    final duration = workoutDurationLabel(l10n, workout.duration);
     final details = <String>[
       if (session.planNameSnapshot?.isNotEmpty == true)
         session.planNameSnapshot!,
       if (workout.cycleNumber != null) l10n.cycleNumber(workout.cycleNumber!),
+      ?duration,
     ];
 
     return Card(

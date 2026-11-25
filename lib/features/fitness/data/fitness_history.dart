@@ -217,8 +217,8 @@ extension HistoricalFitnessRepository on FitnessRepository {
     final existing = context.workouts.firstOrNull;
     final oldAction = context.executions.firstOrNull;
     final occurred =
-        existing?.session.startedAt ??
         oldAction?.occurredAt ??
+        existing?.session.startedAt ??
         (RecordDay.dateOnly(date) == recordingDate
             ? _now()
             : DateTime(date.year, date.month, date.day, 12));
@@ -260,8 +260,10 @@ extension HistoricalFitnessRepository on FitnessRepository {
                 sameBinding ? existing!.session.dayNameSnapshot : day!.name,
               ),
               status: 'completed',
-              startedAt: occurred,
-              completedAt: Value(_now()),
+              startedAt: existing?.session.startedAt ?? occurred,
+              completedAt: Value(
+                existing == null ? occurred : existing.session.completedAt,
+              ),
               notes: Value(existing?.session.notes),
             ),
           );

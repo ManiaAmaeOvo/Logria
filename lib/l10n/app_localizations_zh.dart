@@ -834,6 +834,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reorderExercises => '拖动调整动作顺序';
 
   @override
+  String get saveWorkoutDraft => '临时保存';
+
+  @override
+  String get workoutDraftSaved => '训练草稿已保存';
+
+  @override
+  String workoutDuration(Object elapsed) {
+    return '训练用时 $elapsed';
+  }
+
+  @override
+  String cardioTime(Object time) {
+    return '有氧时间 $time';
+  }
+
+  @override
   String get useLastExercise => '按照上次内容';
 
   @override

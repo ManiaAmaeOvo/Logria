@@ -293,14 +293,16 @@ void main() {
       await open(t, repo, 'en');
       final handles = find.byType(ReorderableDragStartListener);
       final start = t.getCenter(handles.first);
-      final end = t.getCenter(handles.last);
       final gesture = await t.startGesture(start);
       await t.pump();
+      expect(find.byType(TextField), findsNothing);
+      final end = t.getCenter(find.text('Row'));
+      expect(end.dy - t.getCenter(find.text('Bench')).dy, lessThan(80));
       await gesture.moveBy(const Offset(0, 24));
       await t.pump(const Duration(milliseconds: 100));
-      await gesture.moveTo((start + end) / 2);
+      await gesture.moveTo(Offset(start.dx, end.dy));
       await t.pump(const Duration(milliseconds: 300));
-      await gesture.moveTo(end + const Offset(0, 80));
+      await gesture.moveTo(Offset(start.dx, end.dy + 100));
       await t.pump(const Duration(seconds: 1));
       await gesture.up();
       await t.pump(const Duration(milliseconds: 500));
@@ -308,6 +310,7 @@ void main() {
       await t.pump(const Duration(milliseconds: 500));
       await settle(t);
       final saved = jsonDecode((await repo.readSetting(key))!) as List;
+      expect(find.byType(TextField), findsNWidgets(6));
       expect(saved.map((e) => e['name']), ['Row', 'Bench']);
       expect(saved.first['sets'][0]['weight'], '40');
       await t.binding.handlePopRoute();

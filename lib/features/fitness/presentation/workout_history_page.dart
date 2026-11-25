@@ -8,6 +8,7 @@ import '../../../core/number_format.dart';
 
 import '../data/fitness_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import 'workout_duration.dart';
 
 class WorkoutHistoryPage extends StatefulWidget {
   const WorkoutHistoryPage({super.key, required this.repository});
@@ -92,6 +93,7 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final session = item.session;
+    final duration = workoutDurationLabel(l10n, item.duration);
     return Scaffold(
       appBar: AppBar(title: Text(session.dayNameSnapshot ?? l10n.workout)),
       body: ListView(
@@ -106,6 +108,7 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
             '${session.planNameSnapshot ?? l10n.freeWorkout}'
             '${item.cycleNumber == null ? '' : ' · ${l10n.cycleNumber(item.cycleNumber!)}'}',
           ),
+          if (duration != null) Text(duration),
           const SizedBox(height: 20),
           for (final exercise in item.exercises) ...[
             Card(

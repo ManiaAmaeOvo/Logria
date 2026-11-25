@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
@@ -11,6 +10,8 @@ import '../../../core/record_day.dart';
 import '../../../core/numeric_expression.dart';
 import '../../../core/workout_set_values.dart';
 import '../../../core/number_format.dart';
+import '../domain/workout_editor_draft.dart';
+import 'workout_duration.dart';
 
 class WorkoutEditorPage extends StatefulWidget {
   const WorkoutEditorPage({
@@ -49,6 +50,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   bool _finished = false;
   bool _committing = false;
   Timer? _debounce;
+  Timer? _clockTick;
+  DateTime? _startedAt;
+  bool get _tracksDuration =>
+      widget.existingWorkout == null && widget.onSave == null;
+  bool _compactDrag = false;
+  int? _dragPointer;
+  Timer? _restoreCards;
   Future<void> _writes = Future.value();
   late final DateTime _recordDate = RecordDay.dateOnly(
     widget.recordDate ?? widget.repository.recordingDate,
@@ -77,7 +85,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       final raw = await widget.repository.readSetting(_draftKey);
       if (!mounted) return;
       if (raw != null) {
-        final restored = (jsonDecode(raw) as List)
+        final draft = WorkoutEditorDraft.decode(raw);
+        final restored = draft.exercises
             .map((e) => _ExerciseInput.fromJson(Map<String, dynamic>.from(e)))
             .toList();
         for (final e in _exercises) {
@@ -86,6 +95,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         _exercises
           ..clear()
           ..addAll(restored);
+        if (_tracksDuration && draft.startedAt != null) {
+          _startedAt = draft.startedAt;
+          _startClockTick();
+        }
       }
       for (final e in _exercises) {
         _listen(e);
@@ -108,6 +121,37 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         ),
       );
     }
+  }
+
+  void _startClockTick() {
+    _clockTick ??= Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!_compactDrag && !_saving) setState(() {});
+    });
+  }
+
+  void _editedSet() {
+    if (_tracksDuration && _startedAt == null) {
+      setState(() => _startedAt = widget.repository.currentTime);
+      _startClockTick();
+    }
+    _changed();
+  }
+
+  void _holdHandle(PointerDownEvent event) {
+    if (_dragPointer != null) return;
+    _restoreCards?.cancel();
+    _dragPointer = event.pointer;
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() => _compactDrag = true);
+  }
+
+  void _releaseHandle(PointerEvent event) {
+    if (_dragPointer != event.pointer) return;
+    _dragPointer = null;
+    // Restore full cards after Flutter's drop animation has settled.
+    _restoreCards = Timer(const Duration(milliseconds: 350), () {
+      setState(() => _compactDrag = false);
+    });
   }
 
   void _listen(_ExerciseInput input) {
@@ -280,7 +324,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   Future<void> _persistDraft() {
     _debounce?.cancel();
     if (_finished || _loading || _committing) return _writes;
-    final raw = jsonEncode(_exercises.map((e) => e.toJson()).toList());
+    final raw = WorkoutEditorDraft(
+      _exercises.map((e) => e.toJson()).toList(),
+      startedAt: _startedAt,
+    ).encode();
     _writes = _writes
         .catchError((Object _) {})
         .then((_) => widget.repository.writeSetting(_draftKey, raw));
@@ -366,6 +413,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   @override
   void dispose() {
     _debounce?.cancel();
+    _clockTick?.cancel();
+    _restoreCards?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     for (final exercise in _exercises) {
       exercise.dispose();
@@ -391,6 +440,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         appBar: AppBar(
           actions: [
             IconButton(
+              tooltip: l10n.saveWorkoutDraft,
+              onPressed: _saving || _loading ? null : _saveDraft,
+              icon: const Icon(Icons.save_outlined),
+            ),
+            IconButton(
               tooltip: l10n.discardWorkoutDraft,
               onPressed: _saving || _loading ? null : _discardDraft,
               icon: const Icon(Icons.delete_sweep_outlined),
@@ -409,109 +463,132 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             ? const Center(child: CircularProgressIndicator())
             : AbsorbPointer(
                 absorbing: _saving,
-                child: ReorderableListView(
-                  buildDefaultDragHandles: false,
-                  onReorderItem: _reorder,
-                  padding: const EdgeInsets.all(16),
-                  header: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        '${widget.dashboard.plan.name} · ${l10n.cycleNumber(widget.dashboard.cycle.cycleNumber)}',
-                        style: Theme.of(context).textTheme.titleMedium,
+                child: Listener(
+                  onPointerUp: _releaseHandle,
+                  onPointerCancel: _releaseHandle,
+                  child: ReorderableListView(
+                    buildDefaultDragHandles: false,
+                    onReorderItem: _reorder,
+                    proxyDecorator: (child, index, animation) => Align(
+                      alignment: Alignment.topCenter,
+                      child: _ExerciseCard.compactCard(
+                        context,
+                        _exercises[index].name,
                       ),
-                      const SizedBox(height: 16),
-                      Text(l10n.workoutDraftHint),
-                      Text(
-                        l10n.arithmeticHint,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      if (widget.existingWorkout == null) ...[
-                        const SizedBox(height: 8),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    header: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                         Text(
-                          l10n.firstSetFillHint,
-                          style: Theme.of(context).textTheme.bodySmall,
+                          '${widget.dashboard.plan.name} · ${l10n.cycleNumber(widget.dashboard.cycle.cycleNumber)}',
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
-                      ],
-                      if (widget.existingWorkout == null &&
-                          widget.previousWorkout != null)
-                        OutlinedButton.icon(
-                          onPressed: () => _usePrevious(),
-                          icon: const Icon(Icons.copy_outlined),
-                          label: Text(l10n.usePreviousTemplate),
-                        ),
-                      const SizedBox(height: 12),
-                      if (_exercises.isEmpty)
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              children: [
-                                const Icon(Icons.fitness_center, size: 38),
-                                const SizedBox(height: 12),
-                                Text(l10n.addFirstExercise),
-                                const SizedBox(height: 12),
-                                FilledButton.icon(
-                                  onPressed: _addExercise,
-                                  icon: const Icon(Icons.add),
-                                  label: Text(l10n.addExercise),
-                                ),
-                              ],
+                        const SizedBox(height: 16),
+                        if (_startedAt case final start?)
+                          Text(
+                            l10n.workoutDuration(
+                              elapsedClock(
+                                widget.repository.currentTime.difference(start),
+                              ),
                             ),
                           ),
+                        Text(l10n.workoutDraftHint),
+                        Text(
+                          l10n.arithmeticHint,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        if (widget.existingWorkout == null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.firstSetFillHint,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                        if (widget.existingWorkout == null &&
+                            widget.previousWorkout != null)
+                          OutlinedButton.icon(
+                            onPressed: () => _usePrevious(),
+                            icon: const Icon(Icons.copy_outlined),
+                            label: Text(l10n.usePreviousTemplate),
+                          ),
+                        const SizedBox(height: 12),
+                        if (_exercises.isEmpty)
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                children: [
+                                  const Icon(Icons.fitness_center, size: 38),
+                                  const SizedBox(height: 12),
+                                  Text(l10n.addFirstExercise),
+                                  const SizedBox(height: 12),
+                                  FilledButton.icon(
+                                    onPressed: _addExercise,
+                                    icon: const Icon(Icons.add),
+                                    label: Text(l10n.addExercise),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    footer: _footer(l10n),
+                    children: [
+                      for (var index = 0; index < _exercises.length; index++)
+                        _ExerciseCard(
+                          key: ObjectKey(_exercises[index]),
+                          index: index,
+                          input: _exercises[index],
+                          compact: _compactDrag,
+                          onHoldHandle: _holdHandle,
+                          onSetEdited: _editedSet,
+                          onUseLast:
+                              _lastRecords[_exercises[index].name] == null
+                              ? null
+                              : () => _useLastRecord(_exercises[index]),
+                          onVariant: () => _editVariant(_exercises[index]),
+                          onAddSet: () {
+                            final set = _SetInput();
+                            for (final c in [
+                              set.weight,
+                              set.reps,
+                              set.rir,
+                              set.notes,
+                            ]) {
+                              c.addListener(_changed);
+                            }
+                            setState(() => _exercises[index].sets.add(set));
+                            _changed();
+                          },
+                          onRemoveSet: (setIndex) {
+                            setState(() {
+                              if (setIndex == 0) {
+                                _exercises[index].weightFilled = true;
+                                _exercises[index].repsFilled = true;
+                              }
+                              final removed = _exercises[index].sets.removeAt(
+                                setIndex,
+                              );
+                              removed.dispose();
+                            });
+                            _changed();
+                          },
+                          onRemoveExercise: () {
+                            setState(() {
+                              final removed = _exercises.removeAt(index);
+                              removed.dispose();
+                            });
+                            _changed();
+                          },
+                          onWeightModeChanged: () {
+                            setState(() {});
+                            _changed();
+                          },
                         ),
                     ],
                   ),
-                  footer: _footer(l10n),
-                  children: [
-                    for (var index = 0; index < _exercises.length; index++)
-                      _ExerciseCard(
-                        key: ObjectKey(_exercises[index]),
-                        index: index,
-                        input: _exercises[index],
-                        onUseLast: _lastRecords[_exercises[index].name] == null
-                            ? null
-                            : () => _useLastRecord(_exercises[index]),
-                        onVariant: () => _editVariant(_exercises[index]),
-                        onAddSet: () {
-                          final set = _SetInput();
-                          for (final c in [
-                            set.weight,
-                            set.reps,
-                            set.rir,
-                            set.notes,
-                          ]) {
-                            c.addListener(_changed);
-                          }
-                          setState(() => _exercises[index].sets.add(set));
-                          _changed();
-                        },
-                        onRemoveSet: (setIndex) {
-                          setState(() {
-                            if (setIndex == 0) {
-                              _exercises[index].weightFilled = true;
-                              _exercises[index].repsFilled = true;
-                            }
-                            final removed = _exercises[index].sets.removeAt(
-                              setIndex,
-                            );
-                            removed.dispose();
-                          });
-                          _changed();
-                        },
-                        onRemoveExercise: () {
-                          setState(() {
-                            final removed = _exercises.removeAt(index);
-                            removed.dispose();
-                          });
-                          _changed();
-                        },
-                        onWeightModeChanged: () {
-                          setState(() {});
-                          _changed();
-                        },
-                      ),
-                  ],
                 ),
               ),
       ),
@@ -526,6 +603,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           onPressed: _addExercise,
           icon: const Icon(Icons.add),
           label: Text(l.addExercise),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: _saving ? null : _saveDraft,
+          icon: const Icon(Icons.save_outlined),
+          label: Text(l.saveWorkoutDraft),
         ),
         const SizedBox(height: 12),
         FilledButton.icon(
@@ -546,6 +629,27 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       const SizedBox(height: 24),
     ],
   );
+
+  Future<void> _saveDraft() async {
+    if (_saving || _loading) return;
+    final l = AppLocalizations.of(context)!;
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() => _saving = true);
+    try {
+      await _persistDraft();
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.workoutDraftSaved)));
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.saveFailed(error))));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   Future<void> _addExercise() async {
     final l10n = AppLocalizations.of(context)!;
@@ -710,6 +814,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       }
 
       if (drafts.isEmpty) throw FormatException(l10n.addFirstExercise);
+      final finishedAt = widget.repository.currentTime;
 
       setState(() => _saving = true);
       await _persistDraft();
@@ -758,6 +863,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             widget.dashboard,
             drafts,
             recordDate: _recordDate,
+            startedAt: _startedAt,
+            finishedAt: finishedAt,
           );
         } else {
           await widget.repository.updateWorkoutSession(
@@ -809,6 +916,9 @@ class _ExerciseCard extends StatelessWidget {
     required this.onWeightModeChanged,
     required this.onVariant,
     required this.onUseLast,
+    required this.compact,
+    required this.onHoldHandle,
+    required this.onSetEdited,
   });
 
   final int index;
@@ -819,10 +929,30 @@ class _ExerciseCard extends StatelessWidget {
   final VoidCallback onWeightModeChanged;
   final VoidCallback onVariant;
   final VoidCallback? onUseLast;
+  final bool compact;
+  final ValueChanged<PointerDownEvent> onHoldHandle;
+  final VoidCallback onSetEdited;
+
+  static Widget compactCard(BuildContext context, String name) => Card(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        heightFactor: 1,
+        child: Text(
+          name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    if (compact) return compactCard(context, input.name);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -831,13 +961,19 @@ class _ExerciseCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                ReorderableDragStartListener(
-                  index: index,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Tooltip(
-                      message: l10n.reorderExercises,
-                      child: const Icon(Icons.drag_handle),
+                Listener(
+                  onPointerDown: onHoldHandle,
+                  child: ReorderableDragStartListener(
+                    index: index,
+                    child: ColoredBox(
+                      color: Colors.transparent,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Tooltip(
+                          message: l10n.reorderExercises,
+                          child: const Icon(Icons.drag_handle),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -904,8 +1040,10 @@ class _ExerciseCard extends StatelessWidget {
                             decimal: true,
                             allowText: true,
                             focusNode: input.sets[setIndex].weightFocus,
-                            onChanged: (_) =>
-                                input.edit(setIndex, weight: true),
+                            onChanged: (_) {
+                              input.edit(setIndex, weight: true);
+                              onSetEdited();
+                            },
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -913,8 +1051,10 @@ class _ExerciseCard extends StatelessWidget {
                           child: _NumberField(
                             controller: input.sets[setIndex].reps,
                             focusNode: input.sets[setIndex].repsFocus,
-                            onChanged: (_) =>
-                                input.edit(setIndex, weight: false),
+                            onChanged: (_) {
+                              input.edit(setIndex, weight: false);
+                              onSetEdited();
+                            },
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -922,6 +1062,7 @@ class _ExerciseCard extends StatelessWidget {
                           child: _NumberField(
                             controller: input.sets[setIndex].rir,
                             allowText: true,
+                            onChanged: (_) => onSetEdited(),
                           ),
                         ),
                         SizedBox(
@@ -1036,8 +1177,11 @@ class _ExerciseCard extends StatelessWidget {
                                 ],
                               ),
                             );
-                            if (note != null) {
+                            if (note != null &&
+                                context.mounted &&
+                                note != value.text) {
                               input.sets[setIndex].notes.text = note;
+                              onSetEdited();
                             }
                             // Dialog route may still detach its TextField during the next frame.
                             WidgetsBinding.instance.addPostFrameCallback(

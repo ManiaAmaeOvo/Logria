@@ -100,11 +100,13 @@ class WorkoutHistoryItem {
     required this.session,
     required this.exercises,
     required this.cycleNumber,
+    this.duration,
   });
 
   final WorkoutSession session;
   final List<WorkoutHistoryExercise> exercises;
   final int? cycleNumber;
+  final Duration? duration;
 }
 
 class WorkoutHistoryExercise {
@@ -120,6 +122,7 @@ class FitnessRepository {
 
   final AppDatabase database;
   final DateTime Function() _now;
+  DateTime get currentTime => _now();
   DateTime get recordingDate => RecordDay.today(now: _now());
   final Uuid _uuid = const Uuid();
   static const _redoKey = 'fitness.undo.today';
@@ -408,6 +411,7 @@ class FitnessRepository {
     required double minutes,
     double? distance,
     String? notes,
+    DateTime? occurredAt,
   }) async {
     if (activity.trim().isEmpty ||
         !minutes.isFinite ||
@@ -415,19 +419,38 @@ class FitnessRepository {
         (distance != null && (!distance.isFinite || distance < 0))) {
       throw ArgumentError('Invalid cardio');
     }
-    await database
-        .into(database.cardioLogs)
-        .insertOnConflictUpdate(
-          CardioLogsCompanion.insert(
-            id: id ?? _uuid.v4(),
-            localDate: DateFormat('yyyy-MM-dd').format(date),
-            activity: activity.trim(),
-            minutes: minutes,
-            distanceKm: Value(distance),
-            notes: Value(notes),
-            recordedAt: _now(),
-          ),
-        );
+    await database.transaction(() async {
+      final previous = id == null
+          ? null
+          : await (database.select(
+              database.cardioLogs,
+            )..where((row) => row.id.equals(id))).getSingleOrNull();
+      final localDate = RecordDay.key(date);
+      final time = (occurredAt ?? previous?.recordedAt ?? _now()).toLocal();
+      final timestamp = occurredAt == null && previous?.localDate == localDate
+          ? time
+          : DateTime(
+              date.year,
+              date.month,
+              date.day + (time.hour < 4 ? 1 : 0),
+              time.hour,
+              time.minute,
+              time.second,
+            );
+      await database
+          .into(database.cardioLogs)
+          .insertOnConflictUpdate(
+            CardioLogsCompanion.insert(
+              id: id ?? _uuid.v4(),
+              localDate: localDate,
+              activity: activity.trim(),
+              minutes: minutes,
+              distanceKm: Value(distance),
+              notes: Value(notes),
+              recordedAt: timestamp,
+            ),
+          );
+    });
   }
 
   Future<void> deleteCardio(String id) => (database.delete(
@@ -1045,10 +1068,34 @@ class FitnessRepository {
         WorkoutHistoryExercise(exercise: exercise, sets: await setsQuery.get()),
       );
     }
+    Duration? duration;
+    final end = session.completedAt;
+    if (end != null &&
+        end.isAfter(session.startedAt) &&
+        session.cycleInstanceId != null &&
+        session.planDayId != null) {
+      // Older backfills stored the entry time as completedAt. A matching
+      // completion action distinguishes timed sessions from those backfills.
+      final timedAction =
+          await (database.select(database.cycleDayExecutions)
+                ..where(
+                  (row) =>
+                      row.cycleInstanceId.equals(session.cycleInstanceId!) &
+                      row.planDayId.equals(session.planDayId!) &
+                      row.executionType.equals(
+                        CycleExecutionType.completedTraining.name,
+                      ) &
+                      row.occurredAt.equals(end),
+                )
+                ..limit(1))
+              .getSingleOrNull();
+      if (timedAction != null) duration = end.difference(session.startedAt);
+    }
     return WorkoutHistoryItem(
       session: session,
       exercises: detail,
       cycleNumber: cycleNumber,
+      duration: duration,
     );
   }
 
@@ -1098,6 +1145,8 @@ class FitnessRepository {
     FitnessDashboardData dashboard,
     List<WorkoutDraftExercise> exercises, {
     DateTime? recordDate,
+    DateTime? startedAt,
+    DateTime? finishedAt,
   }) async {
     if (dashboard.progress.nextDay?.type != CycleDayType.training) {
       throw StateError('The current cycle day is not a training day.');
@@ -1107,6 +1156,8 @@ class FitnessRepository {
     }
 
     final now = _now();
+    final end = finishedAt ?? now;
+    final start = startedAt == null || startedAt.isAfter(end) ? end : startedAt;
     final sessionId = _uuid.v4();
     final currentDay = dashboard.progress.nextDay!;
     final date = RecordDay.dateOnly(recordDate ?? recordingDate);
@@ -1134,14 +1185,14 @@ class FitnessRepository {
               planNameSnapshot: Value(dashboard.plan.name),
               dayNameSnapshot: Value(currentDay.name),
               status: 'completed',
-              startedAt: now,
-              completedAt: Value(now),
+              startedAt: start,
+              completedAt: Value(end),
             ),
           );
 
       await _insertWorkoutExercises(sessionId, exercises, now);
 
-      final transition = dashboard.progress.completeCurrent(now);
+      final transition = dashboard.progress.completeCurrent(end);
       await _persistTransition(dashboard, transition, date: date);
     });
   }
@@ -1269,12 +1320,18 @@ class FitnessRepository {
       if (execution == null) return false;
 
       final session =
-          await (database.select(database.workoutSessions)..where(
-                (row) =>
-                    row.cycleInstanceId.equals(execution.cycleInstanceId) &
-                    row.startedAt.equals(execution.occurredAt),
-              ))
-              .getSingleOrNull();
+          execution.executionType != CycleExecutionType.completedTraining.name
+          ? null
+          : await (database.select(database.workoutSessions)..where(
+                  (row) =>
+                      row.cycleInstanceId.equals(execution.cycleInstanceId) &
+                      row.status.equals('completed') &
+                      RecordDay.matches(row.localDate, row.startedAt, date) &
+                      (execution.planDayId == null
+                          ? row.planDayId.isNull()
+                          : row.planDayId.equals(execution.planDayId!)),
+                ))
+                .getSingleOrNull();
 
       final cycle =
           await (database.select(database.cycleInstances)

@@ -304,6 +304,7 @@ class _FitnessExtrasPageState extends State<FitnessExtrasPage> {
         minutes: result.value,
         distance: result.distance,
         notes: result.notes,
+        occurredAt: result.occurredAt,
       ),
     );
   }
@@ -317,12 +318,14 @@ class _EntryResult {
     this.distance,
     this.notes,
     this.reps,
+    this.occurredAt,
   );
   final DateTime date;
   final String name, notes;
   final double value;
   final double? distance;
   final int? reps;
+  final DateTime? occurredAt;
 }
 
 class _EntryDialog extends StatefulWidget {
@@ -350,6 +353,7 @@ class _EntryDialogState extends State<_EntryDialog> {
   late DateTime _date = widget.existing == null
       ? RecordDay.today()
       : DateTime.parse(widget.existing!.localDate);
+  TimeOfDay? _selectedTime;
   @override
   void dispose() {
     for (final c in [_name, _value, _distance, _notes, _reps]) {
@@ -362,6 +366,11 @@ class _EntryDialogState extends State<_EntryDialog> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final cardioTime =
+        _selectedTime ??
+        TimeOfDay.fromDateTime(
+          (widget.existing?.recordedAt ?? DateTime.now()).toLocal(),
+        );
     return AlertDialog(
       title: Text(widget.cardio ? l.cardioTitle : l.addPr),
       content: SizedBox(
@@ -388,6 +397,19 @@ class _EntryDialogState extends State<_EntryDialog> {
                   },
                 ),
                 if (widget.cardio) ...[
+                  TextButton.icon(
+                    icon: const Icon(Icons.schedule),
+                    label: Text(l.cardioTime(cardioTime.format(context))),
+                    onPressed: () async {
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: cardioTime,
+                      );
+                      if (time != null && mounted) {
+                        setState(() => _selectedTime = time);
+                      }
+                    },
+                  ),
                   Wrap(
                     spacing: 4,
                     children: l.cardioPresets
@@ -478,6 +500,15 @@ class _EntryDialogState extends State<_EntryDialog> {
                   _number(_distance.text),
                   _notes.text.trim(),
                   NumericExpression.tryInt(_reps.text),
+                  _selectedTime == null
+                      ? null
+                      : DateTime(
+                          _date.year,
+                          _date.month,
+                          _date.day,
+                          _selectedTime!.hour,
+                          _selectedTime!.minute,
+                        ),
                 ),
               );
             }

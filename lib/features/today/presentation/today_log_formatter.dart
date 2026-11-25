@@ -8,6 +8,7 @@ import '../data/today_repository.dart';
 import '../../nutrition/domain/nutrient_values.dart';
 import '../../nutrition/presentation/nutrition_labels.dart';
 import '../../nutrition/domain/meal_ingredient.dart';
+import '../../fitness/presentation/workout_duration.dart';
 
 class TodayLogFormatter {
   TodayLogFormatter(this.data, this.l, {this.historical = false});
@@ -16,8 +17,7 @@ class TodayLogFormatter {
   final AppLocalizations l;
 
   String get fitness {
-    final lines = <String>[];
-    if (data.workouts.isEmpty && data.actions.isEmpty) lines.add(l.defaultRest);
+    final events = <(DateTime, String)>[];
     for (final action in data.actions) {
       if (action.execution.executionType == 'completedTraining' &&
           data.workouts.isNotEmpty) {
@@ -31,26 +31,29 @@ class TodayLogFormatter {
         'completedTraining' => l.trainingRecorded,
         _ => action.execution.executionType,
       };
-      lines.add('${_time(action.execution.occurredAt)} · $label');
-      lines.add(
+      events.add((
+        action.execution.occurredAt,
         [
-          action.planName,
-          if (action.cycleNumber != null) l.cycleNumber(action.cycleNumber!),
-          action.dayName,
-        ].whereType<String>().join(' · '),
-      );
+          '${_time(action.execution.occurredAt)} · $label',
+          [
+            action.planName,
+            if (action.cycleNumber != null) l.cycleNumber(action.cycleNumber!),
+            action.dayName,
+          ].whereType<String>().join(' · '),
+        ].where((line) => line.isNotEmpty).join('\n'),
+      ));
     }
     for (final workout in data.workouts) {
       final session = workout.session;
-      if (lines.isNotEmpty) lines.add('');
-      lines.add(
+      final lines = [
         [
           _time(session.startedAt),
           session.planNameSnapshot,
           if (workout.cycleNumber != null) l.cycleNumber(workout.cycleNumber!),
           session.dayNameSnapshot ?? l.freeWorkout,
+          workoutDurationLabel(l, workout.duration),
         ].whereType<String>().join(' · '),
-      );
+      ];
       for (final exercise in workout.exercises) {
         lines.add(exercise.exercise.exerciseNameSnapshot);
         for (final set in exercise.sets) {
@@ -64,15 +67,23 @@ class TodayLogFormatter {
         }
       }
       if (session.notes?.isNotEmpty ?? false) lines.add(session.notes!);
+      events.add((session.startedAt, lines.join('\n')));
     }
     for (final cardio in data.cardio) {
-      lines.add(
-        '${l.cardioTitle}: ${cardio.activity} · ${cardio.minutes} min${cardio.distanceKm == null ? '' : ' · ${cardio.distanceKm} km'}${cardio.notes?.isNotEmpty == true ? ' · ${cardio.notes}' : ''}',
-      );
+      events.add((
+        cardio.recordedAt,
+        '${_time(cardio.recordedAt)} · ${l.cardioTitle}: ${cardio.activity} · ${cardio.minutes} min${cardio.distanceKm == null ? '' : ' · ${cardio.distanceKm} km'}${cardio.notes?.isNotEmpty == true ? ' · ${cardio.notes}' : ''}',
+      ));
     }
-    return lines.isEmpty
-        ? (historical ? l.noDateTraining : l.noTodayTraining)
-        : lines.join('\n').trim();
+    final ordered = events.indexed.toList()
+      ..sort((a, b) {
+        final timeOrder = a.$2.$1.compareTo(b.$2.$1);
+        return timeOrder == 0 ? a.$1.compareTo(b.$1) : timeOrder;
+      });
+    return [
+      if (data.workouts.isEmpty && data.actions.isEmpty) l.defaultRest,
+      for (final (_, event) in ordered) event.$2,
+    ].join('\n\n');
   }
 
   List<String> get _foodExtras => extraNutrientUnits.keys

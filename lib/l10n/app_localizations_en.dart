@@ -876,6 +876,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reorderExercises => 'Drag to reorder exercises';
 
   @override
+  String get saveWorkoutDraft => 'Save draft';
+
+  @override
+  String get workoutDraftSaved => 'Workout draft saved';
+
+  @override
+  String workoutDuration(Object elapsed) {
+    return 'Training time $elapsed';
+  }
+
+  @override
+  String cardioTime(Object time) {
+    return 'Activity time $time';
+  }
+
+  @override
   String get useLastExercise => 'Use last exercise record';
 
   @override

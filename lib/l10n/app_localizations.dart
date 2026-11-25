@@ -1652,6 +1652,30 @@ abstract class AppLocalizations {
   /// **'Drag to reorder exercises'**
   String get reorderExercises;
 
+  /// No description provided for @saveWorkoutDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Save draft'**
+  String get saveWorkoutDraft;
+
+  /// No description provided for @workoutDraftSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout draft saved'**
+  String get workoutDraftSaved;
+
+  /// No description provided for @workoutDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Training time {elapsed}'**
+  String workoutDuration(Object elapsed);
+
+  /// No description provided for @cardioTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity time {time}'**
+  String cardioTime(Object time);
+
   /// No description provided for @useLastExercise.
   ///
   /// In en, this message translates to:

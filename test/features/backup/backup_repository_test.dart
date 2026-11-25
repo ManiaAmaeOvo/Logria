@@ -48,6 +48,13 @@ void main() {
       ),
     ]);
     await fitness.writeSetting('fitness.draft.sample', '[]');
+    await fitness.writeSetting(
+      'fitness.draft.timed',
+      jsonEncode({
+        'exercises': [],
+        'startedAt': date.toUtc().toIso8601String(),
+      }),
+    );
     await SleepRepository(db).save(
       date,
       DateTime(date.year, date.month, date.day - 1, 23),

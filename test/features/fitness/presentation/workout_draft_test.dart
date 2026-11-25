@@ -13,7 +13,8 @@ void main() {
     (tester) async {
       final db = AppDatabase(NativeDatabase.memory());
       addTearDown(db.close);
-      final repo = FitnessRepository(db);
+      var now = DateTime(2026, 11, 25, 12);
+      final repo = FitnessRepository(db, clock: () => now);
       await repo.activateTemplate(builtInTrainingPlanTemplates.first);
       final dashboard = (await repo.loadDashboard())!;
       final day = dashboard.planDays.first;
@@ -75,7 +76,13 @@ void main() {
           reason: 'Plan targets are not completed values',
         );
       }
+      expect(find.textContaining('Training time'), findsNothing);
+      final startedAt = now;
       await tester.enterText(find.byType(TextField).at(0), 'bodyweight + band');
+      await tester.tap(find.byTooltip('Save draft'));
+      await settle();
+      expect(find.text('Workout draft saved'), findsOneWidget);
+      expect(await db.select(db.workoutSessions).get(), isEmpty);
       // Explicitly omit the auto-filled second set for this single-set draft.
       await tester.enterText(find.byType(TextField).at(3), '');
       await tester.enterText(find.byType(TextField).at(1), '');
@@ -87,8 +94,10 @@ void main() {
       expect((await repo.loadDashboard())!.hasDraft, isTrue);
       expect((await repo.loadDashboard())!.progress.consumedDayIds, isEmpty);
 
+      now = now.add(const Duration(minutes: 18));
       await tester.tap(find.text('Open'));
       await settle();
+      expect(find.text('Training time 18:00'), findsOneWidget);
       expect(find.text('bodyweight + band'), findsOneWidget);
       expect(
         (tester.widget<TextField>(find.byType(TextField).at(1)))
@@ -110,6 +119,7 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       await tester.pumpAndSettle();
+      now = now.add(const Duration(minutes: 12));
       await tester.tap(find.text('Finish and save workout'));
       await settle();
       expect(tester.takeException(), isNull);
@@ -119,6 +129,12 @@ void main() {
       expect(saved.weightValue, isNull);
       expect(saved.reps, 12);
       expect(saved.rir, isNull);
+      final timedSession = await db.select(db.workoutSessions).getSingle();
+      expect(timedSession.startedAt, startedAt);
+      expect(
+        timedSession.completedAt!.difference(timedSession.startedAt),
+        const Duration(minutes: 30),
+      );
       expect((await repo.loadDashboard())!.hasDraft, isFalse);
       expect(
         (await repo.loadDashboard())!.progress.consumedDayIds,
@@ -168,6 +184,12 @@ void main() {
         'unmeasured load',
       );
       expect((await repo.loadDashboard())!.hasDraft, isFalse);
+      await repo.undoLatestFitnessActionToday();
+      expect(await db.select(db.workoutSessions).get(), isEmpty);
+      expect(await repo.redoLatestFitnessActionToday(), isTrue);
+      final restored = await db.select(db.workoutSessions).getSingle();
+      expect(restored.startedAt, timedSession.startedAt);
+      expect(restored.completedAt, timedSession.completedAt);
       await tester.pumpWidget(const SizedBox());
     },
   );

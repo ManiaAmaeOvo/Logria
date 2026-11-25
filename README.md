@@ -13,7 +13,11 @@ Logria is an independent project and does not share a repository or data with Su
 [Changelog](CHANGELOG.md) · [English manual](docs/USER_GUIDE.md) ·
 [中文使用说明](docs/USER_GUIDE.zh-CN.md) · [MIT License](LICENSE)
 
-## Version 1.4.2 (Android build 16)
+## Version 1.4.3 (Android build 18)
+
+Version **1.4.3 build 18** collapses exercise cards during drag, adds explicit
+draft saving and workout timing, and orders cardio and strength logs by activity
+time. Build 18 can be installed over local build 17.
 
 Version **1.4.2 build 16** highlights today's recorded round slot, supports drag
 ordering in workouts and plan sorting panels, renders Calendar nutrition tables,
@@ -105,7 +109,7 @@ Android 7.0/API 24 or later is required. Android 16/arm64 has been checked local
 The published APK runs in release mode but uses the existing development
 signing certificate to allow updates from earlier test APKs from this machine.
 It is not a production Google Play release. See [release details](docs/RELEASE.md).
-To upgrade from earlier releases or local builds, install **1.4.2 build 16** over
+To upgrade from earlier releases or local builds, install **1.4.3 build 18** over
 the existing app without uninstalling or clearing storage. The signing identity
 is unchanged; additive migrations through schema 6 preserve existing records. Keep your data on
 the device. Version 1.4.0 adds full backup/restore and dated JSON analysis export.
